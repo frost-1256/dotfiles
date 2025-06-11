@@ -20,3 +20,4 @@ systemd
 user-dirs.dirs
 user-dirs.locale
 zsh-abbr
+.gsd-keyboard.settings-ported
