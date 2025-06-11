@@ -1,0 +1,134 @@
+/* ===== General ===== */
+* {
+  border: none;
+  border-radius: 4;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 13px;
+  min-height: 0;
+  padding: 2;
+}
+
+/* ===== Colors ===== */
+@define-color bg_dim #232A2E;
+@define-color bg0 #2D353B;
+@define-color bg1 #343F44;
+@define-color bg2 #3D484D;
+@define-color bg3 #475258;
+@define-color bg4 #4F585E;
+@define-color bg_visual #543A48;
+@define-color bg_red #514045;
+@define-color bg_green #425047;
+@define-color bg_blue #3A515D;
+@define-color bg_yellow #4D4C43;
+
+@define-color fg #D3C6AA;
+@define-color red #E67E80;
+@define-color orange #E69875;
+@define-color yellow #DBBC7F;
+@define-color green #A7C080;
+@define-color aqua #83C092;
+@define-color blue #7FBBB3;
+@define-color purple #D699B6;
+
+@define-color grey0 #7A8478;
+@define-color grey1 #859289;
+@define-color grey2 #9DA9A0;
+
+/* ===== Waybar Base ===== */
+window#waybar {
+  background: @bg1;
+  color: @fg;
+}
+
+/* ===== Modules ===== */
+#workspaces button {
+  background: @bg2;
+  color: @fg;
+  border-radius: 4px;
+  padding: 0 8px;
+}
+
+#workspaces button.focused {
+  background: @green;
+  color: @bg0;
+}
+
+#clock,
+#battery,
+#cpu,
+#memory,
+#network,
+#pulseaudio,
+#backlight,
+#temperature,
+#mode,
+#custom-media,
+#idle_inhibitor,
+#power-profiles-daemon,
+#language {
+  padding: 0 8px;
+  background: @bg1;
+}
+
+#battery.warning {
+  background: @bg_yellow;
+  color: @yellow;
+}
+
+#battery.critical {
+  background: @bg_red;
+  color: @red;
+}
+
+#clock {
+  background: @bg_blue;
+  color: @blue;
+}
+
+#tray {
+  background: @bg2;
+}
+
+#taskbar {
+  background: @bg1;
+}
+
+#taskbar button{
+  padding: 1;
+  background: @bg1;
+}
+
+#taskbar button.hover {
+  background-color: @aqua;
+}
+
+#taskbar button.active {
+    background-color: @green;
+}
+
+#tray {
+  padding: 0 10px;
+  background-color: @bg1;
+}
+
+/* ===== Mode Indicator (e.g., for keyboard layout or Wofi) ===== */
+#mode {
+  background: @statusline3;
+  color: @bg0;
+  font-weight: bold;
+}
+
+/* ===== Tooltip (if supported) ===== */
+tooltip {
+  background: @bg3;
+  color: @fg;
+  border: 1px solid @bg4;
+}
+
+/* ===== Custom Styling (Optional) ===== */
+#custom-power {
+  padding: 0 0 0 5;
+  background: @bg_red;
+  color: @fg;   
+}
+
