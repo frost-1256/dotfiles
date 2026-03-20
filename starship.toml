@@ -1,0 +1,66 @@
+# エディターの補完を設定スキーマに合わせて取得
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# シェルのプロンプトの間に空行を挿入する
+add_newline = true
+
+format = """
+$directory$git_status
+$nix_shell$character \
+"""
+right_format = """
+"""
+[character] # The name of the module we are configuring is "character"
+success_symbol = "[➜](bold green)" 
+error_symbol = "[✗](bold red) "
+
+[directory]
+format = '[$path]($style)[$read_only]($read_only_style) '
+fish_style_pwd_dir_length = 1
+read_only = ' 🔒'
+read_only_style = 'red'
+
+[git_status]
+conflicted = '🏳'
+ahead = '🏎💨'
+behind = '😰'
+diverged = '😵'
+up_to_date = '✓'
+untracked = '🤷'
+stashed = '📦'
+modified = '📝'
+staged = '[++\($count\)](green)'
+renamed = '👅'
+deleted = '🗑'
+
+[bun]
+format = 'via [🍔 $version](bold green) '
+
+[c]
+format = 'via [$name $version]($style)'
+# ~/.config/starship.toml
+
+[cpp]
+disabled = false
+format = 'via [$name $version]($style)'
+
+[cmake]
+format = 'via [$symbol($version)]($style)'
+symbol = '△ '
+
+[ruby]
+symbol = '🔺 '
+
+[rust]
+format = 'via [⚙️ $version](red bold)'
+
+[nix_shell]
+disabled = false
+impure_msg = '[impure shell](bold red)'
+pure_msg = '[pure shell](bold green)'
+unknown_msg = '[default shell](bold yellow)'
+format = 'via [❄️ $state( \($name\))](bold blue) '
+
+# package モジュールを無効化してプロンプトから完全に非表示にする
+[package]
+disabled = true
