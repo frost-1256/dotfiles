@@ -152,15 +152,14 @@ let
     vesktop
     direnv
     neovim
+    howdy
    ];
 
    programs.sway = {
     enable = true;
     package = pkgs.swayfx;
    };
-   
-   programs.howdy.enable = true;
-   
+     
    services.fprintd.enable = true;
 
    programs.steam = {
