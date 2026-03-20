@@ -9,6 +9,7 @@ let
 {
   imports =
     [ # Include the results of the hardware scan. 
+      <nixos-hardware/lenovo/thinkpad/t14/intel/gen6>
       ./hardware-configuration.nix
     ];
   # Bootloader.
@@ -151,21 +152,20 @@ let
     })
     vesktop
     direnv
-    neovim
    ];
 
    programs.sway = {
     enable = true;
     package = pkgs.swayfx;
    };
-     
+    
+   programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    vimAlias = true;
+    viAlias = true;
+  };
    services.fprintd.enable = true;
-   services.howdy.enable = true;
-   services.linux-enable-ir-emitter.enable = true;
-   
-   security = {
-     pam.howdy.enable = true;
-   };
 
    programs.steam = {
      enable = true;
@@ -175,6 +175,26 @@ let
    };
 
    services.blueman.enable = true;
+   services.power-profiles-daemon.enable = false;
+   services.tlp = {
+      enable = true;
+      settings = {
+        CPU_SCALING_GOVERNOR_ON_AC = "performance";
+        CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+
+        CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+        CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+
+        CPU_MIN_PERF_ON_AC = 0;
+        CPU_MAX_PERF_ON_AC = 100;
+        CPU_MIN_PERF_ON_BAT = 0;
+        CPU_MAX_PERF_ON_BAT = 60;
+        #Optional helps save long term battery health
+        START_CHARGE_THRESH_BAT0 = 75; # 40 and below it starts to charge
+        STOP_CHARGE_THRESH_BAT0 = 85; # 80 and above it stops charging
+
+      };
+   };
 
    # Enable the OpenSSH daemon.
    services.openssh.enable = true;
