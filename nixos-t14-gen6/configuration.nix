@@ -152,7 +152,6 @@ let
     vesktop
     direnv
     neovim
-    howdy
    ];
 
    programs.sway = {
@@ -161,6 +160,12 @@ let
    };
      
    services.fprintd.enable = true;
+   services.howdy.enable = true;
+   services.linux-enable-ir-emitter.enable = true;
+   
+   security = {
+     pam.howdy.enable = true;
+   };
 
    programs.steam = {
      enable = true;
