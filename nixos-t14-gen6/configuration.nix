@@ -169,8 +169,6 @@ let
     viAlias = true;
   };
    services.fprintd.enable = true;
-   
-   security.pam.gnome-keyring.enable = true;
 
    programs.steam = {
      enable = true;
@@ -201,6 +199,8 @@ let
       };
    };
 
+   services.gnome.gnome-keyring.enable = true;
+   security.pam.services.login.enableGnomeKeyring = true;
    # Open ports in the firewall.
    # networking.firewall.allowedTCPPorts = [ ... ];
    # networking.firewall.allowedUDPPorts = [ ... ];
