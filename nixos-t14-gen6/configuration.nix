@@ -155,13 +155,18 @@ let
     direnv
     usbutils
     gnome-firmware
+    kitty
    ];
 
    programs.sway = {
-    enable = false;
-    package = pkgs.swayfx;
+     enable = false;
+     package = pkgs.swayfx;
    };
-    
+   programs.hyprland = {
+     enable = true;
+     xwayland.enable = true;
+   }; 
+   environment.sessionVariables.NIXOS_OZONE_WL = "1";
    programs.neovim = {
     enable = true;
     defaultEditor = true;
