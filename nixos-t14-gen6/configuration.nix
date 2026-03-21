@@ -158,7 +158,7 @@ let
    ];
 
    programs.sway = {
-    enable = true;
+    enable = false;
     package = pkgs.swayfx;
    };
     
