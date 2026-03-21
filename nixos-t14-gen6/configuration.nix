@@ -155,6 +155,7 @@ let
     direnv
     usbutils
     gnome-firmware
+    sbctl
    ];
 
    programs.sway = {
