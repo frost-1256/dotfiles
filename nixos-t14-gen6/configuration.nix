@@ -9,7 +9,7 @@ let
 {
   imports =
     [ # Include the results of the hardware scan. 
-      <nixos-hardware/lenovo/thinkpad/t14/intel/gen6>
+      #<nixos-hardware/lenovo/thinkpad/t14/intel/gen6>
       ./hardware-configuration.nix
     ];
   # Bootloader.
@@ -152,6 +152,8 @@ let
     })
     vesktop
     direnv
+    usbutils
+    gnome-firmware
    ];
 
    programs.sway = {
@@ -166,7 +168,7 @@ let
     viAlias = true;
   };
    services.fprintd.enable = true;
-
+   
    programs.steam = {
      enable = true;
      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
@@ -203,7 +205,8 @@ let
    # networking.firewall.allowedTCPPorts = [ ... ];
    # networking.firewall.allowedUDPPorts = [ ... ];
    # Or disable the firewall altogether.
-   networking.firewall.enable = false;
+   networking.firewall.enable = true;
+   services.fwupd.enable = true;
 
    # This value determines the NixOS release from which the default
    # settings for stateful data, like file locations and database versions
