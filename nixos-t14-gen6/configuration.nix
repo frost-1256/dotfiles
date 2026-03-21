@@ -49,7 +49,7 @@ let
     LC_NUMERIC = "ja_JP.UTF-8";
     LC_PAPER = "ja_JP.UTF-8";
     LC_TELEPHONE = "ja_JP.UTF-8";
-    LC_TIME = "ja_JP.UTF-8";
+    LC_TIME = "en_US.UTF-8";
   };
 
   i18n.inputMethod = {
@@ -113,6 +113,7 @@ let
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
     font-awesome
+    hicolor-icon-theme
   ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
   programs.nix-ld.enable = true;  
   # Install firefox.
@@ -139,7 +140,6 @@ let
     wl-clipboard
     waybar
     wlogout
-    swaynotificationcenter
     floorp-bin
     networkmanagerapplet
     vscode-fhs
@@ -156,6 +156,12 @@ let
     usbutils
     gnome-firmware
     kitty
+    hyprpolkitagent
+    brightnessctl
+    hypridle
+    hyprlock
+    swaynotificationcenter
+    rose-pine-hyprcursor
    ];
 
    programs.sway = {
