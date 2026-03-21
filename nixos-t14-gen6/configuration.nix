@@ -185,7 +185,9 @@ let
      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
    };
-
+   
+   services.logind.settings.Login.HandlePowerKey = "suspend";
+   services.logind.settings.Login.HandleLidSwitch = "suspend";
    services.blueman.enable = true;
    services.power-profiles-daemon.enable = false;
    services.tlp = {
