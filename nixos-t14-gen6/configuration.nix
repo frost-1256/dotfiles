@@ -14,9 +14,8 @@ let
     ];
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
-  boot.loader.limine.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
-
+  boot.plymouth.enable = true;
   zramSwap = {
     enable = true;
     memoryPercent = 200;
