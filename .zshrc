@@ -2,14 +2,18 @@ HISTFILE=~/.histfile
 HISTSIZE=1000
 SAVEHIST=1000
 bindkey -e
+
+bindkey "^[OH" beginning-of-line
+bindkey "^[OF" end-of-line
+bindkey "^[[3~" delete-char
+
 zstyle :compinstall filename '/home/spring/.zshrc'
 zstyle :prompt:pure:git:stash show yes
 # aliasとか書くところ
-alias "nix-gc=sudo nix-collect-garbage && sudo nixos-rebuild switch"
+alias "nix-gc=sudo nix-collect-garbage -d && sudo nixos-rebuild switch"
 alias ":q=exit"
 alias "vim=nvim"
 export PATH=$HOME/.local/bin:$PATH
-
 export EDITOR=nvim
 export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/share:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share
 eval "$(direnv hook zsh)"
