@@ -170,6 +170,8 @@ let
   };
    services.fprintd.enable = true;
    
+   security.pam.gnome-keyring.enable = true;
+
    programs.steam = {
      enable = true;
      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
@@ -198,9 +200,6 @@ let
 
       };
    };
-
-   # Enable the OpenSSH daemon.
-   services.openssh.enable = true;
 
    # Open ports in the firewall.
    # networking.firewall.allowedTCPPorts = [ ... ];
