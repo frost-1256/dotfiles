@@ -13,8 +13,8 @@ let
       ./hardware-configuration.nix
     ];
   # Bootloader.
-  boot.loader.systemd-boot.enable = false;
-  boot.loader.limine.enable = true;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.limine.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
 
   zramSwap = {
@@ -155,7 +155,6 @@ let
     direnv
     usbutils
     gnome-firmware
-    sbctl
    ];
 
    programs.sway = {
