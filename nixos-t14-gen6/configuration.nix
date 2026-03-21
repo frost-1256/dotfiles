@@ -161,6 +161,7 @@ let
     swaynotificationcenter
     rose-pine-hyprcursor
     intel-npu-driver
+    unzip
    ];
 
    programs.sway = {
