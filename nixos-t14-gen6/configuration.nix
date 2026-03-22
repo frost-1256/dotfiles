@@ -158,11 +158,11 @@ let
     brightnessctl
     hypridle
     hyprlock
-    swaynotificationcenter
     rose-pine-hyprcursor
     intel-npu-driver
     unzip
     cliphist
+    dunst
   ];
 
    programs.sway = {

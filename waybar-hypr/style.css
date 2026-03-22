@@ -8,18 +8,18 @@
   padding: 2;
 }
 
-/* ===== Neko Kipferl — unified warm dark ===== */
-@define-color bg_dim      #3C2E1E;
-@define-color bg0         #483820;
-@define-color bg1         #544228;
-@define-color bg2         #604C30;
-@define-color bg3         #6C5838;
-@define-color bg4         #786448;
-@define-color bg_visual   #504028;
-@define-color bg_red      #583028;
-@define-color bg_green    #304838;
-@define-color bg_blue     #284858;
-@define-color bg_yellow   #483808;
+/* ===== Neko Kipferl — all transparent ===== */
+@define-color bg_dim      rgba(60, 46, 30, 0.70);
+@define-color bg0         rgba(72, 56, 32, 0.70);
+@define-color bg1         rgba(84, 66, 40, 0.70);
+@define-color bg2         rgba(96, 76, 48, 0.70);
+@define-color bg3         rgba(108, 88, 56, 0.70);
+@define-color bg4         rgba(120, 100, 72, 0.70);
+@define-color bg_visual   rgba(80, 64, 40, 0.70);
+@define-color bg_red      rgba(88, 48, 40, 0.70);
+@define-color bg_green    rgba(48, 72, 56, 0.70);
+@define-color bg_blue     rgba(40, 72, 88, 0.70);
+@define-color bg_yellow   rgba(72, 56, 8, 0.70);
 @define-color fg          #F0D8A0;
 @define-color red         #D06858;
 @define-color orange      #C8905A;
@@ -55,7 +55,6 @@ window#waybar {
 #battery,
 #cpu,
 #memory,
-#network,
 #pulseaudio,
 #backlight,
 #temperature,
@@ -64,18 +63,19 @@ window#waybar {
 #idle_inhibitor,
 #power-profiles-daemon,
 #language {
-  padding: 0 8px;
+  padding: 10px;
   background: @bg1;
+  border-radius: 10px
 }
 
-#battery.warning {
-  background: @bg_yellow;
-  color: @yellow;
+#network {
+  padding: 0 20 0 10px;
+  background: @bg1;
+  border-radius: 10px
 }
-#battery.critical {
-  background: @bg_red;
-  color: @red;
-}
+
+#battery.warning  { background: @bg_yellow; color: @yellow; }
+#battery.critical { background: @bg_red;    color: @red;    }
 
 #clock {
   background: @bg_blue;
@@ -86,18 +86,11 @@ window#waybar {
 #tray {
   padding: 0 10px;
   background-color: @bg1;
+  border-radius: 10px;
 }
-
-#taskbar {
-  background: @bg1;
-}
-#taskbar button {
-  padding: 1;
-  background: @bg1;
-}
-#taskbar button.hover {
-  background-color: @aqua;
-}
+/*#taskbar        { background: @bg1; }*/
+#taskbar button { padding: 1; background: @bg1; }
+#taskbar button.hover  { background-color: @aqua; }
 #taskbar button.active {
   margin: 0 3 0 3px;
   padding: 3px;
