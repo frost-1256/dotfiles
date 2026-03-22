@@ -59,15 +59,17 @@
     "clock": {
         "timezone": "Asia/Tokyo",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-        "format-alt": "{:%Y-%m-%d}"
-	
+        "format-alt": "{:%Y-%m-%d}",
+	"justify": "center"
     },
     "cpu": {
         "format": "{usage}% ",
-        "tooltip": false
+        "tooltip": false,
+	"justify": "center"
     },
     "memory": {
-        "format": "{}% "
+        "format": "{}% ",
+	"justify": "center"
     },
     "temperature": {
         // "thermal-zone": 2,
@@ -75,12 +77,14 @@
         "critical-threshold": 80,
         // "format-critical": "{temperatureC}°C {icon}",
         "format": "{temperatureC}°C {icon}",
-        "format-icons": [""]
+        "format-icons": [""],
+	"justify": "center"
     },
     "backlight": {
         // "device": "acpi_video1",
         "format": "{percent}% {icon}",
-        "format-icons": ["", "", "", "", "", "", "", "", ""]
+        "format-icons": ["", "", "", "", "", "", "", "", ""],
+	"justify": "center"
     },
     "battery": {
         "states": {
@@ -95,7 +99,8 @@
         "format-alt": "{time} {icon}",
         // "format-good": "", // An empty format will hide the module
         // "format-full": "",
-        "format-icons": ["", "", "", "", ""]
+        "format-icons": ["", "", "", "", ""],
+	"justify": "center"
     },
     "power-profiles-daemon": {
       "format": "{icon}",
@@ -110,12 +115,13 @@
     },
     "network": {
         // "interface": "wlp2*", // (Optional) To force the use of this interface
-        "format-wifi": "{essid} ({signalStrength}%) ",
+        "format-wifi": "{essid} [{signalStrength}%]  ",
         "format-ethernet": "{ipaddr}/{cidr} ",
         "tooltip-format": "{ifname} via {gwaddr} ",
         "format-linked": "{ifname} (No IP) ",
         "format-disconnected": "Disconnected ⚠",
-        "format-alt": "{ifname}: {ipaddr}/{cidr}"
+        "format-alt": "{ifname}: {ipaddr}/{cidr}",
+	"justify": "center"
     },
     "pulseaudio": {
         // "scroll-step": 1, // %, can be a float
@@ -128,10 +134,12 @@
         "format-icons": {
             "default": ["", "", ""]
         },
+	"justify": "center",
         "on-click": "pavucontrol"
     }, 
     "custom/power": {
-        "format" : "⏻ ",
+	"justify": "center",
+        "format" : "",
 	"on-click": "wlogout"
     }
 }

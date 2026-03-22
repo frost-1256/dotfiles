@@ -6,6 +6,15 @@ require("nvim-treesitter").setup()
 
 -- nvim-cmp の設定
 local cmp = require("cmp")
+vim.cmd("colorscheme kipfel")
+vim.cmd([[
+  highlight Normal guibg=none
+  highlight NonText guibg=none
+  highlight Normal ctermbg=none
+  highlight NonText ctermbg=none
+  highlight NormalNC guibg=none
+  highlight NormalSB guibg=none
+]])
 
 cmp.setup({
   snippet = {
@@ -63,11 +72,15 @@ cmp.setup.cmdline(':', {
 
 -- Lualine Configuration
 local lualine = require("lualine")
-lualine.setup()
-
+require("lualine").setup()
 vim.keymap.set('n', '<C-q>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-,>', ':BufferPrevious<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-.>', ':BufferNext<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-c>', ':BufferClose<CR>', { noremap = true, silent = true })
 vim.o.pumheight = 10
 vim.g.mapleader = ' '
+
+vim.opt.termguicolors = true
+vim.opt.winblend = 0 -- ウィンドウの不透明度
+vim.opt.pumblend = 0 -- ポップアップメニューの不透明度
+
