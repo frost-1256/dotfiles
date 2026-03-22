@@ -162,7 +162,8 @@ let
     rose-pine-hyprcursor
     intel-npu-driver
     unzip
-   ];
+    cliphist
+  ];
 
    programs.sway = {
      enable = false;
@@ -211,7 +212,6 @@ let
 
       };
    };
-
    services.gnome.gnome-keyring.enable = true;
    security.pam.services.login.enableGnomeKeyring = true;
    # Open ports in the firewall.
