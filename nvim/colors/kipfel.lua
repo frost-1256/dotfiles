@@ -137,7 +137,7 @@ hi("Removed",       { fg = c.red })
 -- =============================================================
 -- SYNTAX
 -- =============================================================
-hi("Comment",       { fg = c.grey0,    italic = true })
+hi("Comment",       { fg = c.comment,    italic = true })
 hi("Constant",      { fg = c.purple })
 hi("String",        { fg = c.green })
 hi("Character",     { fg = c.green })
