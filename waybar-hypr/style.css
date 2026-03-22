@@ -36,13 +36,13 @@
 
 /* ===== Waybar Base ===== */
 window#waybar {
-  background: @bg1;
+  background: @md_sys_color_surface_variant;
   color: @fg;
 }
 
 /* ===== Modules ===== */
 #workspaces button {
-  background: @bg2;
+  background: @md_sys_color_tertiary_fixed_dim;
   color: @fg;
   border-radius: 10px;
   padding: 0 15 0 15px;
