@@ -44,8 +44,9 @@ window#waybar {
 #workspaces button {
   background: @bg2;
   color: @fg;
-  border-radius: 4px;
-  padding: 0 8px;
+  border-radius: 10px;
+  padding: 0 15 0 15px;
+  margin: 0 3 0 3px;
 }
 
 #workspaces button.active {
@@ -83,6 +84,7 @@ window#waybar {
 #clock {
   background: @bg_blue;
   color: @blue;
+  border-radius: 10px;
 }
 
 #tray {
@@ -103,7 +105,10 @@ window#waybar {
 }
 
 #taskbar button.active {
-    background-color: @green;
+   margin: 0 3 0 3px;
+   padding: 3px;
+   background-color: @green;
+   border-radius: 10px;
 }
 
 #tray {
@@ -130,5 +135,6 @@ tooltip {
   padding: 0 0 0 5;
   background: @bg_red;
   color: @fg;   
+  border-radius: 10px;
 }
 
