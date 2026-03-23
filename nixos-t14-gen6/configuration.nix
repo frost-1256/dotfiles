@@ -165,6 +165,7 @@ let
     dunst
     wireplumber
     xdg-desktop-portal-hyprland
+    lazygit
   ];
 
    programs.sway = {
