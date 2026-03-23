@@ -39,6 +39,7 @@ require("lazy").setup({
     { import = "plugins.autopairs" },
     { import = "plugins.cord" },
     { import = "plugins.trouble"},
+    { import = "plugins.diffview" },
     { import = "plugins.toggleterm" }
   },
   -- automatically check for plugin updates
