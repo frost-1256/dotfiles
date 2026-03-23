@@ -163,6 +163,8 @@ let
     unzip
     cliphist
     dunst
+    wireplumber
+    xdg-desktop-portal-hyprland
   ];
 
    programs.sway = {
