@@ -38,6 +38,7 @@ require("lazy").setup({
     { import = "plugins.barbar" },
     { import = "plugins.autopairs" },
     { import = "plugins.cord" },
+    { import = "plugins.lazygit" },
     { import = "plugins.trouble"},
     { import = "plugins.diffview" },
     { import = "plugins.toggleterm" }
