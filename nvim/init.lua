@@ -77,6 +77,7 @@ vim.keymap.set('n', '<C-q>', ':NvimTreeToggle<CR>', { noremap = true, silent = t
 vim.keymap.set('n', '<A-,>', ':BufferPrevious<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-.>', ':BufferNext<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-c>', ':BufferClose<CR>', { noremap = true, silent = true })
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>")
 vim.o.pumheight = 10
 vim.g.mapleader = ' '
 

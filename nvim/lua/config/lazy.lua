@@ -38,8 +38,12 @@ require("lazy").setup({
     { import = "plugins.barbar" },
     { import = "plugins.autopairs" },
     { import = "plugins.cord" },
-    { import = "plugins.trouble"}
+    { import = "plugins.trouble"},
+    { import = "plugins.toggleterm" }
   },
   -- automatically check for plugin updates
-  checker = { enabled = true },
+  checker = {
+    enabled = true,
+    notify = false,
+  },
 })
