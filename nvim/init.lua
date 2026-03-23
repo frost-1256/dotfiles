@@ -70,6 +70,14 @@ cmp.setup.cmdline(':', {
   matching = { disallow_symbol_nonprefix_matching = false }
 })
 
+
+
+local map = vim.api.nvim_set_keymap
+local opts = { noremap = true, silent = true }
+
+-- lazygit
+map('n', '<leader>g', ':Lazygit<CR>', opts)
+
 -- Lualine Configuration
 local lualine = require("lualine")
 require("lualine").setup()
