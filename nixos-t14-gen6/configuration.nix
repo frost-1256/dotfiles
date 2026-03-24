@@ -3,14 +3,11 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, ... }:
-let
-  discord-ime = import ./overlays/discord.nix;
-  in
 {
   imports =
-    [ # Include the results of the hardware scan. 
-      #<nixos-hardware/lenovo/thinkpad/t14/intel/gen6>
+    [ 
       ./hardware-configuration.nix
+      ./modules/services/keyd.nix
     ];
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -227,25 +224,7 @@ let
    # Or disable the firewall altogether.
    networking.firewall.enable = true;
    services.fwupd.enable = true;
-   services.keyd = {
-     enable = true;
-       keyboards = {
-         default = {
-           ids = [ "0001:0001:09b4e68d" ];
-             settings = {
-               main = {
-                 "leftshift+leftmeta+f23" = "f13";
-               };
-               "meta" = {
-                 h = "left";
-                 j = "down";
-                 k = "up";
-                 l = "right";
-               };
-             };
-           };
-       };
-   };
+
 
    # This value determines the NixOS release from which the default
    # settings for stateful data, like file locations and database versions
