@@ -8,12 +8,6 @@
           main = {
             "leftshift+leftmeta+f23" = "f13";
           };
-          "meta" = {
-            h = "left";
-            j = "down";
-            k = "up";
-            l = "right";
-          };
         };
       };
     };
