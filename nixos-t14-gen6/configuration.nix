@@ -166,6 +166,10 @@ let
     wireplumber
     xdg-desktop-portal-hyprland
     lazygit
+    jetbrains.webstorm
+    jetbrains.idea
+    android-tools
+    android-studio
   ];
 
    programs.sway = {

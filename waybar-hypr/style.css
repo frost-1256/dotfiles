@@ -78,8 +78,8 @@ window#waybar {
 #battery.critical { background: @bg_red;    color: @red;    }
 
 #clock {
-  background: @bg_blue;
-  color: @blue;
+  background: @green;
+  color: @fg;
   border-radius: 10px;
 }
 
