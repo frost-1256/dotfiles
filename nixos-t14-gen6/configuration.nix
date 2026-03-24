@@ -7,16 +7,9 @@
   imports =
     [ 
       ./hardware-configuration.nix
+      ./modules/boot.nix
       ./modules/services/keyd.nix
     ];
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.plymouth.enable = true;
-  zramSwap = {
-    enable = true;
-    memoryPercent = 200;
-  };
 
   networking.hostName = "spring-t14-gen6"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.

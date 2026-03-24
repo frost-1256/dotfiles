@@ -29,8 +29,12 @@
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/0b44e6f4-4ccb-40a9-8b35-a4a96fac09fa"; }
-    ];
+    [ { device = "/dev/disk/by-uuid/0b44e6f4-4ccb-40a9-8b35-a4a96fac09fa"; } ];
+  
+  zramSwap = {
+    enable = true;
+    memoryPercent = 200;
+  };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.npu.enable = true;
