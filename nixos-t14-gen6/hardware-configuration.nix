@@ -33,7 +33,7 @@
   
   zramSwap = {
     enable = true;
-    memoryPercent = 200;
+    memoryPercent = 50;
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

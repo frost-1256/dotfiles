@@ -85,6 +85,7 @@
     jetbrains.idea
     android-tools
     android-studio
+    winboat
   ];
    programs.neovim = {
     enable = true;
