@@ -26,6 +26,7 @@
       ./modules/services/gnome-keyring.nix
       ./modules/services/fwupd.nix
       ./modules/services/keyd.nix
+      ./modules/virtualisation/docker.nix
     ];
 
   # Configure keymap in X11
@@ -85,7 +86,7 @@
     jetbrains.idea
     android-tools
     android-studio
-    winboat
+    #winboat
   ];
    programs.neovim = {
     enable = true;
@@ -100,6 +101,11 @@
      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
    };
+
+  services.udev.extraRules = ''
+  KERNEL=="ttyACM[0-9]*", MODE="0666"
+  KERNEL=="ttyUSB[0-9]*", MODE="0666"
+'';
 
    # This value determines the NixOS release from which the default
    # settings for stateful data, like file locations and database versions
