@@ -1,0 +1,108 @@
+# modules/hypr/rofi.nix
+{ pkgs, ... }: {
+  programs.rofi = {
+    enable   = true;
+    package  = pkgs.rofi;
+    font     = "Fira Code 10";
+    terminal = "wezterm";
+    extraConfig = {
+      modi       = "window,drun,ssh,combi";
+      combi-modi = "window,drun,ssh";
+    };
+    theme = "kipfel";
+  };
+
+  # テーマファイルを直接配置
+  xdg.configFile."rofi/themes/kipfel.rasi".text = ''
+    /* きぷきぷ */
+    * {
+        font:               "FiraCode Nerd Font Medium 11";
+        bgdark:             #504028;
+        bgalt:              #5C4C30;
+        bggreen:            #786448;
+        fg0:                #F0D8A0;
+        accent-color:       #70A8A0;
+        urgent-color:       #D8C070;
+        background-color:   transparent;
+        text-color:         @fg0;
+        transparent:        rgba(0,0,0,0);
+    }
+    window {
+        location:           center;
+        anchor:             center;
+        transparency:       "real";
+        padding:            15px;
+        border:             0px;
+        border-radius:      10px;
+        background-color:   @transparent;
+        spacing:            0;
+        children:           [mainbox];
+        orientation:        horizontal;
+    }
+    mainbox {
+        spacing:       0;
+        children:      [ inputbar, message, listview ];
+        border-radius: 10px;
+    }
+    message {
+        color:            @bggreen;
+        padding:          5px;
+        border-color:     @fg0;
+        border:           0px 2px 2px 2px;
+        background-color: @bgdark;
+    }
+    inputbar {
+        color:            @fg0;
+        padding:          11px;
+        background-color: rgba(80, 64, 40, 0.70);
+        border:           1px;
+        border-radius:    3px 3px 0px 0px;
+        border-color:     @bggreen;
+    }
+    entry, prompt, case-indicator {
+        text-font:  inherit;
+        text-color: inherit;
+    }
+    prompt {
+        margin: 0px 1em 0em 0em;
+    }
+    listview {
+        padding:          8px;
+        border-radius:    0px 0px 3px 3px;
+        border-color:     @bggreen;
+        border:           0px 1px 1px 1px;
+        background-color: rgba(80, 64, 40, 0.70);
+        dynamic:          false;
+    }
+    element {
+        padding:          3px;
+        vertical-align:   0.5;
+        border-radius:    3px;
+        background-color: transparent;
+        color:            @fg0;
+        text-color:       #F0D8A0;
+    }
+    element selected.normal {
+        background-color: @accent-color;
+        text-color:       #3C2E1E;
+        padding:          15px;
+        border-radius:    10px;
+    }
+    element-text, element-icon {
+        background-color: inherit;
+        text-color:       inherit;
+    }
+    button {
+        padding:          6px;
+        color:            @fg0;
+        horizontal-align: 0.5;
+        border:           2px 0px 2px 2px;
+        border-radius:    4px 0px 0px 4px;
+        border-color:     @bggreen;
+    }
+    button selected normal {
+        border:       2px 0px 2px 2px;
+        border-color: @fg0;
+    }
+  '';
+}
