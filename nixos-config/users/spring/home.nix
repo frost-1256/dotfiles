@@ -10,6 +10,7 @@
   ];
   home.packages = with pkgs; [
     floorp-bin
+    obsidian
   ];
   programs.git.settings = {
     user.name = "spring";
