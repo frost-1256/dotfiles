@@ -1,7 +1,0 @@
-configuration {
- modi: "window,drun,ssh,combi";
- font: "Fira Code 10";
- combi-modi: "window,drun,ssh";
- }
-@theme "kipfel"
-
