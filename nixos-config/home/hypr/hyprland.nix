@@ -11,11 +11,12 @@
     $terminal = wezterm
     $fileManager = nautilus
     $menu = rofi -show drun
+    $runMenu = rofi -show run
 
     ### Autostart ###
     exec-once = nm-applet & blueman-applet
     exec-once = waybar
-    exec-once = swww-daemon
+    exec-once = awww-daemon
     exec-once = fcitx5
     exec-once = hypridle
     exec-once = wl-paste --watch cliphist store
@@ -113,6 +114,7 @@
     bind = $mainMod, E, exec, $fileManager
     bind = $mainMod, V, togglefloating,
     bind = $mainMod, D, exec, $menu
+    bind = $mainMod SHIFT, D, exec, $runMenu
     bind = $mainMod SHIFT, S, exec, grim -g "$(slurp)" - | wl-copy # Screenshot
     bind = $mainMod SHIFT, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy # Clipboard manager
 
