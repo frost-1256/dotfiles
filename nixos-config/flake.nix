@@ -14,7 +14,29 @@
     nixpkgs,
     home-manager,
     ...
-  }: {
+  }: let
+    mkHomeModules = username: [
+      inputs.nixvim.homeModules.nixvim
+      ./users/${username}/home.nix
+    ];
+
+    mkHomeSpecialArgs = username: inputs // {inherit username;};
+
+    mkHomeConfiguration = {
+      username,
+      system,
+    }: let
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    in
+      home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = mkHomeSpecialArgs username;
+        modules = mkHomeModules username;
+      };
+  in {
     nixosConfigurations = {
       spring-t14-gen6 = let
         username = "spring";
@@ -33,16 +55,18 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
 
-              home-manager.extraSpecialArgs = inputs // specialArgs;
-              home-manager.users.${username} = {
-                imports = [
-                  inputs.nixvim.homeModules.nixvim
-                  ./users/${username}/home.nix
-                ];
-              };
+              home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
+              home-manager.users.${username}.imports = mkHomeModules username;
             }
           ];
         };
+    };
+
+    homeConfigurations = {
+      spring = mkHomeConfiguration {
+        username = "spring";
+        system = "x86_64-linux";
+      };
     };
   };
 }

@@ -50,6 +50,12 @@
       vim = "nvim";
       vi = "nvim";
       kernel-build = "sudo systemd-nspawn -D /var/lib/machines/kernel-build --network-veth --resolv-conf=auto /bin/bash";
+      ubuntu-bootstrap = "sudo ubuntu-nspawn-bootstrap noble /var/lib/machines/ubuntu";
+      ubuntu-network-init = "sudo ubuntu-nspawn-configure-network /var/lib/machines/ubuntu";
+      ubuntu-container = "sudo systemd-nspawn -M ubuntu -D /var/lib/machines/ubuntu --boot --network-veth --resolv-conf=auto";
+      ubuntu-shell = "sudo systemd-nspawn -M ubuntu -D /var/lib/machines/ubuntu --network-veth --resolv-conf=auto /bin/bash";
+      ubuntu-machine-start = "sudo ubuntu-nspawn-configure-network /var/lib/machines/ubuntu && sudo systemctl start systemd-nspawn@ubuntu";
+      ubuntu-machine-stop = "sudo systemctl stop systemd-nspawn@ubuntu";
     };
 
     setOptions = [ "NO_NOMATCH" ];
@@ -73,6 +79,11 @@
       '')
 
       (lib.mkOrder 1000 ''
+        function ubuntu-machine-shell {
+          local user="''${1:-root}"
+          sudo machinectl shell "''${user}@ubuntu"
+        }
+
         bindkey "^[OH" beginning-of-line
         bindkey "^[OF" end-of-line
         bindkey "^[[3~" delete-char
