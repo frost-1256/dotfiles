@@ -10,6 +10,8 @@
   ];
   home.packages = with pkgs; [
     floorp-bin
+    nix-search-cli
+    vrcx
     obsidian
   ];
   programs.git.settings = {
