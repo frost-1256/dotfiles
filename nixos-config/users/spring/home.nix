@@ -12,6 +12,7 @@
     floorp-bin
     nix-search-cli
     vrcx
+    github-cli
     obsidian
   ];
   programs.git.settings = {
