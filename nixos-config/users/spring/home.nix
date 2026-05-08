@@ -13,6 +13,7 @@
     nix-search-cli
     vrcx
     github-cli
+    nwg-displays
     obsidian
   ];
   programs.git.settings = {
