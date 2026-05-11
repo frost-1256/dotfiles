@@ -242,7 +242,7 @@
       border-radius: 10px;
     }
     /*#taskbar        { background: @bg1; }*/
-    #taskbar button { padding: 1; background: @bg1; }
+    #taskbar button { margin: 0 3 0 3px; padding: 1; background: @bg1; }
     #taskbar button.hover  { background-color: @aqua; }
     #taskbar button.active {
       margin: 0 3 0 3px;
