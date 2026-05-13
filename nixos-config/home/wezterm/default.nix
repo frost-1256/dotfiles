@@ -4,7 +4,7 @@
     settings = {
       automatically_reload_config = true;
       color_scheme = "Everforest Dark Soft (Gogh)";
-      window_background_opacity = 0.65;
+      window_background_opacity = 0.4;
       hide_tab_bar_if_only_one_tab = true;
       use_fancy_tab_bar = true;
       show_new_tab_button_in_tab_bar = false;
