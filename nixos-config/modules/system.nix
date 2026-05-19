@@ -155,13 +155,18 @@ in {
     gnome-keyring
     debootstrap
     systemd
-    ubuntuNspawnConfigureNetwork
-    ubuntuNspawnBootstrap
+    libimobiledevice
+    ifuse
   ];
 
   systemd.tmpfiles.rules = [
     "d /var/lib/machines 0755 root root -"
   ];
+  
+  services.usbmuxd = {
+    enable = true;
+    package = pkgs.usbmuxd2;
+  };
 
   environment.etc."systemd/nspawn/ubuntu.nspawn".text = ''
     [Exec]

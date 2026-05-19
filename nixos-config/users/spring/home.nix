@@ -6,9 +6,11 @@
     ../../home/shell
     ../../home/steam
     ../../home/wezterm
+    ../../home/valent
     ../../home/core.nix
   ];
   home.packages = with pkgs; [
+    filezilla
     floorp-bin
     nix-search-cli
     vrcx
