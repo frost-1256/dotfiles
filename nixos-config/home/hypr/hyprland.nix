@@ -104,6 +104,11 @@
         }
     }
 
+    device {
+        name = tpps/2-elan-trackpoint
+        sensitivity = 0.6
+    }
+
     ### KEYBINDINGS ###
     $mainMod = SUPER
 

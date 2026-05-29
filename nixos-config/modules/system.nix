@@ -98,7 +98,12 @@ in {
     options = lib.mkDefault "--delete-older-than 7d";
   };
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    permittedInsecurePackages = [
+      "electron-38.8.4"
+    ];
+  };
 
   boot.enableContainers = true;
 
@@ -145,6 +150,22 @@ in {
     internalInterfaces = [ "ve-ubuntu" ];
   };
 
+  services.resolved = {
+    enable = true;
+
+    settings = {
+      Resolve = {
+        DNS = [
+          "45.90.28.0#3ab36d.dns.nextdns.io"
+          "2a07:a8c0::#3ab36d.dns.nextdns.io"
+          "45.90.30.0#3ab36d.dns.nextdns.io"
+          "2a07:a8c1::#3ab36d.dns.nextdns.io"
+        ];
+
+        DNSOverTLS = true;
+      };
+    };
+  };
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [

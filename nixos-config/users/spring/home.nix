@@ -18,6 +18,8 @@
     obsidian
     keybase
     keybase-gui
+    pavucontrol
+    protonup-qt
   ];
   services.keybase.enable = true;
   programs.gpg.enable = true;
