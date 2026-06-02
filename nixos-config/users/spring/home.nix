@@ -1,4 +1,10 @@
-{pkgs, ...}: {
+{
+  ccusage,
+  llm-agents,
+  nix-claude-code,
+  pkgs,
+  ...
+}: {
   imports = [
     ../../home/fcitx5
     ../../home/hypr
@@ -20,7 +26,23 @@
     keybase-gui
     pavucontrol
     protonup-qt
+    nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ccusage.packages.${pkgs.stdenv.hostPlatform.system}.default
+    llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
   ];
+  home.file.".claude/settings.json" = {
+    force = true;
+    text = builtins.toJSON {
+      effortLevel = "medium";
+      theme = "auto";
+      statusLine = {
+        type = "command";
+        command = "ccstatusline";
+        padding = 0;
+        refreshInterval = 10;
+      };
+    };
+  };
   services.keybase.enable = true;
   programs.gpg.enable = true;
   services.gpg-agent = {

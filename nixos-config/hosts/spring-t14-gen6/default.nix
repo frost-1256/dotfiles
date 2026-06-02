@@ -27,5 +27,5 @@
   networking.networkmanager.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
 
-  system.stateVersion = "26.05"; # Did you read the comment?
+  system.stateVersion = "26.11"; # Did you read the comment?
 }

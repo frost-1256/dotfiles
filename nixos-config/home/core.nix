@@ -3,7 +3,7 @@
     inherit username;
     homeDirectory = "/home/${username}";
 
-    stateVersion = "26.05";
+    stateVersion = "26.11";
   };
 
   # Let Home Manager install and manage itself.

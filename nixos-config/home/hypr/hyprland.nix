@@ -27,6 +27,7 @@
     env = XCURSOR_SIZE,24
     env = HYPRCURSOR_SIZE,24
     env = HYPRCURSOR_THEME,rose-pine-hyprcursor
+    env = STEAM_EXTRA_COMPAT_TOOLS_PATHS,$HOME/.steam/root/compatibilitytools.d
 
     ### Window decorations ###
     general {

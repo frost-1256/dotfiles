@@ -2,11 +2,19 @@
   description = "haru's NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable-small";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
+    nix-hazkey.url = "github:aster-void/nix-hazkey";
+    nix-hazkey.inputs.nixpkgs.follows = "nixpkgs";
+    nix-claude-code.url = "github:ryoppippi/nix-claude-code";
+    nix-claude-code.inputs.nixpkgs.follows = "nixpkgs";
+    ccusage.url = "github:ryoppippi/ccusage";
+    ccusage.inputs.nixpkgs.follows = "nixpkgs";
+    llm-agents.url = "github:numtide/llm-agents.nix";
+    llm-agents.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {
@@ -16,6 +24,7 @@
     ...
   }: let
     mkHomeModules = username: [
+      inputs.nix-hazkey.homeModules.hazkey
       inputs.nixvim.homeModules.nixvim
       ./users/${username}/home.nix
     ];
