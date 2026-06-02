@@ -16,13 +16,11 @@
   home.sessionPath = [
     "$HOME/.local/bin"
     "$HOME/.local/share/pnpm"
-    "/usr/local/bin"
   ];
 
   home.sessionVariables = {
     EDITOR = "nvim";
     PNPM_HOME = "$HOME/.local/share/pnpm";
-    XDG_DATA_DIRS = "$XDG_DATA_DIRS:/usr/share:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share";
   };
 
   programs.zsh = {
@@ -43,9 +41,9 @@
 
     history = {
       path = "${config.home.homeDirectory}/.histfile";
-      size = 1000;
-      save = 1000;
-      ignoreSpace = false;
+      size = 10000;
+      save = 10000;
+      ignoreSpace = true;
     };
 
     shellAliases = {

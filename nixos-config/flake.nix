@@ -38,7 +38,6 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-	config.allowInsecure = true;
         config.permittedInsecurePackages = [
           "electron-38.8.4"
         ];

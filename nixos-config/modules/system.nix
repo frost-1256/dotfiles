@@ -85,7 +85,7 @@ in {
   users.users.${username} = {
     isNormalUser = true;
     description = username;
-    extraGroups = ["networkmanager" "wheel" "docker" "input"];
+    extraGroups = ["networkmanager" "wheel" "input"];
   };
 
   nix.settings = {

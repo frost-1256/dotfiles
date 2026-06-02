@@ -16,9 +16,6 @@
       intel-media-driver
       vpl-gpu-rt
     ];
-    extraPackages32 = with pkgs.pkgsi686Linux; [
-      intel-media-driver
-    ];
   };
 
   programs.gamemode.enable = true;
