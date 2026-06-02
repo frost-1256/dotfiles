@@ -12,43 +12,43 @@ vim.o.background = "dark"
 
 -- ── Palette ───────────────────────────────────────────────────
 local c = {
-  -- bg scale
-  bg_dim    = "#3C2E1E",
-  bg0       = "#483820",
-  bg1       = "#544228",
-  bg2       = "#604C30",
-  bg3       = "#6C5838",
-  bg4       = "#786448",
-  bg_visual = "#504028",
-  bg_red    = "#583028",
-  bg_green  = "#304838",
-  bg_blue   = "#284858",
-  bg_yellow = "#483808",
+  -- bg scale (dark matcha olive)
+  bg_dim    = "#1F2618",
+  bg0       = "#28311F",
+  bg1       = "#323C28",
+  bg2       = "#3C4730",
+  bg3       = "#465238",
+  bg4       = "#566440",
+  bg_visual = "#45522F",
+  bg_red    = "#4A2A20",
+  bg_green  = "#304828",
+  bg_blue   = "#2C4440",
+  bg_yellow = "#40401C",
 
-  -- fg / text
-  fg        = "#F0D8A0",
-  fg_dim    = "#C0A888",
-  fg_muted  = "#A88870",
+  -- fg / text (latte cream)
+  fg        = "#ECE4CC",
+  fg_dim    = "#C4CDA8",
+  fg_muted  = "#A9B788",
 
-  -- accents
-  red       = "#D06858",
-  orange    = "#C8905A",
+  -- accents (matcha-harmonized, hue-distinct for readability)
+  red       = "#CC7059",
+  orange    = "#D89A5E",
   yellow    = "#D8C070",
-  green     = "#7A9878",
-  aqua      = "#70A8A0",
-  blue      = "#8098B8",
-  purple    = "#B890A0",
+  green     = "#A4BC7C",
+  aqua      = "#88B8A0",
+  blue      = "#8FB0A8",
+  purple    = "#C7A2A0",
 
-  -- greys
-  grey0     = "#907060",
-  grey1     = "#A88870",
-  grey2     = "#C0A888",
+  -- greys (sage)
+  grey0     = "#7E8C5E",
+  grey1     = "#98A878",
+  grey2     = "#B8C39A",
 
   -- special
   none      = "NONE",
 
   -- another ---
-  comment   = "#8A9878"
+  comment   = "#83926A"
 }
 
 -- ── Helper ────────────────────────────────────────────────────

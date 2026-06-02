@@ -6,12 +6,13 @@
   xdg.configFile."waybar/config.jsonc".text = ''
     // -*- mode: jsonc -*-
     {
-        // "layer": "top", // Waybar at top layer
-        // "position": "bottom", // Waybar position (top|bottom|left|right)
-        "height": 25, // Waybar height (to be removed for auto height)
-        // "width": 1280, // Waybar width
-        "spacing": 4, // Gaps between modules (4px)
-        // Choose the order of the modules
+        "layer": "top",
+        "position": "top",
+        "height": 44,
+        "margin-top": 8,
+        "margin-left": 12,
+        "margin-right": 12,
+        "spacing": 6,
         "modules-left": [
             "hyprland/workspaces",
             "wlr/taskbar"
@@ -29,232 +30,137 @@
             "battery",
             "custom/power"
         ],
-        "keyboard-state": {
-            "numlock": true,
-            "capslock": true,
-            "format": "{name} {icon}",
-            "format-icons": {
-                "locked": "",
-                "unlocked": ""
-            }
-        },
-        "hyprland/mode": {
-            "format": "<span style=\"italic\">{}</span>"
-        },
-        "hyprland/scratchpad": {
-            "format": "{icon} {count}",
-            "show-empty": false,
-            "format-icons": ["", ""],
-            "tooltip": true,
-            "tooltip-format": "{app}: {title}"
-        },
-        "tray": {
-            // "icon-size": 21,
-            "spacing": 10,
-            // "icons": {
-            //   "blueman": "bluetooth",
-            //   "TelegramDesktop": "$HOME/.local/share/icons/hicolor/16x16/apps/telegram.png"
-            // }
+        "hyprland/workspaces": {
+            "format": "{id}"
         },
         "wlr/taskbar": {
-            "icon-size": 20,
+            "icon-size": 18,
             "on-click": "activate",
             "on-click-right": "minimize",
             "format": "{icon}"
         },
+        "tray": {
+            "spacing": 8
+        },
         "clock": {
             "timezone": "Asia/Tokyo",
-            "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+            "format": "{:%H:%M}",
             "format-alt": "{:%Y-%m-%d}",
+            "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
             "justify": "center"
         },
         "cpu": {
-            "format": "{usage}% ",
-            "tooltip": false,
+            "format": "󰘚 {usage}%",
+            "tooltip": true,
             "justify": "center"
         },
         "memory": {
-            "format": "{}% ",
-            "justify": "center"
-        },
-        "temperature": {
-            // "thermal-zone": 2,
-            // "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
-            "critical-threshold": 80,
-            // "format-critical": "{temperatureC}°C {icon}",
-            "format": "{temperatureC}°C {icon}",
-            "format-icons": [""],
+            "format": "󰍛 {percentage}%",
+            "tooltip-format": "RAM {used:0.1f}G / {total:0.1f}G",
             "justify": "center"
         },
         "backlight": {
-            // "device": "acpi_video1",
-            "format": "{percent}% {icon}",
-            "format-icons": ["", "", "", "", "", "", "", "", ""],
+            "format": "{icon} {percent}%",
+            "format-icons": ["󰃞", "󰃟", "󰃠"],
             "justify": "center"
         },
         "battery": {
             "states": {
-                // "good": 95,
                 "warning": 35,
                 "critical": 20
             },
-            "format": "{capacity}% {icon}",
-            "format-full": "{capacity}% {icon}",
-            "format-charging": "{capacity}% ",
-            "format-plugged": "{capacity}% ",
-            "format-alt": "{time} {icon}",
-            // "format-good": "", // An empty format will hide the module
-            // "format-full": "",
-            "format-icons": ["", "", "", "", ""],
+            "format": "{icon} {capacity}%",
+            "format-charging": "󰂄 {capacity}%",
+            "format-plugged": "󰂄 {capacity}%",
+            "format-icons": ["󰂎", "󰁼", "󰁾", "󰂀", "󰁹"],
             "justify": "center"
         },
-        "power-profiles-daemon": {
-          "format": "{icon}",
-          "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
-          "tooltip": true,
-          "format-icons": {
-            "default": "",
-            "performance": "",
-            "balanced": "",
-            "power-saver": ""
-          }
-        },
         "network": {
-            // "interface": "wlp2*", // (Optional) To force the use of this interface
-            "format-wifi": "{essid} [{signalStrength}%]  ",
-            "format-ethernet": "{ipaddr}/{cidr} ",
-            "tooltip-format": "{ifname} via {gwaddr} ",
-            "format-linked": "{ifname} (No IP) ",
-            "format-disconnected": "Disconnected ⚠",
-            "format-alt": "{ifname}: {ipaddr}/{cidr}",
+            "format-wifi": "{icon}",
+            "format-ethernet": "󰈀",
+            "format-disconnected": "󰖪",
+            "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+            "tooltip-format": "{ifname} via {gwaddr}",
+            "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+            "tooltip-format-disconnected": "Disconnected",
             "justify": "center"
         },
         "pulseaudio": {
-            // "scroll-step": 1, // %, can be a float
-            "format": "{volume}% {icon} {format_source}",
-            "format-bluetooth": "{volume}% {icon} {format_source}",
-            "format-bluetooth-muted": "󰝟 {format_source}",
-            "format-muted": "󰝟 {format_source}",
-            "format-source": "{volume}% ",
-            "format-source-muted": "󰍭",
+            "format": "{icon} {volume}%",
+            "format-bluetooth": "{icon} {volume}%",
+            "format-muted": "󰖁",
             "format-icons": {
-                "default": ["", "", ""]
+                "default": ["󰕿", "󰖀", "󰕾"]
             },
-            "justify": "center",
-            "on-click": "pavucontrol"
+            "on-click": "pavucontrol",
+            "tooltip-format": "{volume}% {desc}",
+            "justify": "center"
         },
         "custom/power": {
+            "format": "󰐥",
             "justify": "center",
-            "format" : "",
             "on-click": "wlogout"
         }
     }
   '';
   xdg.configFile."waybar/style.css".text = ''
-    /*
-     * BeerCSS -> Waybar adapter
-     *
-     * Waybar uses GTK CSS, so browser-only BeerCSS syntax such as
-     * :root, --primary, var(--primary), rem, and component classes cannot be
-     * pasted unchanged. Keep the BeerCSS values here and map them to GTK
-     * @define-color tokens:
-     *
-     *   --primary: #70A8A0;            -> @define-color primary #70A8A0;
-     *   --on-primary: rgba(...);       -> @define-color on_primary rgba(...);
-     *   --surface: rgba(...);          -> @define-color surface rgba(...);
-     */
+    /* ===== Matcha Latte tokens (Material You) ===== */
+    @define-color primary                 #A4BC7C;
+    @define-color on_primary              #283418;
+    @define-color primary_container       rgba(74, 96, 52, 0.75);
+    @define-color on_primary_container    #C8DCA0;
 
-    /* ===== BeerCSS / Material You tokens, mapped to the original dark theme ===== */
-    @define-color primary                 #70A8A0;
-    @define-color on_primary              rgba(72, 56, 32, 0.70);
-    @define-color primary_container       rgba(108, 88, 56, 0.70);
-    @define-color on_primary_container    #F0D8A0;
+    @define-color secondary               #CBBE96;
+    @define-color on_secondary            #322A18;
+    @define-color secondary_container     rgba(96, 88, 56, 0.70);
+    @define-color on_secondary_container  #ECE0BC;
 
-    @define-color secondary               #7A9878;
-    @define-color on_secondary            #F0D8A0;
-    @define-color secondary_container     rgba(84, 66, 40, 0.70);
-    @define-color on_secondary_container  #F0D8A0;
+    @define-color tertiary                #88A860;
+    @define-color on_tertiary             #1A2C10;
+    @define-color tertiary_container      rgba(60, 80, 40, 0.70);
+    @define-color on_tertiary_container   #D2E4A8;
 
-    @define-color tertiary                #7A9878;
-    @define-color on_tertiary             #F0D8A0;
-    @define-color tertiary_container      rgba(48, 72, 56, 0.70);
-    @define-color on_tertiary_container   #F0D8A0;
+    @define-color error                   #CC7059;
+    @define-color on_error                #2A140E;
+    @define-color error_container         rgba(92, 52, 40, 0.72);
+    @define-color on_error_container      #F0C0B0;
 
-    @define-color error                   #D06858;
-    @define-color on_error                #F0D8A0;
-    @define-color error_container         rgba(88, 48, 40, 0.70);
-    @define-color on_error_container      #D06858;
+    @define-color surface                 rgba(40, 47, 33, 0.82);
+    @define-color surface_dim             rgba(31, 37, 26, 0.82);
+    @define-color surface_container_low   rgba(44, 51, 36, 0.74);
+    @define-color surface_container       rgba(52, 60, 43, 0.78);
+    @define-color surface_container_high  rgba(64, 73, 53, 0.82);
+    @define-color surface_variant         rgba(78, 88, 64, 0.70);
+    @define-color on_surface              #ECE4CC;
+    @define-color on_surface_variant      #C4CDA8;
+    @define-color outline                 rgba(120, 134, 92, 0.55);
+    @define-color shadow                  rgba(0, 0, 0, 0.30);
 
-    @define-color surface                 rgba(80, 64, 40, 0.70);
-    @define-color surface_dim             rgba(60, 46, 30, 0.70);
-    @define-color surface_container_low   rgba(72, 56, 32, 0.70);
-    @define-color surface_container       rgba(84, 66, 40, 0.70);
-    @define-color surface_container_high  rgba(96, 76, 48, 0.70);
-    @define-color surface_variant         rgba(108, 88, 56, 0.70);
-    @define-color on_surface              #F0D8A0;
-    @define-color on_surface_variant      #F0D8A0;
-    @define-color outline                 rgba(120, 100, 72, 0.70);
-    @define-color shadow                  rgba(0, 0, 0, 0.22);
-
-    @define-color warning_container       rgba(72, 56, 8, 0.70);
-    @define-color on_warning_container    #D8C070;
+    @define-color warning_container       rgba(74, 66, 24, 0.72);
+    @define-color on_warning_container    #E0CE8C;
 
     /* ===== General ===== */
     * {
       border: none;
-      border-radius: 4;
+      border-radius: 0;
       box-shadow: none;
-      font-family: "Fira Code", "FontAwesome", monospace;
+      font-family: "Fira Code", "Symbols Nerd Font", "FontAwesome", monospace;
       font-size: 14px;
       min-height: 0;
-      padding: 2;
+      padding: 0;
+      transition: background 150ms ease;
     }
 
-    /* ===== BeerCSS-like utility classes for modules that expose class names ===== */
-    .primary {
-      background: @primary;
-      color: @on_primary;
-    }
-
-    .secondary {
-      background: @secondary_container;
-      color: @on_secondary_container;
-    }
-
-    .tertiary {
-      background: @tertiary_container;
-      color: @on_tertiary_container;
-    }
-
-    .error {
-      background: @error_container;
-      color: @on_error_container;
-    }
-
-    .surface {
-      background: @surface_container;
-      color: @on_surface;
-    }
-
-    .round {
-      border-radius: 999px;
-    }
-
-    .border {
-      border: 1px solid @outline;
-    }
-
-    /* ===== Waybar Base ===== */
+    /* ===== Floating top bar ===== */
     window#waybar {
       background: @surface;
       color: @on_surface;
+      border-radius: 16px;
     }
 
-    window#waybar.hidden {
-      opacity: 0.2;
-    }
+    window#waybar.hidden { opacity: 0.2; }
 
-    /* ===== Shared module shape ===== */
+    /* ===== Shared module chip ===== */
     #clock,
     #battery,
     #cpu,
@@ -262,37 +168,33 @@
     #pulseaudio,
     #network,
     #backlight,
-    #temperature,
-    #mode,
-    #custom-media,
-    #idle_inhibitor,
-    #power-profiles-daemon,
-    #language,
     #tray,
     #custom-power {
       background: @surface_container;
       color: @on_surface;
-      border-radius: 10px;
-      padding: 0 15px 0 15px;
+      border-radius: 999px;
+      padding: 0 14px;
+      margin: 6px 3px;
     }
 
     /* ===== Workspaces ===== */
     #workspaces {
-      margin: 0;
+      background: @surface_container_low;
+      border-radius: 999px;
+      padding: 0 4px;
+      margin: 6px 3px;
     }
 
     #workspaces button {
-      background: @surface_variant;
+      background: transparent;
       color: @on_surface;
-      border-radius: 10px;
-      margin: 0 3px 0 3px;
-      padding: 0 15px 0 15px;
+      border-radius: 999px;
+      margin: 4px 2px;
+      padding: 0 12px;
+      min-width: 24px;
     }
 
-    #workspaces button:hover {
-      background: @surface_container_high;
-      color: @on_surface;
-    }
+    #workspaces button:hover { background: @surface_container_high; }
 
     #workspaces button.active {
       background: @primary;
@@ -304,11 +206,11 @@
       color: @on_error_container;
     }
 
-    /* ===== Modules ===== */
+    /* ===== Accent modules ===== */
     #clock {
       background: @secondary;
       color: @on_secondary;
-      border-radius: 10px;
+      font-weight: 600;
     }
 
     #battery.warning {
@@ -318,7 +220,7 @@
 
     #battery.critical {
       background: @error_container;
-      color: @error;
+      color: @on_error_container;
     }
 
     #network.disconnected,
@@ -327,42 +229,40 @@
       color: @on_error_container;
     }
 
-    #taskbar button {
-      background: @surface_container;
-      margin: 0 3px 0 3px;
-      padding: 1;
+    /* ===== Taskbar ===== */
+    #taskbar {
+      background: @surface_container_low;
+      border-radius: 999px;
+      padding: 0 4px;
+      margin: 6px 3px;
     }
 
-    #taskbar button:hover {
-      background: @surface_container_high;
+    #taskbar button {
+      background: transparent;
+      border-radius: 999px;
+      margin: 4px 2px;
+      padding: 0 6px;
     }
+
+    #taskbar button:hover { background: @surface_container_high; }
 
     #taskbar button.active {
       background: @secondary;
       color: @on_secondary;
-      border-radius: 10px;
-      margin: 0 3px 0 3px;
-      padding: 3px;
-    }
-
-    #mode {
-      background: @primary;
-      color: @on_primary;
-      font-weight: bold;
     }
 
     #custom-power {
       background: @error_container;
-      color: @on_surface;
-      padding: 0 15px 0 15px;
-      border-radius: 10px;
+      color: @on_error_container;
     }
 
     /* ===== Tooltip ===== */
     tooltip {
       background: @surface_variant;
       color: @on_surface;
+      border-radius: 12px;
       border: 1px solid @outline;
+      padding: 4px;
     }
 
     tooltip label {

@@ -22,6 +22,7 @@
     exec-once = wl-paste --watch cliphist store
     exec-once = dunst
     exec-once = vesktop
+    exec-once = systemctl --user start hazkey-server
 
     ### Environment variables ###
     env = XCURSOR_SIZE,24
@@ -31,31 +32,33 @@
 
     ### Window decorations ###
     general {
-        gaps_in = 5
-        gaps_out = 20
-        border_size = 2
-        col.active_border = rgba(70a8a0ff)
-        col.inactive_border = rgba(284858ff)
-        resize_on_border = false
+        gaps_in = 6
+        gaps_out = 14
+        border_size = 1
+        col.active_border = rgba(a4bc7ccc) rgba(88a860cc) 45deg
+        col.inactive_border = rgba(2c342240)
+        resize_on_border = true
         allow_tearing = false
         layout = dwindle
     }
     decoration {
-        rounding =5
+        rounding = 16
         rounding_power = 2
         active_opacity = 1.0
         inactive_opacity = 1.0
         shadow {
             enabled = true
-            range = 10
-            render_power = 3
-            color = rgba(1a1a1aee)
+            range = 24
+            render_power = 2
+            color = rgba(0d0a0766)
+            offset = 0 4
         }
         blur {
             enabled = true
-            size = 5
-            passes = 2
-            vibrancy = 0.1696
+            size = 8
+            passes = 3
+            vibrancy = 0.2
+            new_optimizations = true
         }
     }
     animations {

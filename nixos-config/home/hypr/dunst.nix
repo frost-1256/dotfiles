@@ -5,7 +5,7 @@
   };
   xdg.configFile."dunst/dunstrc".text = ''
     # =====================================================
-    # dunstrc — Neko Kipferl  (dunst 1.12.0+)
+    # dunstrc — Matcha Latte  (dunst 1.12.0+)
     # ~/.config/dunst/dunstrc
     # =====================================================
 
@@ -20,19 +20,19 @@
         scale                  = 0
         notification_limit     = 5
 
-        padding                = 10
-        horizontal_padding     = 14
-        text_icon_padding      = 10
-        frame_width            = 1
-        gap_size               = 6
-        separator_height       = 1
+        padding                = 14
+        horizontal_padding     = 16
+        text_icon_padding      = 12
+        frame_width            = 0
+        gap_size               = 8
+        separator_height       = 0
         sort                   = yes
 
-        corner_radius          = 8
-        frame_color            = "#786448B2"    # bg4  70%
+        corner_radius          = 16
+        frame_color            = "#4E5A38B2"
         separator_color        = frame
-        background             = "#504028B2"    # bg_visual  70%
-        foreground             = "#F0D8A0"      # fg
+        background             = "#2A3122E6"
+        foreground             = "#ECE4CC"
 
         font                   = FiraCode Nerd Font 11
         line_height            = 2
@@ -68,21 +68,22 @@
     # ── Urgency levels ───────────────────────────────
 
     [urgency_low]
-        background             = "#544228B2"    # bg1  70%
-        foreground             = "#C0A888"      # grey2
-        frame_color            = "#6C5838B2"    # bg3  70%
+        background             = "#323A28CC"
+        foreground             = "#C4CDA8"
+        frame_color            = "#4A5638B2"
         timeout                = 4
 
     [urgency_normal]
-        background             = "#504028B2"    # bg_visual  70%
-        foreground             = "#F0D8A0"      # fg
-        frame_color            = "#786448B2"    # bg4  70%
+        background             = "#2A3122E6"
+        foreground             = "#ECE4CC"
+        frame_color            = "#5A6840B2"
         timeout                = 6
 
     [urgency_critical]
-        background             = "#583028E0"    # bg_red  88%
-        foreground             = "#D06858"      # red
-        frame_color            = "#D06858"      # red 不透明
+        background             = "#4A2A1EF0"
+        foreground             = "#F0C8B0"
+        frame_color            = "#CC7059"
+        highlight              = "#CC7059"
         timeout                = 0
   '';
 }
