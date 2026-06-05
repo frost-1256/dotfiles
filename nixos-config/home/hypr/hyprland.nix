@@ -198,7 +198,7 @@
 
       ## Sensors ##
       bindl = [
-        ", switch:Lid Switch, exec, hyprlock;systemd suspend"
+        ", switch:Lid Switch, exec, hyprlock;systemctl suspend"
       ];
 
       ### Windows and workspaces ###
