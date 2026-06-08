@@ -8,7 +8,6 @@
   imports = [
     ../../home/nvim
     ../../home/shell
-    ../../home/wezterm
     ../../home/core.nix
   ];
   home.packages = with pkgs; [
