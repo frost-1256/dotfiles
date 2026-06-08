@@ -126,6 +126,7 @@
         force_no_accel = false;
         accel_profile = "flat";
         sensitivity = 0.5;
+        scroll_method = "2fg";
         touchpad = {
           natural_scroll = true;
           scroll_factor = 1;
