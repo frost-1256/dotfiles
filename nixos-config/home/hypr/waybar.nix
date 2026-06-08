@@ -2,6 +2,11 @@
 { ... }: {
   programs.waybar = {
     enable = true;
+    # systemd ユーザサービスとして単一インスタンス管理する。
+    # exec-once の生起動だと resume 時のクラッシュ(SIGABRT)後に
+    # 取りこぼし→再起動で waybar が増殖していたため、
+    # systemd の単一ユニット + Restart=on-failure で「常に1個」に固定する。
+    systemd.enable = true;
     settings.mainBar = {
       layer = "top";
       position = "top";

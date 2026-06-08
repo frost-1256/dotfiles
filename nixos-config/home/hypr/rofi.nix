@@ -20,8 +20,8 @@ in {
         primary          = l "#A4BC7C";
         on-primary       = l "#283418";
         matcha-soft      = l "rgba(164, 188, 124, 0.22)";
-        surface          = l "rgba(40, 47, 33, 0.94)";
-        surface-high     = l "rgba(64, 73, 53, 0.94)";
+        surface          = l "rgba(40, 47, 33, 0.60)";
+        surface-high     = l "rgba(64, 73, 53, 0.60)";
         on-surface       = l "#ECE4CC";
         on-surface-dim   = l "#C4CDA8";
         outline          = l "rgba(120, 134, 92, 0.45)";

@@ -27,7 +27,11 @@
       ### Autostart ###
       exec-once = [
         "nm-applet & blueman-applet"
-        "waybar"
+        # waybar は systemd ユーザサービス(programs.waybar.systemd.enable)で
+        # 単一インスタンス管理する。hyprland 本体の systemd 連携は無効のため、
+        # ここで Wayland 環境変数をインポートしてからサービスを(再)起動する。
+        # restart にしておくと再ログイン時に古い(死んだ)インスタンスが残らない。
+        "systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP && systemctl --user restart waybar.service"
         "awww-daemon"
         "fcitx5"
         "hypridle"
