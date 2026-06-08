@@ -29,24 +29,40 @@
       ./users/${username}/home.nix
     ];
 
+    mkPortableHomeModules = username: [
+      inputs.nixvim.homeModules.nixvim
+      ./users/${username}/home-portable.nix
+    ];
+
     mkHomeSpecialArgs = username: inputs // {inherit username;};
 
-    mkHomeConfiguration = {
-      username,
-      system,
-    }: let
-      pkgs = import nixpkgs {
+    mkPkgs = system:
+      import nixpkgs {
         inherit system;
         config.allowUnfree = true;
         config.permittedInsecurePackages = [
           "electron-38.8.4"
         ];
       };
-    in
+
+    mkHomeConfiguration = {
+      username,
+      system,
+    }:
       home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
+        pkgs = mkPkgs system;
         extraSpecialArgs = mkHomeSpecialArgs username;
         modules = mkHomeModules username;
+      };
+
+    mkPortableHomeConfiguration = {
+      username,
+      system,
+    }:
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = mkPkgs system;
+        extraSpecialArgs = mkHomeSpecialArgs username;
+        modules = mkPortableHomeModules username;
       };
   in {
     nixosConfigurations = {
@@ -78,6 +94,21 @@
       spring = mkHomeConfiguration {
         username = "spring";
         system = "x86_64-linux";
+      };
+
+      "spring@x86_64-linux" = mkPortableHomeConfiguration {
+        username = "spring";
+        system = "x86_64-linux";
+      };
+
+      "spring@aarch64-linux" = mkPortableHomeConfiguration {
+        username = "spring";
+        system = "aarch64-linux";
+      };
+
+      "spring@aarch64-darwin" = mkPortableHomeConfiguration {
+        username = "spring";
+        system = "aarch64-darwin";
       };
     };
   };
