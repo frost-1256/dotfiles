@@ -3,7 +3,7 @@
     lazygit
   ];
 
-  xdg.configFile."nvim/colors/kipferl.lua".source = ../nvim-old/colors/kipfel.lua;
+  xdg.configFile."nvim/colors/kipferl.lua".source = ./colors/kipfel.lua;
 
   programs.nixvim = {
     enable = true;
