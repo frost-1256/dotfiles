@@ -29,6 +29,9 @@
     nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     ccusage.packages.${pkgs.stdenv.hostPlatform.system}.default
     llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
+    thunderbird
+    teams-for-linux
+    libreoffice-fresh
   ];
   home.file.".claude/settings.json" = {
     force = true;
