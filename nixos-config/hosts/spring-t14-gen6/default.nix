@@ -10,6 +10,7 @@
     ../../modules/system.nix
     ../../modules/steam.nix
     ../../modules/gnome.nix
+    ../../modules/winboat.nix
     ./hardware-configuration.nix
   ];
 
