@@ -19,6 +19,7 @@
       "$fileManager" = "nautilus";
       "$menu" = "rofi -show drun";
       "$runMenu" = "rofi -show run";
+      "$googleSearch" = "bash $HOME/.local/bin/rofi-google-search";
       "$mainMod" = "SUPER";
 
       ### Monitor ###
@@ -150,6 +151,7 @@
         "$mainMod SHIFT, D, exec, $runMenu"
         "$mainMod SHIFT, S, exec, grim -g \"$(slurp)\" - | wl-copy"
         "$mainMod SHIFT, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+        "$mainMod SHIFT, E, exec, $googleSearch"
 
         ## Window management ##
         "$mainMod, J, layoutmsg, togglesplit"
@@ -340,4 +342,15 @@
   ];
 
   home.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  home.file.".local/bin/rofi-google-search" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      query=$(rofi -dmenu -p "Google")
+      [ -z "$query" ] && exit 0
+      encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$query")
+      xdg-open "https://www.google.com/search?q=$encoded"
+    '';
+  };
 }

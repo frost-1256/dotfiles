@@ -56,6 +56,12 @@
     # GUIなら:
     # pinentry.package = pkgs.pinentry-qt;
   };
+
+  # set-SSH_AUTH_SOCK.service が basic.target の後に順序付けられて
+  # sockets.target との循環依存を起こすのを防ぐ
+  systemd.user.services.set-SSH_AUTH_SOCK = {
+    Unit.DefaultDependencies = false;
+  };
   programs.git.settings = {
     user.name = "spring";
     user.email = "harusan@spring-server.com";
