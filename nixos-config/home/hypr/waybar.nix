@@ -226,9 +226,8 @@
 
       /* ===== Taskbar ===== */
       #taskbar {
-        background: @surface_container_low;
-        border-radius: 999px;
-        padding: 0 4px;
+        background: transparent;
+        padding: 0;
         margin: 6px 3px;
       }
 
