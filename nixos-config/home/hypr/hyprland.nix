@@ -339,6 +339,7 @@
 
     # Chat
     vesktop
+
   ];
 
   home.sessionVariables.NIXOS_OZONE_WL = "1";
@@ -347,9 +348,11 @@
     executable = true;
     text = ''
       #!/usr/bin/env bash
-      query=$(rofi -dmenu -p "Google")
+      # rofi 2.0 の Wayland バックエンドは text-input-v3 未対応で IME が効かない。
+      # WAYLAND_DISPLAY を外して xcb(XWayland) で起動し、fcitx5 の XIM 経由で日本語入力する。
+      query=$(env -u WAYLAND_DISPLAY rofi -dmenu -p "Google")
       [ -z "$query" ] && exit 0
-      encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$query")
+      encoded=$(${pkgs.python3}/bin/python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$query")
       xdg-open "https://www.google.com/search?q=$encoded"
     '';
   };
