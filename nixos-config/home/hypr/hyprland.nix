@@ -205,7 +205,8 @@
 
       ## Sensors ##
       bindl = [
-        ", switch:Lid Switch, exec, hyprlock;systemctl suspend"
+        # Lid の処理は lid-action に一本化。lid-toggle で閉じ時サスペンドを on/off できる。
+        ", switch:Lid Switch, exec, lid-action"
       ];
 
       ### Windows and workspaces ###

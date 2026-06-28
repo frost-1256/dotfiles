@@ -30,6 +30,7 @@
         "backlight"
         "tray"
         "battery"
+        "custom/lid"
         "custom/power"
       ];
       "hyprland/workspaces".format = "{id}";
@@ -90,6 +91,15 @@
         format-icons.default = [ "󰕿" "󰖀" "󰕾" ];
         on-click = "pavucontrol";
         tooltip-format = "{volume}% {desc}";
+        justify = "center";
+      };
+      # フタ閉じサスペンドの状態表示＆トグル(󰒲=有効 / 󰒳=無効)。
+      # lid-toggle が SIGRTMIN+8 で即時更新する。
+      "custom/lid" = {
+        exec = "lid-status";
+        signal = 8;
+        on-click = "lid-toggle";
+        tooltip = false;
         justify = "center";
       };
       "custom/power" = {
@@ -164,6 +174,7 @@
       #network,
       #backlight,
       #tray,
+      #custom-lid,
       #custom-power {
         background: @surface_container;
         color: @on_surface;

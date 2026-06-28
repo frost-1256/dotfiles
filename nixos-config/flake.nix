@@ -15,7 +15,9 @@
     ccusage.inputs.nixpkgs.follows = "nixpkgs";
     llm-agents.url = "github:numtide/llm-agents.nix";
     llm-agents.inputs.nixpkgs.follows = "nixpkgs";
-    nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
+    # push 前のローカル改良 (gpu.vendor / performanceMode) を使うため path 参照。
+    # GitHub へ push 済みなら "github:frost-1256/nixos-vrchat" に戻してよい。
+    nixos-vrchat.url = "path:/home/spring/nixos-vrchat";
     nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
   };
 

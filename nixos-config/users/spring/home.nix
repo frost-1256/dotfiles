@@ -33,7 +33,26 @@
     teams-for-linux
     libreoffice-fresh
     remmina
+    keepassxc
   ];
+
+  # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。
+  # Syncthing はファイル単体ではなくフォルダ単位で同期するため、
+  # ~/Passwords/ を専用フォルダにして中に Passwords.kdbx を置く。
+  services.syncthing = {
+    enable = true;
+    overrideDevices = true;
+    overrideFolders = true;
+    settings = {
+      devices.remote.id =
+        "PCGB5KH-6M5RUEL-2LQV6YY-EKMKWS3-VI7NXXM-3Q3RGQF-WIVTNJH-SGWIPQK";
+      folders."Passwords" = {
+        id = "passwords";
+        path = "/home/spring/Passwords";
+        devices = [ "remote" ];
+      };
+    };
+  };
   home.file.".claude/settings.json" = {
     force = true;
     text = builtins.toJSON {

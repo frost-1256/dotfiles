@@ -428,17 +428,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1780556654,
-        "narHash": "sha256-VUd8sp7Cw/dP0a0sXkSIc+s0CCmAR2I/xF0f0kbpZOI=",
-        "owner": "frost-1256",
-        "repo": "nixos-vrchat",
-        "rev": "0bca3a070b6ca2ca92487c6dab59d9e9f940a7ae",
-        "type": "github"
+        "lastModified": 1782573802,
+        "narHash": "sha256-CQ+obBox2b+fkaiHav8QxrMBPKWvxT57lIoYw5HeO88=",
+        "path": "/home/spring/nixos-vrchat",
+        "type": "path"
       },
       "original": {
-        "owner": "frost-1256",
-        "repo": "nixos-vrchat",
-        "type": "github"
+        "path": "/home/spring/nixos-vrchat",
+        "type": "path"
       }
     },
     "nixpkgs": {
