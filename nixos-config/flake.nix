@@ -15,6 +15,8 @@
     ccusage.inputs.nixpkgs.follows = "nixpkgs";
     llm-agents.url = "github:numtide/llm-agents.nix";
     llm-agents.inputs.nixpkgs.follows = "nixpkgs";
+    nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
+    nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {
@@ -77,6 +79,8 @@
           modules = [
             ./hosts/spring-t14-gen6
             ./users/${username}/nixos.nix
+
+            inputs.nixos-vrchat.nixosModules.default
 
             home-manager.nixosModules.home-manager
             {

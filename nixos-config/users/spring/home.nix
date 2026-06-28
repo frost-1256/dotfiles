@@ -32,6 +32,7 @@
     thunderbird
     teams-for-linux
     libreoffice-fresh
+    remmina
   ];
   home.file.".claude/settings.json" = {
     force = true;

@@ -9,6 +9,8 @@
   imports = [
     ../../modules/system.nix
     ../../modules/steam.nix
+    ../../modules/vrchat.nix
+    ../../modules/unity-avatar.nix
     ../../modules/gnome.nix
     ../../modules/winboat.nix
     ./hardware-configuration.nix
@@ -23,6 +25,14 @@
     systemd-boot.enable = true;
   };
   boot.kernelPackages = pkgs.linuxPackages_7_0;
+
+  # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
+  # logind 側で suspend してしまうと lid-toggle が効かないため ignore にする。
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
+  };
 
   networking.hostName = "spring-t14-gen6"; # Define your hostname.
   networking.networkmanager.enable = true;

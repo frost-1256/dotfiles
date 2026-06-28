@@ -178,6 +178,7 @@ in {
     systemd
     libimobiledevice
     ifuse
+    gnome-firmware
   ];
 
   systemd.tmpfiles.rules = [
@@ -216,6 +217,9 @@ in {
 
   security.polkit.enable = true;
   services.fprintd.enable = true;
+
+  # Firmware updates (LVFS) — daemon + GNOME Firmware GUI
+  services.fwupd.enable = true;
 
   services = {
     pipewire = {
