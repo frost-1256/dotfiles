@@ -28,6 +28,12 @@
     ];
   };
 
+  # Unity/ALCOM でのアバター作業環境 (同じ nixos-vrchat flake の vrchat-unity)。
+  # 旧 modules/unity-avatar.nix はこのモジュールへ移行済み。FHS ランチャー
+  # (ALCOM / unity-fhs-env / unity-android-paths)・Android SDK/NDK/JDK・
+  # Proton-GE はすべて既定で有効になる。
+  programs.vrchat-unity.enable = true;
+
   # Lunar Lake (Xe2, xe ドライバ) で VA-API エンコーダのドライバを iHD に確定。
   # 自動検出に任せると取りこぼす事があるので明示する。
   environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";

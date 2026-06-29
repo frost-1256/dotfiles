@@ -49,6 +49,11 @@
     shellAliases = {
       nix-gc = "sudo nix-collect-garbage -d && sudo nixos-rebuild switch";
       ":q" = "exit";
+
+      # VRChat アバター作業 (nixos-vrchat flake の vrchat-unity / FHS 経由で起動)
+      alcom = "ALCOM &!"; # ALCOM wrapper 側で FHS に入る
+      unity-paths = "unity-android-paths"; # Android(Quest) 用 SDK/NDK/JDK のパス表示
+
       vim = "nvim";
       vi = "nvim";
       kernel-build = "sudo systemd-nspawn -D /var/lib/machines/kernel-build --network-veth --resolv-conf=auto /bin/bash";
@@ -85,6 +90,39 @@
           local user="''${1:-root}"
           sudo machinectl shell "''${user}@ubuntu"
         }
+
+        # Unity Editor を FHS 経由で開く。引数は ~/ALCOM/Projects 配下のプロジェクト名。
+        # 省略時は Kipfel。スラッシュ/絶対パスを渡せばそのまま使う。Tab 補完あり。
+        # 例: unity-open Kipfel  /  unity-open  /  unity-open /abs/path
+        function unity-open {
+          local base="$HOME/ALCOM/Projects"
+          local arg="''${1:-Kipfel}"
+          local proj
+          case "$arg" in
+            /*|*/*) proj="$arg" ;;       # 絶対 or スラッシュ含み → パスとして扱う
+            *)      proj="$base/$arg" ;; # 素の名前 → ~/ALCOM/Projects 配下
+          esac
+          if [[ ! -d "$proj" ]]; then
+            echo "プロジェクトが見つかりません: $proj" >&2
+            return 1
+          fi
+          local editor
+          editor=$(ls -d "$HOME"/Unity/Hub/Editor/*/Editor/Unity 2>/dev/null | sort -V | tail -n1)
+          if [[ -z "$editor" ]]; then
+            echo "Unity Editor が見つかりません (~/Unity/Hub/Editor/*/Editor/Unity)" >&2
+            return 1
+          fi
+          echo "起動: $editor -projectPath $proj"
+          unity-fhs-env "$editor" -projectPath "$proj" >/dev/null 2>&1 &!
+        }
+
+        # unity-open のプロジェクト名補完 (~/ALCOM/Projects 配下のディレクトリ名)。
+        function _unity-open {
+          local -a projects
+          projects=( "$HOME"/ALCOM/Projects/*(/N:t) )
+          compadd -a projects
+        }
+        compdef _unity-open unity-open
 
         bindkey "^[OH" beginning-of-line
         bindkey "^[OF" end-of-line

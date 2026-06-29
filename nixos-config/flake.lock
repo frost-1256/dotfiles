@@ -428,8 +428,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1782573802,
-        "narHash": "sha256-CQ+obBox2b+fkaiHav8QxrMBPKWvxT57lIoYw5HeO88=",
+        "lastModified": 1782702925,
+        "narHash": "sha256-gmyme2qyG/5AjBATek8vZgTSKuKh4dW30exO6pWnR1k=",
         "path": "/home/spring/nixos-vrchat",
         "type": "path"
       },

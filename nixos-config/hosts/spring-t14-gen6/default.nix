@@ -10,7 +10,6 @@
     ../../modules/system.nix
     ../../modules/steam.nix
     ../../modules/vrchat.nix
-    ../../modules/unity-avatar.nix
     ../../modules/gnome.nix
     ../../modules/winboat.nix
     ./hardware-configuration.nix
