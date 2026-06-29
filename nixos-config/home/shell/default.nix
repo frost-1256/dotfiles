@@ -124,6 +124,65 @@
         }
         compdef _unity-open unity-open
 
+        # --- 電源モード手動切り替え (modules/vrchat.nix の performanceMode と同じノブ) ---
+        # highperf  : 最大性能。governor=performance / platform_profile=performance に加え
+        #             Intel iGPU の最低クロックを最大(RP0)へ固定。給電時の VR 用。
+        # balanced  : 省電力寄りへ戻す (governor=powersave / iGPU 最低クロックを RPn へ解放)。
+        # perf-status: 現在のプロファイル/governor/iGPU クロックを表示。
+        # ※ sysfs への書き込みに sudo を使う。platform_profile/EPP は power-profiles-daemon に任せる。
+        function highperf {
+          command -v powerprofilesctl >/dev/null 2>&1 && powerprofilesctl set performance
+          sudo sh -c '
+            for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
+              [ -w "$c/scaling_governor" ] && echo performance > "$c/scaling_governor"
+            done
+            [ -w /sys/firmware/acpi/platform_profile ] && echo performance > /sys/firmware/acpi/platform_profile
+            for card in /sys/class/drm/card[0-9]*; do
+              if [ -r "$card/gt_RP0_freq_mhz" ]; then
+                rp0=$(cat "$card/gt_RP0_freq_mhz")
+                [ -w "$card/gt_min_freq_mhz" ]   && echo "$rp0" > "$card/gt_min_freq_mhz"
+                [ -w "$card/gt_boost_freq_mhz" ] && echo "$rp0" > "$card/gt_boost_freq_mhz"
+              fi
+              for gt in "$card"/device/tile*/gt*/freq0; do
+                [ -r "$gt/rp0_freq" ] && [ -w "$gt/min_freq" ] && echo "$(cat "$gt/rp0_freq")" > "$gt/min_freq"
+              done
+            done
+          ' && echo "high performance mode: ON"
+        }
+
+        function balanced {
+          command -v powerprofilesctl >/dev/null 2>&1 && powerprofilesctl set balanced
+          sudo sh -c '
+            for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
+              [ -w "$c/scaling_governor" ] && echo powersave > "$c/scaling_governor"
+            done
+            [ -w /sys/firmware/acpi/platform_profile ] && echo balanced > /sys/firmware/acpi/platform_profile
+            for card in /sys/class/drm/card[0-9]*; do
+              if [ -r "$card/gt_RPn_freq_mhz" ]; then
+                rpn=$(cat "$card/gt_RPn_freq_mhz")
+                [ -w "$card/gt_min_freq_mhz" ] && echo "$rpn" > "$card/gt_min_freq_mhz"
+              fi
+              for gt in "$card"/device/tile*/gt*/freq0; do
+                [ -r "$gt/rpn_freq" ] && [ -w "$gt/min_freq" ] && echo "$(cat "$gt/rpn_freq")" > "$gt/min_freq"
+              done
+            done
+          ' && echo "high performance mode: OFF (balanced)"
+        }
+
+        function perf-status {
+          echo "power profile : $(powerprofilesctl get 2>/dev/null)"
+          echo "platform      : $(cat /sys/firmware/acpi/platform_profile 2>/dev/null)"
+          echo "governor      : $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)"
+          for card in /sys/class/drm/card[0-9]*; do
+            [ -r "$card/gt_min_freq_mhz" ] && \
+              echo "iGPU min/cur/max: $(cat "$card/gt_min_freq_mhz")/$(cat "$card/gt_cur_freq_mhz")/$(cat "$card/gt_max_freq_mhz") MHz"
+            for gt in "$card"/device/tile*/gt*/freq0; do
+              [ -r "$gt/min_freq" ] && \
+                echo "iGPU(xe) min/cur: $(cat "$gt/min_freq")/$(cat "$gt/cur_freq") MHz"
+            done
+          done
+        }
+
         bindkey "^[OH" beginning-of-line
         bindkey "^[OF" end-of-line
         bindkey "^[[3~" delete-char
