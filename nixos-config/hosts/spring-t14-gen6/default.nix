@@ -10,6 +10,7 @@
     ../../modules/system.nix
     ../../modules/steam.nix
     ../../modules/vrchat.nix
+    ../../modules/perf-mode.nix
     ../../modules/gnome.nix
     ../../modules/winboat.nix
     ./hardware-configuration.nix

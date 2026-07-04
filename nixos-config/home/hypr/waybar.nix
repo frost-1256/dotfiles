@@ -30,6 +30,7 @@
         "backlight"
         "tray"
         "battery"
+        "custom/perf"
         "custom/lid"
         "custom/power"
       ];
@@ -91,6 +92,15 @@
         format-icons.default = [ "󰕿" "󰖀" "󰕾" ];
         on-click = "pavucontrol";
         tooltip-format = "{volume}% {desc}";
+        justify = "center";
+      };
+      # 電源モード表示＆トグル(󰓅=高性能 / 󰾅=バランス)。
+      # perf-toggle が SIGRTMIN+9 で即時更新する(modules/perf-mode.nix)。
+      "custom/perf" = {
+        exec = "perf-status-icon";
+        return-type = "json";
+        signal = 9;
+        on-click = "perf-toggle";
         justify = "center";
       };
       # フタ閉じサスペンドの状態表示＆トグル(󰒲=有効 / 󰒳=無効)。
@@ -175,6 +185,7 @@
       #backlight,
       #tray,
       #custom-lid,
+      #custom-perf,
       #custom-power {
         background: @surface_container;
         color: @on_surface;
@@ -233,6 +244,12 @@
       #pulseaudio.muted {
         background: @error_container;
         color: @on_error_container;
+      }
+
+      /* 高性能モード中はアクセント色で強調する。 */
+      #custom-perf.highperf {
+        background: @primary;
+        color: @on_primary;
       }
 
       /* ===== Taskbar ===== */

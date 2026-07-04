@@ -8,10 +8,12 @@
     # intel-media-driver(iHD) と LIBVA_DRIVER_NAME=iHD を自動投入する。
     gpu.vendor = "intel";
 
-    # 常時最大化: governor/EPP/platform_profile を performance に、
-    # iGPU 最低クロックを最大(RP0)に固定。給電前提なので有効化。
-    # (GameMode は既定 ON。Steam の起動オプションに `gamemoderun %command%` を)
-    performanceMode.enable = true;
+    # 常時最大化は無効化する。これを true にすると起動時/resume 毎に governor・
+    # platform_profile・iGPU クロックを performance へ強制 pin し、実行時トグル
+    # (modules/perf-mode.nix / Waybar の custom/perf・highperf/balanced)を打ち消す。
+    # 電源モードはトグルを唯一の真実として扱い、起動はバランス、VR 時に手動で high へ。
+    # (Steam ゲームは gamemoderun %command% が governor を一時ブーストする)
+    performanceMode.enable = false;
 
     # 接続時の WayVR 自動起動は無効化中。使いたくなったら下行を有効化する
     # (package 渡しで絶対パス化されるので PATH 問題は起きない)。

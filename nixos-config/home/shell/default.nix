@@ -129,44 +129,18 @@
         #             Intel iGPU の最低クロックを最大(RP0)へ固定。給電時の VR 用。
         # balanced  : 省電力寄りへ戻す (governor=powersave / iGPU 最低クロックを RPn へ解放)。
         # perf-status: 現在のプロファイル/governor/iGPU クロックを表示。
-        # ※ sysfs への書き込みに sudo を使う。platform_profile/EPP は power-profiles-daemon に任せる。
+        # ※ sysfs 書き込みは modules/perf-mode.nix の perf-apply(NOPASSWD sudo)に委譲し、
+        #   Waybar の custom/perf トグルとロジックを共有する。
         function highperf {
-          command -v powerprofilesctl >/dev/null 2>&1 && powerprofilesctl set performance
-          sudo sh -c '
-            for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
-              [ -w "$c/scaling_governor" ] && echo performance > "$c/scaling_governor"
-            done
-            [ -w /sys/firmware/acpi/platform_profile ] && echo performance > /sys/firmware/acpi/platform_profile
-            for card in /sys/class/drm/card[0-9]*; do
-              if [ -r "$card/gt_RP0_freq_mhz" ]; then
-                rp0=$(cat "$card/gt_RP0_freq_mhz")
-                [ -w "$card/gt_min_freq_mhz" ]   && echo "$rp0" > "$card/gt_min_freq_mhz"
-                [ -w "$card/gt_boost_freq_mhz" ] && echo "$rp0" > "$card/gt_boost_freq_mhz"
-              fi
-              for gt in "$card"/device/tile*/gt*/freq0; do
-                [ -r "$gt/rp0_freq" ] && [ -w "$gt/min_freq" ] && echo "$(cat "$gt/rp0_freq")" > "$gt/min_freq"
-              done
-            done
-          ' && echo "high performance mode: ON"
+          powerprofilesctl set performance
+          sudo perf-apply high && echo "high performance mode: ON"
         }
 
         function balanced {
-          command -v powerprofilesctl >/dev/null 2>&1 && powerprofilesctl set balanced
-          sudo sh -c '
-            for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
-              [ -w "$c/scaling_governor" ] && echo powersave > "$c/scaling_governor"
-            done
-            [ -w /sys/firmware/acpi/platform_profile ] && echo balanced > /sys/firmware/acpi/platform_profile
-            for card in /sys/class/drm/card[0-9]*; do
-              if [ -r "$card/gt_RPn_freq_mhz" ]; then
-                rpn=$(cat "$card/gt_RPn_freq_mhz")
-                [ -w "$card/gt_min_freq_mhz" ] && echo "$rpn" > "$card/gt_min_freq_mhz"
-              fi
-              for gt in "$card"/device/tile*/gt*/freq0; do
-                [ -r "$gt/rpn_freq" ] && [ -w "$gt/min_freq" ] && echo "$(cat "$gt/rpn_freq")" > "$gt/min_freq"
-              done
-            done
-          ' && echo "high performance mode: OFF (balanced)"
+          # governor=performance のままだと EPP 書き込みが busy になり
+          # powerprofilesctl set balanced が失敗するので、先に governor を解放する。
+          sudo perf-apply balanced
+          powerprofilesctl set balanced && echo "high performance mode: OFF (balanced)"
         }
 
         function perf-status {
