@@ -1,8 +1,8 @@
 # modules/perf-mode.nix
 # 電源モード(高性能/バランス)の実行時切り替えを Waybar から行うための一式。
 #
-# ・modules/vrchat.nix の performanceMode と同じノブ(governor / platform_profile /
-#   Intel iGPU 最低クロック)を、再ビルド無しで toggle できるようにする。
+# ・governor / platform_profile / Intel iGPU 最低クロックを、再ビルド無しで
+#   toggle できるようにする。
 # ・sysfs への書き込みは root が要るので、引数固定(high|balanced)の専用ヘルパ
 #   perf-apply に対してだけ NOPASSWD sudo を許可する(スコープを最小化)。
 # ・platform_profile/EPP は power-profiles-daemon(polkit, パスワード不要)に任せ、

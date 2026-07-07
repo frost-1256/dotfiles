@@ -421,23 +421,6 @@
         "type": "github"
       }
     },
-    "nixos-vrchat": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1782703709,
-        "narHash": "sha256-J/3AR2SmPya6iZycV0H5f5Pha0szrH+QJ/lVl88F0AY=",
-        "path": "/home/spring/nixos-vrchat",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/spring/nixos-vrchat",
-        "type": "path"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1782915142,
@@ -498,7 +481,6 @@
         "llm-agents": "llm-agents",
         "nix-claude-code": "nix-claude-code",
         "nix-hazkey": "nix-hazkey",
-        "nixos-vrchat": "nixos-vrchat",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim"
       }

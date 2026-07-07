@@ -232,61 +232,6 @@
           move = "20 monitor_h-120";
           float = true;
         }
-        # --- Winboat (Windows アプリのシームレス統合) ---
-        # 旧 windowrulev2 構文を新ルールセットへ変換。1ブロックに複数エフェクトを集約。
-        # norounding→rounding=0, noborder→border_size=0, "xray 0"→xray=false。
-        {
-          # Office / Photoshop / エクスプローラ: 装飾を消してフルスクリーン表示。
-          name = "winboat-office-apps";
-          "match:class" = "^(Microsoft Word|Microsoft Excel|Microsoft PowerPoint|Photoshop|File Explorer)$";
-          suppress_event = "fullscreen maximize activate activatefocus";
-          no_initial_focus = true;
-          fullscreen = true;
-          no_anim = true;
-          rounding = 0;
-          border_size = 0;
-          no_shadow = true;
-          no_blur = true;
-          xray = false;
-          opaque = true;
-        }
-        {
-          # FreeRDP 本体の描画ウィンドウ。
-          name = "winboat-wlfreerdp";
-          "match:class" = "^(wlfreerdp)$";
-          opaque = true;
-          xray = false;
-        }
-        {
-          # winboat ランチャ本体は special ワークスペースへ。
-          name = "winboat-launcher";
-          "match:class" = "^(winboat)$";
-          workspace = "special:6";
-        }
-        {
-          # winboat-<app> な個別アプリウィンドウ: ws1 で装飾なしフルスクリーン。
-          name = "winboat-apps";
-          "match:class" = "^winboat-.*$";
-          workspace = "1";
-          suppress_event = "fullscreen maximize activate activatefocus";
-          no_initial_focus = true;
-          fullscreen = true;
-          no_anim = true;
-          rounding = 0;
-          no_shadow = true;
-          no_blur = true;
-          xray = false;
-          opaque = true;
-          no_dim = true;
-        }
-        {
-          # winboat 以外の XWayland ウィンドウは RGBX 強制(透明バグ回避)。
-          # 注: 否定先読み (?!...) は正規表現エンジン依存。効かない場合は要調整。
-          name = "winboat-xwayland-rgbx";
-          "match:xwayland" = true;
-          "match:class" = "^(?!winboat-).+$";
-          force_rgbx = true;
-        }
       ];
 
       ### Other settings ###
