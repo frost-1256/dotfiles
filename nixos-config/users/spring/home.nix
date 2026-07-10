@@ -10,7 +10,6 @@
     ../../home/hypr
     ../../home/nvim
     ../../home/shell
-    ../../home/steam
     ../../home/wezterm
     ../../home/core.nix
   ];
@@ -31,7 +30,6 @@
     llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
     thunderbird
     teams-for-linux
-    libreoffice-fresh
     remmina
     keepassxc
   ];

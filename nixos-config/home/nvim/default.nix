@@ -58,6 +58,7 @@
       trouble-nvim
       diffview-nvim
       toggleterm-nvim
+      nvim-treesitter-grammar-qmljs
     ];
 
     extraConfigLua = ''
@@ -79,6 +80,7 @@
       })
       require("trouble").setup({})
       require("cord").setup({})
+      require("lspconfig").qmlls.setup {}
 
       vim.cmd("colorscheme kipferl")
       vim.cmd([[

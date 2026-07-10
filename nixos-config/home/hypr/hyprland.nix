@@ -47,7 +47,6 @@
         "XCURSOR_SIZE,24"
         "HYPRCURSOR_SIZE,24"
         "HYPRCURSOR_THEME,rose-pine-hyprcursor"
-        "STEAM_EXTRA_COMPAT_TOOLS_PATHS,$HOME/.steam/root/compatibilitytools.d"
       ];
 
       ### Window decorations ###

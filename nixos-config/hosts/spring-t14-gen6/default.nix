@@ -8,7 +8,6 @@
 }: {
   imports = [
     ../../modules/system.nix
-    ../../modules/steam.nix
     ../../modules/perf-mode.nix
     ../../modules/gnome.nix
     ./hardware-configuration.nix
