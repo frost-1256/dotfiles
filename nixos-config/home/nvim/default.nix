@@ -58,7 +58,6 @@
       trouble-nvim
       diffview-nvim
       toggleterm-nvim
-      nvim-treesitter-grammar-qmljs
     ];
 
     extraConfigLua = ''
