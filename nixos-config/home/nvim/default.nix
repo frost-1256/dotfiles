@@ -79,7 +79,6 @@
       })
       require("trouble").setup({})
       require("cord").setup({})
-      require("lspconfig").qmlls.setup {}
 
       vim.cmd("colorscheme kipferl")
       vim.cmd([[
