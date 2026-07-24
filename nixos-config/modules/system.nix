@@ -103,6 +103,7 @@
 
   security.polkit.enable = true;
   services.fprintd.enable = true;
+  services.upower.enable = true;
 
   # Firmware updates (LVFS) — daemon + GNOME Firmware GUI
   services.fwupd.enable = true;

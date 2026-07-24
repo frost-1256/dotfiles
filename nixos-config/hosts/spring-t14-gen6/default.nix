@@ -35,5 +35,7 @@
   networking.networkmanager.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
 
+  hardware.bluetooth.enable = true;
+
   system.stateVersion = "26.11"; # Did you read the comment?
 }

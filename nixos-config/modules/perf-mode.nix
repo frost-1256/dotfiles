@@ -79,6 +79,8 @@ let
     fi
   '';
 in {
+  services.power-profiles-daemon.enable = true;
+
   environment.systemPackages = [ perf-apply perf-toggle perf-status-icon ];
 
   # 引数固定の perf-apply にだけパスワード無しの sudo を許可する。
