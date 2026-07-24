@@ -21,7 +21,7 @@
     };
     systemd-boot.enable = true;
   };
-  boot.kernelPackages = pkgs.linuxPackages_7_0;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
   # logind 側で suspend してしまうと lid-toggle が効かないため ignore にする。
