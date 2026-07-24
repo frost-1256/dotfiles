@@ -10,6 +10,7 @@
     ../../home/hypr
     ../../home/nvim
     ../../home/shell
+    ../../home/noctalia
     ../../home/wezterm
     ../../home/core.nix
   ];
