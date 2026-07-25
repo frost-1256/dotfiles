@@ -12,8 +12,16 @@
 
   nix.settings = {
     experimental-features = ["nix-command" "flakes"];
-    extra-substituters = ["https://noctalia.cachix.org"];
-    extra-trusted-public-keys = ["noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="];
+    substituters = [
+      "https://cache.nixos.org/"
+      "https://noctalia.cachix.org"
+      "https://niri.cachix.org"
+    ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+      "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+    ];
   };
 
   nix.gc = {
@@ -105,7 +113,6 @@
 
   security.polkit.enable = true;
   services.fprintd.enable = true;
-  services.upower.enable = true;
 
   # Firmware updates (LVFS) — daemon + GNOME Firmware GUI
   services.fwupd.enable = true;

@@ -15,17 +15,22 @@
     ccusage.inputs.nixpkgs.follows = "nixpkgs";
     llm-agents.url = "github:numtide/llm-agents.nix";
     llm-agents.inputs.nixpkgs.follows = "nixpkgs";
-    noctalia.url = "github:noctalia-dev/noctalia/legacy-v4";
-    noctalia.inputs.nixpkgs.follows = "nixpkgs";
+    noctalia.url = "github:noctalia-dev/noctalia/cachix";
+    niri = {
+      url = "github:sodiboo/niri-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
     home-manager,
+    niri,
     ...
   }: let
     mkHomeModules = username: [
+      inputs.noctalia.homeModules.default
       inputs.nix-hazkey.homeModules.hazkey
       inputs.nixvim.homeModules.nixvim
       ./users/${username}/home.nix
@@ -70,13 +75,21 @@
     nixosConfigurations = {
       spring-t14-gen6 = let
         username = "spring";
-        specialArgs = {inherit username;};
+        specialArgs = inputs // {inherit username;};
       in
         nixpkgs.lib.nixosSystem {
           inherit specialArgs;
           system = "x86_64-linux";
 
           modules = [
+            inputs.noctalia.nixosModules.default
+
+            niri.nixosModules.niri
+
+            {
+              _module.args.inputs = inputs;
+            }
+
             ./hosts/spring-t14-gen6
             ./users/${username}/nixos.nix
 
@@ -87,6 +100,13 @@
 
               home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
               home-manager.users.${username}.imports = mkHomeModules username;
+            }
+
+            {
+              programs.noctalia = {
+                enable = true;
+                recommendedServices.enable = true;
+              };
             }
           ];
         };

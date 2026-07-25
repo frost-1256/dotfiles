@@ -8,6 +8,7 @@
   imports = [
     ../../home/fcitx5
     ../../home/hypr
+    ../../home/niri
     ../../home/nvim
     ../../home/shell
     ../../home/noctalia

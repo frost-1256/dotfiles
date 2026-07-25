@@ -10,6 +10,7 @@
     ../../modules/system.nix
     ../../modules/perf-mode.nix
     ../../modules/gnome.nix
+    ../../modules/niri.nix
     ./hardware-configuration.nix
   ];
 
