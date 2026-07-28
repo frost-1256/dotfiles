@@ -116,7 +116,6 @@
         autoload -Uz promptinit
         promptinit
         prompt pure
-	unset GTK_IM_MODULE
       '')
     ];
   };
