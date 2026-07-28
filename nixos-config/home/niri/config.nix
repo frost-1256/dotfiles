@@ -14,7 +14,16 @@
     ])
 
     (plain "cursor" [
-      (leaf "xcursor-size" 8)
+      (leaf "xcursor-theme" "Adwaita")
+      (leaf "xcursor-size" 16)
+    ])
+
+    # 背景ブラー
+    (plain "blur" [
+      (leaf "passes" 3)
+      (leaf "offset" 2.0)
+      (leaf "noise" 0.02)
+      (leaf "saturation" 1.2)
     ])
 
     (plain "window-rule" [
@@ -42,6 +51,14 @@
       ])
     ])
 
+    (plain "window-rule" [
+      (leaf "match" { app-id = "^org.wezfurlong.wezterm$"; })
+      (plain "background-effect" [
+        (leaf "blur" true)
+        (leaf "xray" true)
+      ])
+    ])
+
     # input
     (plain "input" [
       (plain "keyboard" [
@@ -50,7 +67,7 @@
         ])
       ])
 
-      (flag "focus-follows-mouse")
+      (leaf "focus-follows-mouse" { max-scroll-amount = "0%"; })
 
       (plain "mouse" [
         (leaf "accel-profile" "flat")
@@ -72,14 +89,24 @@
 
     # layout
     (plain "layout" [
+      # Dracula: focus-ring active=Purple, inactive=Surface Alt
       (plain "focus-ring" [
-        (leaf "width" 4)
-        (leaf "active-color" "#7fc8ff")
-        (leaf "inactive-color" "#505050")
+        (leaf "width" 2)
+        (leaf "active-color" "#BD93F9")
+        (leaf "inactive-color" "#44475A")
       ])
 
       (plain "border" [
         (flag "off")
+      ])
+
+      (plain "shadow" [
+        (flag "on")
+        (leaf "softness" 30)
+        (leaf "spread" 5)
+        (leaf "offset" { x = 0; y = 5; })
+        # Dracula: shadow color with transparency
+        (leaf "color" "#0007")
       ])
 
       (plain "preset-column-widths" [
@@ -144,6 +171,11 @@
         (leaf "spawn-sh" "noctalia msg window-switcher")
       ])
 
+      # Win+Tab で Overview 表示 (左上ホットコーナー廃止の代替)
+      (plain "Super+Tab" [
+        (flag "toggle-overview")
+      ])
+
       (plain "Mod+Shift+Q" [
         (flag "close-window")
       ])
@@ -165,6 +197,7 @@
         (flag "focus-column-right")
       ])
 
+      # ウィンドウ/カラム移動
       # ウィンドウ/カラム移動
       (plain "Mod+Shift+H" [
         (flag "move-column-left")
@@ -247,6 +280,13 @@
 
     (plain "recent-windows" [
       (plain "binds" [])
+    ])
+
+    # ジェスチャー・ホットコーナー設定
+    (plain "gestures" [
+      (plain "hot-corners" [
+        (flag "off")
+      ])
     ])
 
     (plain "debug" [

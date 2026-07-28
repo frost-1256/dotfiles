@@ -3,8 +3,6 @@
     lazygit
   ];
 
-  xdg.configFile."nvim/colors/kipferl.lua".source = ./colors/kipfel.lua;
-
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
@@ -15,7 +13,6 @@
     globals = {
       mapleader = " ";
       maplocalleader = "\\";
-      everforest_enable_italic = true;
       barbar_auto_setup = false;
     };
 
@@ -24,6 +21,19 @@
       termguicolors = true;
       winblend = 0;
       pumblend = 0;
+    };
+
+    colorschemes.dracula-nvim = {
+      enable = true;
+      settings = {
+        transparent = true;
+        style = "default";
+        styles = {
+          comments = { italic = true; };
+          keywords = { bold = true; };
+          functions = { bold = true; };
+        };
+      };
     };
 
     plugins.treesitter = {
@@ -36,7 +46,6 @@
 
     extraPlugins = with pkgs.vimPlugins; [
       transparent-nvim
-      everforest
       nvim-lspconfig
       nvim-cmp
       cmp-nvim-lsp
@@ -64,7 +73,11 @@
       require("transparent").setup({})
       require("nvim-autopairs").setup({})
       require("nvim-tree").setup({})
-      require("lualine").setup({})
+      require("lualine").setup({
+        options = {
+          theme = "dracula-nvim"
+        }
+      })
       require("barbar").setup({})
       require("toggleterm").setup({
         size = 100,
@@ -79,16 +92,6 @@
       })
       require("trouble").setup({})
       require("cord").setup({})
-
-      vim.cmd("colorscheme kipferl")
-      vim.cmd([[
-        highlight Normal guibg=none
-        highlight NonText guibg=none
-        highlight Normal ctermbg=none
-        highlight NonText ctermbg=none
-        highlight NormalNC guibg=none
-        highlight NormalSB guibg=none
-      ]])
 
       local cmp = require("cmp")
       cmp.setup({

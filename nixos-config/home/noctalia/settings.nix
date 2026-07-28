@@ -1,8 +1,8 @@
 {
   theme = {
     mode = "dark";
-    source = "builtin";
-    builtin = "Monochrome";
+    source = "custom";
+    custom_palette = "Dracula";
   };
 
   wallpaper = {

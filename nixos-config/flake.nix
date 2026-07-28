@@ -41,7 +41,10 @@
       ./users/${username}/home-portable.nix
     ];
 
-    mkHomeSpecialArgs = username: inputs // {inherit username;};
+    mkHomeSpecialArgs = username: inputs // {
+      inherit inputs;
+      inherit username;
+    };
 
     mkPkgs = system:
       import nixpkgs {

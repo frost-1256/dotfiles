@@ -7,14 +7,26 @@
 }: {
   imports = [
     ../../home/fcitx5
-    ../../home/hypr
+    # Hyprland → Niri に移行済みのため無効化
+    # ../../home/hypr
     ../../home/niri
     ../../home/nvim
     ../../home/shell
     ../../home/noctalia
     ../../home/wezterm
+    ../../home/kitty
     ../../home/core.nix
   ];
+  # nm-applet / blueman-applet の自動起動を無効化
+  xdg.autostart.entries = {
+    "nm-applet.desktop" = {
+      enable = false;
+    };
+    "blueman.desktop" = {
+      enable = false;
+    };
+  };
+
   home.packages = with pkgs; [
     filezilla
     floorp-bin
@@ -34,6 +46,8 @@
     teams-for-linux
     remmina
     keepassxc
+    tmux
+    vesktop
   ];
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。
