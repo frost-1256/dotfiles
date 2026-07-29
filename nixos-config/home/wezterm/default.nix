@@ -8,6 +8,7 @@
       window_background_opacity = 0.3;
       hide_tab_bar_if_only_one_tab = true;
       use_fancy_tab_bar = false;
+      mux_enable_ssh_agent = false;
       tab_bar_at_bottom = false;
       window_decorations = "NONE";
       show_new_tab_button_in_tab_bar = false;
