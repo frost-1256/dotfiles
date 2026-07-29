@@ -88,7 +88,7 @@
     enable = true;
     enableSshSupport = false;
 
-    pinentry.package = pkgs.pinentry-curses;
+    pinentry.package = (pkgs.pinentry-curses.override { withLibsecret = false; });
     # GUIなら:
     # pinentry.package = pkgs.pinentry-qt;
   };
