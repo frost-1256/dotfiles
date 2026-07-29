@@ -29,4 +29,19 @@
   bar.default.end = [ "tray" "notifications" "network" "bluetooth" "brightness" "volume" "battery" "session" ];
 
   bar.default.dead_zone.right_command = "none";
+
+  idle = {
+    behavior = {
+      "screen-off" = {
+        timeout = 300;
+        action = "screen_off";
+        enabled = true;
+      };
+      suspend = {
+        timeout = 420;
+        action = "lock_and_suspend";
+        enabled = true;
+      };
+    };
+  };
 }

@@ -303,6 +303,15 @@
       ])
     ])
 
+    (plain "switch-events" [
+      (plain "lid-close" [
+        (leaf "spawn" [ "noctalia" "msg" "session" "lock-and-suspend" ])
+      ])
+      (plain "lid-open" [
+        (leaf "spawn" [ "systemctl" "--user" "restart" "hazkey-server" ])
+      ])
+    ])
+
     (plain "recent-windows" [
       (plain "binds" [])
     ])
