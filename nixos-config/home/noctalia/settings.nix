@@ -13,7 +13,16 @@
 
   launch_apps_as_systemd_services = true;
 
-  shell.animation.speed = 2.0;
+  shell = {
+    font_family = "JetBrains Mono";
+    animation.speed = 2.5;
+    panel = {
+      open_near_click_control_center = true;
+      open_near_click_launcher = true;
+      open_near_click_clipboard = true;
+      open_near_click_wallpaper = true;
+    };
+  };
 
   bar.default.start = [ "workspaces" "media" ];
 

@@ -11,6 +11,12 @@
     '')
     pure-prompt
     zsh-completions
+    ripgrep
+    fd
+    sd
+    dust
+    duf
+    procs
   ];
 
   home.sessionPath = [
@@ -21,6 +27,26 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     PNPM_HOME = "$HOME/.local/share/pnpm";
+  };
+
+  programs.bat.enable = true;
+
+  programs.bottom.enable = true;
+
+  programs.eza = {
+    enable = true;
+    icons = "auto";
+    git = true;
+  };
+
+  programs.fzf = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  programs.zoxide = {
+    enable = true;
+    enableZshIntegration = true;
   };
 
   programs.zsh = {
@@ -53,6 +79,18 @@
       vim = "nvim";
       vi = "nvim";
       kernel-build = "sudo systemd-nspawn -D /var/lib/machines/kernel-build --network-veth --resolv-conf=auto /bin/bash";
+
+      grep = "rg";
+      find = "fd";
+      ls = "eza --icons --group-directories-first";
+      ll = "eza -la --icons --git";
+      cat = "bat";
+      du = "dust";
+      df = "duf";
+      ps = "procs";
+      top = "btm";
+      man = "tldr";
+      cd = "z";
     };
 
     setOptions = [ "NO_NOMATCH" ];

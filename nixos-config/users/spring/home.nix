@@ -30,6 +30,7 @@
   home.packages = with pkgs; [
     filezilla
     floorp-bin
+    fastfetch
     nix-search-cli
     vrcx
     github-cli
@@ -39,12 +40,13 @@
     keybase-gui
     pavucontrol
     protonup-qt
+    gpu-screen-recorder-gtk
     nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     ccusage.packages.${pkgs.stdenv.hostPlatform.system}.default
     llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
     thunderbird
     teams-for-linux
-    remmina
+    tealdeer
     keepassxc
     tmux
     vesktop
@@ -96,8 +98,14 @@
   systemd.user.services.set-SSH_AUTH_SOCK = {
     Unit.DefaultDependencies = false;
   };
-  programs.git.settings = {
-    user.name = "spring";
-    user.email = "harusan@spring-server.com";
+  programs.git = {
+    settings = {
+      user.name = "spring";
+      user.email = "harusan@spring-server.com";
+    };
+  };
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
   };
 }

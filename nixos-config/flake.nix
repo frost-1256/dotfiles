@@ -20,6 +20,10 @@
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    gpu-screen-recorder-ui = {
+      url = "github:rPlakama/gsr-ui-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -88,6 +92,7 @@
             inputs.noctalia.nixosModules.default
 
             niri.nixosModules.niri
+            inputs.gpu-screen-recorder-ui.nixosModules.default
 
             {
               _module.args.inputs = inputs;

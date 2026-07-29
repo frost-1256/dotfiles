@@ -6,6 +6,7 @@
     grim
     slurp
     wl-clipboard
+    xwayland-satellite-unstable
   ];
 
   programs.waybar.enable = lib.mkForce false;
@@ -136,24 +137,24 @@
     (plain "animations" [
       (plain "workspace-switch" [
         (leaf "spring" {
-          damping-ratio = 1.0;
-          stiffness = 1800;
+          damping-ratio = 0.75;
+          stiffness = 6000;
           epsilon = 0.0001;
         })
       ])
 
       (plain "horizontal-view-movement" [
         (leaf "spring" {
-          damping-ratio = 1.0;
-          stiffness = 1600;
+          damping-ratio = 0.75;
+          stiffness = 5000;
           epsilon = 0.0001;
         })
       ])
 
       (plain "window-open" [
         (leaf "spring" {
-          damping-ratio = 1.0;
-          stiffness = 1800;
+          damping-ratio = 0.75;
+          stiffness = 6000;
           epsilon = 0.0001;
         })
       ])
@@ -291,6 +292,14 @@
 
       (plain "XF86MonBrightnessDown" [
         (leaf "spawn-sh" "noctalia msg brightness-down")
+      ])
+
+      (plain "Mod+Shift+F9" [
+        (leaf "spawn-sh" "gsr-ui-cli toggle-record")
+      ])
+
+      (plain "Mod+Shift+F10" [
+        (leaf "spawn-sh" "gsr-ui-cli toggle-show")
       ])
     ])
 
