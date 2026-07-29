@@ -44,6 +44,7 @@
     nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     ccusage.packages.${pkgs.stdenv.hostPlatform.system}.default
     llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
+    mpv
     thunderbird
     teams-for-linux
     tealdeer

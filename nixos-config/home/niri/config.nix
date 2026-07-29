@@ -7,6 +7,7 @@
     slurp
     wl-clipboard
     xwayland-satellite-unstable
+    nautilus
   ];
 
   programs.waybar.enable = lib.mkForce false;
@@ -168,6 +169,10 @@
 
       (plain "Mod+D" [
         (leaf "spawn-sh" "noctalia msg panel-toggle launcher")
+      ])
+
+      (plain "Mod+E" [
+        (leaf "spawn" [ "nautilus" ])
       ])
 
       (plain "Mod+S" [
