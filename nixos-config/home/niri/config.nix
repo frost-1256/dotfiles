@@ -1,7 +1,13 @@
 # home-manager/modules/niri/config.nix
-{ inputs, lib, ... }:
+{ inputs, lib, pkgs, ... }:
 
 {
+  home.packages = with pkgs; [
+    grim
+    slurp
+    wl-clipboard
+  ];
+
   programs.waybar.enable = lib.mkForce false;
 
   programs.niri.config = let
@@ -256,6 +262,16 @@
       (plain "Mod+Shift+7" [ (leaf "move-window-to-workspace" 7) ])
       (plain "Mod+Shift+8" [ (leaf "move-window-to-workspace" 8) ])
       (plain "Mod+Shift+9" [ (leaf "move-window-to-workspace" 9) ])
+
+      # Win+Shift+S 選択領域スクリーンショット (クリップボードへ)
+      (plain "Mod+Shift+S" [
+        (leaf "spawn-sh" "grim -g \"$(slurp)\" - | wl-copy")
+      ])
+
+      # Win+Shift+V Noctalia クリップボードパネル
+      (plain "Mod+Shift+V" [
+        (leaf "spawn-sh" "noctalia msg panel-toggle clipboard")
+      ])
 
       (plain "XF86AudioRaiseVolume" [
         (leaf "spawn-sh" "noctalia msg volume-up")

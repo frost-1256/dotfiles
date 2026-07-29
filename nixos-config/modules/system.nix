@@ -96,7 +96,6 @@
     wget
     curl
     git
-    gnome-keyring
     libimobiledevice
     ifuse
     gnome-firmware
