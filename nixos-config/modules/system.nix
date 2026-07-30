@@ -123,9 +123,9 @@
     tod.driver = pkgs.libfprint-2-tod1-goodix;
   };
 
-  # Unbind Goodix fingerprint sensor from hid-multitouch so fprintd TOD driver can use it
+  # Unbind fingerprint sensor from hid-multitouch so TOD driver can use it via hidraw
   services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="hid", DRIVER=="hid-multitouch", ATTRS{modalias}=="hid:b0018g0004v000004F3p00003195", RUN+="${pkgs.bash}/bin/bash -c 'echo $kernel > /sys/bus/hid/drivers/hid-multitouch/unbind'"
+    ACTION=="add", SUBSYSTEM=="hid", DRIVER=="hid-multitouch", ATTRS{modalias}=="hid:b0018g0004v000004F3p00003195", RUN+="${pkgs.bash}/bin/sh -c 'echo $kernel > /sys/bus/hid/drivers/hid-multitouch/unbind'"
   '';
 
   # Firmware updates (LVFS) — daemon + GNOME Firmware GUI

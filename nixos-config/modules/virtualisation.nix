@@ -9,6 +9,7 @@
   virtualisation.libvirtd = {
     enable = true;
     qemu.swtpm.enable = true;
+    extraOptions = [ "--timeout" "0" ];
   };
 
   programs.virt-manager.enable = true;
@@ -17,7 +18,8 @@
     spice-gtk
     spice-protocol
     virtio-win
-   looking-glass-client
+    looking-glass-client
+    virt-viewer
   ];
 
   boot.kernelModules = ["kvm-intel" "vfio" "vfio_iommu_type1" "vfio_pci" "vfio_virqfd"];
