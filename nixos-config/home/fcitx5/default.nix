@@ -3,7 +3,7 @@
   pkgs,
   ...
 } @ args: let
-  inherit (pkgs.stdenv) system;
+  inherit (pkgs.stdenv.hostPlatform) system;
   nix-hazkey = args.nix-hazkey;
 in {
   services.hazkey = {
