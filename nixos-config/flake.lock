@@ -653,11 +653,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1785385413,
-        "narHash": "sha256-ZF7XdOc+DU/GK9QdjNo4U97xgKP3jAq3ErJWBZTV19Y=",
+        "lastModified": 1785385949,
+        "narHash": "sha256-A2C6/Okm8IvrCHUArYGdX1fZOJZ1dCcGj37raN9FX8g=",
         "owner": "frost-1256",
         "repo": "run-vm",
-        "rev": "e4c806c187b55151ea7b15393529bb32e2115309",
+        "rev": "3351b746e183a8c95452d331704aeff7e8a0e0b4",
         "type": "github"
       },
       "original": {
