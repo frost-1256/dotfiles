@@ -71,6 +71,10 @@
       };
     };
   };
+  services.transmission = {
+    enable = true;
+    package = pkgs.transmission_4;
+  }
   home.file.".claude/settings.json" = {
     force = true;
     text = builtins.toJSON {
