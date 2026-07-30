@@ -37,6 +37,7 @@
     nwg-displays
     obsidian
     keybase
+    aria2
     keybase-gui
     pavucontrol
     protonup-qt
