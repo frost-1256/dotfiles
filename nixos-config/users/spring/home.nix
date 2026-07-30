@@ -52,6 +52,7 @@
     keepassxc
     tmux
     vesktop
+    transmission_4-qt
   ];
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。
@@ -70,10 +71,6 @@
         devices = [ "remote" ];
       };
     };
-  };
-  services.transmission = {
-    enable = true;
-    package = pkgs.transmission_4;
   };
   home.file.".claude/settings.json" = {
     force = true;
