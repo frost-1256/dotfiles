@@ -115,7 +115,18 @@
   services.pulseaudio.enable = false;
 
   security.polkit.enable = true;
-  services.fprintd.enable = true;
+  security.pam.services.polkit-1.fprintAuth = true;
+
+  services.fprintd = {
+    enable = true;
+    tod.enable = true;
+    tod.driver = pkgs.libfprint-2-tod1-goodix;
+  };
+
+  # Unbind Goodix fingerprint sensor from hid-multitouch so fprintd TOD driver can use it
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="hid", DRIVER=="hid-multitouch", ATTRS{modalias}=="hid:b0018g0004v000004F3p00003195", RUN+="${pkgs.bash}/bin/bash -c 'echo $kernel > /sys/bus/hid/drivers/hid-multitouch/unbind'"
+  '';
 
   # Firmware updates (LVFS) — daemon + GNOME Firmware GUI
   services.fwupd.enable = true;

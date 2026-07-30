@@ -24,6 +24,7 @@
       url = "github:rPlakama/gsr-ui-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    run-vm.url = "github:frost-1256/run-vm";
   };
 
   outputs = inputs @ {
@@ -93,6 +94,7 @@
 
             niri.nixosModules.niri
             inputs.gpu-screen-recorder-ui.nixosModules.default
+            inputs.run-vm.nixosModules.default
 
             {
               _module.args.inputs = inputs;

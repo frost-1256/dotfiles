@@ -8,11 +8,7 @@
 
   virtualisation.libvirtd = {
     enable = true;
-    qemu = {
-      swtpm.enable = true;
-      ovmf.enable = true;
-      ovmf.packages = [pkgs.OVMFFull];
-    };
+    qemu.swtpm.enable = true;
   };
 
   programs.virt-manager.enable = true;
@@ -20,7 +16,7 @@
   environment.systemPackages = with pkgs; [
     spice-gtk
     spice-protocol
-    win-virtio
+    virtio-win
    looking-glass-client
   ];
 

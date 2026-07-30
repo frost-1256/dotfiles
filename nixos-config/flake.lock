@@ -576,6 +576,22 @@
         "url": "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1785318670,
+        "narHash": "sha256-dN6Ou5x/+23FZLEpYP3IffO+NyJFzUlGumt1uu3MMaY=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "0954f7ee2f6bb3dc7d4e3d0d8bcb8fd4bde4cfc5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixvim": {
       "inputs": {
         "flake-parts": "flake-parts_4",
@@ -628,7 +644,26 @@
         "nix-hazkey": "nix-hazkey",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
-        "noctalia": "noctalia"
+        "noctalia": "noctalia",
+        "run-vm": "run-vm"
+      }
+    },
+    "run-vm": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1785371194,
+        "narHash": "sha256-8fKdsl2xIYZgXdsHaOMXBtu3ahwA/H80Qzt5fMQz0x0=",
+        "owner": "frost-1256",
+        "repo": "run-vm",
+        "rev": "fe1da35fca5c17084a7e24f954bb85f7600a2842",
+        "type": "github"
+      },
+      "original": {
+        "owner": "frost-1256",
+        "repo": "run-vm",
+        "type": "github"
       }
     },
     "rust-overlay": {
