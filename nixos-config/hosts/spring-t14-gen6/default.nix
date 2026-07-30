@@ -6,11 +6,14 @@
   pkgs,
   ...
 }: {
+  disabledModules = [ "programs/wayland/noctalia.nix" ];
+
   imports = [
     ../../modules/system.nix
     ../../modules/perf-mode.nix
     ../../modules/gnome.nix
     ../../modules/niri.nix
+    ../../modules/virtualisation.nix
     ./hardware-configuration.nix
   ];
 
