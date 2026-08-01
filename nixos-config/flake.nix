@@ -25,6 +25,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     run-vm.url = "github:frost-1256/run-vm";
+    discord-rpc.url = "github:frost-1256/discord-rpc";
+    discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {

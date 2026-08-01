@@ -9,6 +9,7 @@
     ../../home/fcitx5
     # Hyprland → Niri に移行済みのため無効化
     # ../../home/hypr
+    ../../home/discord-rpc
     ../../home/niri
     ../../home/nvim
     ../../home/shell

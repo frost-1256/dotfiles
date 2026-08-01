@@ -124,6 +124,26 @@
         "type": "github"
       }
     },
+    "discord-rpc": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785562667,
+        "narHash": "sha256-7IXgAywPmsRx9mD2SYbBj90XG4pOFCEz01E1OU/84dY=",
+        "owner": "frost-1256",
+        "repo": "discord-rpc",
+        "rev": "84710796dd39c792b764bc59a7e89cb574e8892a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "frost-1256",
+        "repo": "discord-rpc",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -636,6 +656,7 @@
     "root": {
       "inputs": {
         "ccusage": "ccusage",
+        "discord-rpc": "discord-rpc",
         "gpu-screen-recorder-ui": "gpu-screen-recorder-ui",
         "home-manager": "home-manager_2",
         "llm-agents": "llm-agents",
