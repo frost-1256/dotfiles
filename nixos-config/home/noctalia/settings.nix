@@ -8,13 +8,11 @@
   wallpaper = {
     enabled = true;
     default.path = "/home/spring/.face";
-    allowCaching = true;
   };
-
-  launch_apps_as_systemd_services = true;
 
   shell = {
     font_family = "JetBrains Mono";
+    launch_apps_as_systemd_services = true;
     animation.speed = 2.5;
     panel = {
       open_near_click_control_center = true;
@@ -28,7 +26,7 @@
 
   bar.default.end = [ "tray" "notifications" "network" "bluetooth" "brightness" "volume" "battery" "session" ];
 
-  bar.default.dead_zone.right_command = "none";
+  bar.default.dead_zone.actions.right = "none";
 
   idle = {
     behavior = {
