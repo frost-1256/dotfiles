@@ -14,6 +14,7 @@
     ../../modules/gnome.nix
     ../../modules/niri.nix
     ../../modules/virtualisation.nix
+    ../../modules/steam.nix
     ./hardware-configuration.nix
   ];
 
