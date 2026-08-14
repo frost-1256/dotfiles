@@ -15,16 +15,48 @@ let
   '';
 
   selectProject = ''
-    ls -d ${projectsRoot}/*/ 2>/dev/null | sed 's|.*/||; s|/$||' | ${fzf} --prompt="プロジェクト > "
+    ls -d ${projectsRoot}/*/ 2>/dev/null | sed 's|.*/||; s|/$||' | ${fzf} --bind "j:down,k:up" --prompt="プロジェクト > "
   '';
 
   unityCli = pkgs.writeShellScriptBin "unity" ''
     #!/usr/bin/env bash
     set -euo pipefail
 
-    hub_url() { unityhub-shell -c "unityhub '$1'"; }
+    hub_url() { unityhub-shell -c "unityhub --password-store=basic '$1'"; }
 
-    cmd_hub() { unityhub-shell -c unityhub; }
+    cmd_login() {
+      local url="''${1:-}"
+      if [ -n "$url" ]; then
+        echo "ログイン URL を Unity Hub に渡します"
+        hub_url "$url"
+        return 0
+      fi
+
+      echo "Unity Hub を起動しています..."
+      unityhub-shell -c "unityhub --password-store=basic" &
+
+      echo "Unity Hub でサインインしてください"
+      echo "unityhub://login?... をクリップボードにコピーすると自動で Hub に渡します"
+      (
+        xdg-mime default unity-hub.desktop x-scheme-handler/unityhub 2>/dev/null || true
+        wl-copy -c 2>/dev/null || true
+        for i in $(seq 1 60); do
+          sleep 2
+          url=$(wl-paste 2>/dev/null || true)
+          case "$url" in
+            unityhub://*)
+              echo "unityhub:// URL を Unity Hub に渡します"
+              xdg-open "$url" >/dev/null 2>&1
+              exit 0
+              ;;
+          esac
+        done
+        echo "タイムアウトしました。unity login <url> で手動実行してください" >&2
+        exit 1
+      ) &
+    }
+
+    cmd_hub() { unityhub-shell -c "unityhub --password-store=basic"; }
 
     cmd_install() {
       local version="''${1:-${unityDefaultVersion}}"
@@ -114,6 +146,7 @@ unity - VRChat アバター制作ツール
   unity alcom           ALCOM を開く
   unity new             ALCOM で新規プロジェクト作成
   unity vrc [project]   vrc-get で VCC パッケージ追加
+  unity login [url]     ログイン URL を Hub に渡す (既定: クリップボード)
   unity url [url]       unityhub:// URL を Hub に渡す (既定: クリップボード)
   unity android         Android パス設定を表示
 EOF
@@ -121,13 +154,14 @@ EOF
 
     cmd_menu() {
       local choice
-      choice=$(${fzf} --prompt="unity> " <<'EOF'
+      choice=$(${fzf} --bind "j:down,k:up" --prompt="unity> " <<'EOF'
 Hub      Unity Hub を開く
 Install  Unity Editor 2022.3.22f1 をインストール
 Open     プロジェクトを開く
 New      ALCOM で新規プロジェクト作成
 Vrc      vrc-get で VCC パッケージ追加
 Alcom    ALCOM を開く (パッケージ/GUI 管理)
+Login    unityhub:// ログイン URL を Hub に渡す
 Url      unityhub:// URL を Hub に渡す
 Android  Android パス設定を表示
 Help     ヘルプを表示
@@ -141,6 +175,7 @@ EOF
         New) cmd_new ;;
         Vrc) cmd_vrc ;;
         Alcom) cmd_alcom ;;
+        Login) cmd_login ;;
         Url) cmd_url ;;
         Android) cmd_android ;;
         Help) cmd_help ;;
@@ -156,11 +191,15 @@ EOF
       alcom) cmd_alcom ;;
       new) cmd_new ;;
       vrc) shift; cmd_vrc "$@" ;;
+      login) shift; cmd_login "$@" ;;
       url) shift; cmd_url "$@" ;;
       android) cmd_android ;;
       help|-h|--help) cmd_help ;;
       *) echo "不明なコマンド: $1 (unity help で確認)" >&2; exit 1 ;;
     esac
+  '';
+  unityhubOpen = pkgs.writeShellScriptBin "unityhub-open" ''
+    exec unityhub-shell -c "unityhub --password-store=basic '$1'"
   '';
 in {
   # VRChat アバター制作環境 (Unity Hub + ALCOM + Android SDK/NDK/JDK)
@@ -171,6 +210,8 @@ in {
   environment.systemPackages = [
     # Unity 制作の面倒な操作をまとめた TUI/CLI
     unityCli
+    # unityhub:// スキームを Hub へ渡すためのホスト側ハンドラ
+    unityhubOpen
     # vrc-get (ALCOM の CLI 基盤) を unity vrc から使う
     pkgs.vrc-get
     # Unity Hub を FHS 環境経由でランチャー (drun) から起動できるようにする
@@ -178,10 +219,11 @@ in {
       name = "unity-hub";
       desktopName = "Unity Hub";
       comment = "Unity Hub (via unity-fhs-env)";
-      exec = "unityhub-shell -c unityhub";
+      exec = "unityhub-open %u";
       icon = "unityhub";
       categories = [ "Development" ];
       startupNotify = false;
+      mimeTypes = [ "x-scheme-handler/unityhub" ];
     })
   ];
 }
