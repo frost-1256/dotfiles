@@ -31,6 +31,7 @@
   home.packages = with pkgs; [
     filezilla
     floorp-bin
+    gimp
     fastfetch
     nix-search-cli
     vrcx
@@ -42,6 +43,9 @@
     keybase-gui
     pavucontrol
     protonup-qt
+    protontricks
+    icoutils
+    wine
     gpu-screen-recorder-gtk
     nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     ccusage.packages.${pkgs.stdenv.hostPlatform.system}.default

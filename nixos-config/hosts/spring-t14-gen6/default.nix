@@ -16,6 +16,7 @@
     ../../modules/virtualisation.nix
     ../../modules/podman.nix
     ../../modules/steam.nix
+    ../../modules/unity.nix
     ./hardware-configuration.nix
   ];
 

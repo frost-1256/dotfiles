@@ -27,6 +27,8 @@
     run-vm.url = "github:frost-1256/run-vm";
     discord-rpc.url = "github:frost-1256/discord-rpc";
     discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
+    nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
+    nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
     };
 
   outputs = inputs @ {
@@ -97,6 +99,7 @@
             niri.nixosModules.niri
             inputs.gpu-screen-recorder-ui.nixosModules.default
             inputs.run-vm.nixosModules.default
+            inputs.nixos-vrchat.nixosModules.default
 
             {
               _module.args.inputs = inputs;

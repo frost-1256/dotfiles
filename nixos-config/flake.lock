@@ -536,6 +536,26 @@
         "type": "github"
       }
     },
+    "nixos-vrchat": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1782702925,
+        "narHash": "sha256-iit7ebn9LyLS0A/vFEvBaZevFA6OqnpvVmU6wY5HTLQ=",
+        "owner": "frost-1256",
+        "repo": "nixos-vrchat",
+        "rev": "3bf9368dde2bca9d761ec2247e250b4a239282a8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "frost-1256",
+        "repo": "nixos-vrchat",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1785307242,
@@ -663,6 +683,7 @@
         "niri": "niri",
         "nix-claude-code": "nix-claude-code",
         "nix-hazkey": "nix-hazkey",
+        "nixos-vrchat": "nixos-vrchat",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
         "noctalia": "noctalia",
