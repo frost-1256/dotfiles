@@ -18,6 +18,7 @@
     dust
     duf
     procs
+    nixfmt-rfc-style
   ];
 
   home.sessionPath = [

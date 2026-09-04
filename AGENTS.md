@@ -18,8 +18,8 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - rebuild は既定で `sudo nixos-rebuild switch` を**直接実行**する（認証は指紋 fprintd）
 - nixos-rebuild skill（tmux 経由）は **指紋認証ができなかった場合** と **ユーザーが明示的に tmux 使用を指示した場合のみ** 使う。手順: root shell が開いた tmux セッション `nixos-rebuild` へ `sudo nixos-rebuild switch 2>&1 | tee /tmp/rebuild-output` を送り、`/tmp/rebuild-output` を読む。セッションが無ければ自分で作らずユーザーに起動を依頼
 - 構文・評価チェックは `nix flake check` / `nix eval .#nixosConfigurations.spring-t14-gen6`（書き込み禁止なら `--no-write-lock-file` 併用）で可
-- 素早い構文だけ見るなら `nix-instantiate --parse <file>.nix`（評価しない。ファイル単位のタイポ検出に便利）
-- CI なし・formatter 設定なし。スタイルは nixfmt 互換（2 インデント）。編集時は surrounding を真似る
+- 早めの構文チェックは `nix-instantiate --parse <file>.nix`（評価しない。ファイル単位のタイポ検出に便利）
+- フォーマッタは **`nixfmt-rfc-style`**（home/shell/default.nix で導入済み、CI なし）。編集後は `nixfmt $(git ls-files '*.nix')` で整形、`--check` 付きで差分確認できる。スタイルは nixfmt 準拠（2 インデント）なので手書き時も周りに合わせる
 - `flake.lock` はコミット済み。明示的な依頼なく `nix flake update` しない
 
 ## デスクトップ周のクセ
