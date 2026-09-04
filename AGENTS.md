@@ -53,6 +53,16 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - main のコミットメッセージは「aaaa」「ok stable?」「fix error」等の雑なものが混在。**真似しない**。書くなら `feat(scope):` / `fix:` 形式で日本語説明付き（portable-hm ブランチの流儀）
 - flake description は "haru's ..." だがユーザー名/git name は "spring"。どちらに寄せるか迷ったら `spring`
 
+## opencode スキル (~/.config/opencode/skills/)
+
+該当作業では必ずスキルを load してから動く。リポジトリ外にあるので clone してもここには入らない。
+
+- `niri-config` — Niri 設定 (`home/niri/config.nix`) の編集・保守。KDL DSL の規則、最小 diff、UX に効く変更 (レイアウト・アニメーション・操作体系) は承認取り
+- `noctalia-config` — Noctalia の declarative 設定 (`home/noctalia/`) の編集・保守。既存パレット再利用・最小 diff 方針
+- `noctalia-sync` — 設定アプリが書いたランタイム側 `~/.local/state/noctalia/settings.toml` を settings.nix へ反映する。設定アプリで変更があった・ランタイム設定を declarative に落としたい時に使う
+- `nixos-rebuild` — tmux セッション経由のリビルド手順。指紋認証失敗時か明示指示時のみ (上記「ビルド・再構築」参照)
+- `agent-workflow` — 非自明タスクをサブエージェントへ委譲して実装するワークフロー
+
 ## その他
 
 - `nixos-config/.codex` は中身 0 バイトの残骸。`.gitignore` には `old-dots/` と `flake-lock.nix` がある
