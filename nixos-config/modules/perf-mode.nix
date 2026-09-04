@@ -78,17 +78,26 @@ let
       printf '{"text":"󰾅","class":"balanced","tooltip":"バランスモード (クリックで高性能)"}\n'
     fi
   '';
-in {
+in
+{
   services.power-profiles-daemon.enable = true;
 
-  environment.systemPackages = [ perf-apply perf-toggle perf-status-icon ];
+  environment.systemPackages = [
+    perf-apply
+    perf-toggle
+    perf-status-icon
+  ];
 
   # 引数固定の perf-apply にだけパスワード無しの sudo を許可する。
-  security.sudo.extraRules = [{
-    users = [ username ];
-    commands = [{
-      command = "${perf-apply}/bin/perf-apply";
-      options = [ "NOPASSWD" ];
-    }];
-  }];
+  security.sudo.extraRules = [
+    {
+      users = [ username ];
+      commands = [
+        {
+          command = "${perf-apply}/bin/perf-apply";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
 }

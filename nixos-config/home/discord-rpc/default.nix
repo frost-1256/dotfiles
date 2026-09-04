@@ -1,7 +1,8 @@
 {
   inputs,
   ...
-}: {
+}:
+{
   imports = [
     inputs.discord-rpc.nixosModules.default
   ];

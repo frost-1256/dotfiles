@@ -3,9 +3,10 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   home.packages = with pkgs; [
-    (runCommand "gh-zsh-completion" {} ''
+    (runCommand "gh-zsh-completion" { } ''
       mkdir -p $out/share/zsh/site-functions
       ${lib.getExe gh} completion -s zsh > $out/share/zsh/site-functions/_gh
     '')

@@ -279,7 +279,7 @@
     rose-pine-hyprcursor
 
     # Audio & Brightness (CLIツール)
-    wireplumber      # wpctl
+    wireplumber # wpctl
     brightnessctl
 
     # Chat

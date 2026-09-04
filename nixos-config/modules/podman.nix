@@ -1,8 +1,9 @@
 {
   pkgs,
   ...
-}: {
-  users.users.spring.extraGroups = ["podman"];
+}:
+{
+  users.users.spring.extraGroups = [ "podman" ];
 
   virtualisation.podman = {
     enable = true;

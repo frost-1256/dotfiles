@@ -3,15 +3,23 @@
   lib,
   username,
   ...
-}: {
+}:
+{
   users.users.${username} = {
     isNormalUser = true;
     description = username;
-    extraGroups = ["networkmanager" "wheel" "input"];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "input"
+    ];
   };
 
   nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     substituters = [
       "https://cache.nixos.org/"
       "https://noctalia.cachix.org"
@@ -60,16 +68,28 @@
       noto-fonts-color-emoji
       hackgen-font
       ipafont
-      nerd-fonts.symbols-only 
+      nerd-fonts.symbols-only
       nerd-fonts.fira-code
       nerd-fonts.jetbrains-mono
       nerd-fonts.hack
     ];
     fontconfig.defaultFonts = {
-      serif = ["Noto Serif" "IPAMincho" "Noto Color Emoji"];
-      sansSerif = ["Noto Sans" "IPAGothic" "Noto Color Emoji"];
-      monospace = ["JetBrainsMono Nerd Font" "IPAGothic" "Noto Color Emoji"];
-      emoji = ["Noto Color Emoji"];
+      serif = [
+        "Noto Serif"
+        "IPAMincho"
+        "Noto Color Emoji"
+      ];
+      sansSerif = [
+        "Noto Sans"
+        "IPAGothic"
+        "Noto Color Emoji"
+      ];
+      monospace = [
+        "JetBrainsMono Nerd Font"
+        "IPAGothic"
+        "Noto Color Emoji"
+      ];
+      emoji = [ "Noto Color Emoji" ];
     };
     fontconfig.localConf = ''
       <?xml version="1.0"?>
@@ -122,7 +142,7 @@
     gst_all_1.gst-plugins-ugly
     gst_all_1.gst-libav
   ];
-  
+
   services.usbmuxd = {
     enable = true;
     package = pkgs.usbmuxd2;

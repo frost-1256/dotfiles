@@ -4,7 +4,8 @@
   nix-claude-code,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ../../home/fcitx5
     # Hyprland → Niri に移行済みのため無効化
@@ -69,8 +70,7 @@
     overrideDevices = true;
     overrideFolders = true;
     settings = {
-      devices.remote.id =
-        "PCGB5KH-6M5RUEL-2LQV6YY-EKMKWS3-VI7NXXM-3Q3RGQF-WIVTNJH-SGWIPQK";
+      devices.remote.id = "PCGB5KH-6M5RUEL-2LQV6YY-EKMKWS3-VI7NXXM-3Q3RGQF-WIVTNJH-SGWIPQK";
       folders."Passwords" = {
         id = "passwords";
         path = "/home/spring/Passwords";

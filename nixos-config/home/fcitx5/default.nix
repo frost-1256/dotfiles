@@ -2,10 +2,12 @@
   config,
   pkgs,
   ...
-} @ args: let
+}@args:
+let
   inherit (pkgs.stdenv.hostPlatform) system;
   nix-hazkey = args.nix-hazkey;
-in {
+in
+{
   services.hazkey = {
     enable = true;
     server.package = nix-hazkey.packages.${system}.hazkey-server.override {

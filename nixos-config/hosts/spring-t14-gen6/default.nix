@@ -5,7 +5,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   disabledModules = [ "programs/wayland/noctalia.nix" ];
 
   imports = [

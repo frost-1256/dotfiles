@@ -36,9 +36,22 @@
     };
   };
 
-  bar.default.start = [ "workspaces" "media" ];
+  bar.default.start = [
+    "workspaces"
+    "media"
+  ];
 
-  bar.default.end = [ "tray" "notifications" "network" "bluetooth" "brightness" "volume" "cat" "battery" "session" ];
+  bar.default.end = [
+    "tray"
+    "notifications"
+    "network"
+    "bluetooth"
+    "brightness"
+    "volume"
+    "cat"
+    "battery"
+    "session"
+  ];
 
   bar.default.background_opacity = 0.5;
 
@@ -58,7 +71,10 @@
   location.auto_locate = true;
 
   idle = {
-    behavior_order = [ "screen-off" "suspend" ];
+    behavior_order = [
+      "screen-off"
+      "suspend"
+    ];
     behavior = {
       "screen-off" = {
         timeout = 300;
@@ -76,7 +92,10 @@
   lockscreen_widgets = {
     enabled = true;
     schema_version = 2;
-    widget_order = [ "lockscreen-login-box@eDP-1" "lockscreen-widget-0000000000000001" ];
+    widget_order = [
+      "lockscreen-login-box@eDP-1"
+      "lockscreen-widget-0000000000000001"
+    ];
     grid = {
       cell_size = 16;
       major_interval = 4;

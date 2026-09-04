@@ -1,7 +1,9 @@
 # modules/hypr/wlogout.nix
-{ pkgs, ... }: let
+{ pkgs, ... }:
+let
   icons = "${pkgs.wlogout}/share/wlogout/icons";
-in {
+in
+{
   programs.wlogout = {
     enable = true;
 

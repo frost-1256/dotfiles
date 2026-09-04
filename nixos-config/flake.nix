@@ -29,128 +29,140 @@
     discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
     nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
     nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
-    };
+  };
 
-  outputs = inputs @ {
-    self,
-    nixpkgs,
-    home-manager,
-    niri,
-    ...
-  }: let
-    mkHomeModules = username: [
-      inputs.noctalia.homeModules.default
-      inputs.nix-hazkey.homeModules.hazkey
-      inputs.nixvim.homeModules.nixvim
-      ./users/${username}/home.nix
-    ];
-
-    mkPortableHomeModules = username: [
-      inputs.nixvim.homeModules.nixvim
-      ./users/${username}/home-portable.nix
-    ];
-
-    mkHomeSpecialArgs = username: inputs // {
-      inherit inputs;
-      inherit username;
-    };
-
-    mkPkgs = system:
-      import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        config.permittedInsecurePackages = [
-          "electron-38.8.4"
-        ];
-      };
-
-    mkHomeConfiguration = {
-      username,
-      system,
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      home-manager,
+      niri,
+      ...
     }:
-      home-manager.lib.homeManagerConfiguration {
-        pkgs = mkPkgs system;
-        extraSpecialArgs = mkHomeSpecialArgs username;
-        modules = mkHomeModules username;
-      };
+    let
+      mkHomeModules = username: [
+        inputs.noctalia.homeModules.default
+        inputs.nix-hazkey.homeModules.hazkey
+        inputs.nixvim.homeModules.nixvim
+        ./users/${username}/home.nix
+      ];
 
-    mkPortableHomeConfiguration = {
-      username,
-      system,
-    }:
-      home-manager.lib.homeManagerConfiguration {
-        pkgs = mkPkgs system;
-        extraSpecialArgs = mkHomeSpecialArgs username;
-        modules = mkPortableHomeModules username;
-      };
-  in {
-    nixosConfigurations = {
-      spring-t14-gen6 = let
-        username = "spring";
-        specialArgs = inputs // {inherit username;};
-      in
-        nixpkgs.lib.nixosSystem {
-          inherit specialArgs;
-          system = "x86_64-linux";
+      mkPortableHomeModules = username: [
+        inputs.nixvim.homeModules.nixvim
+        ./users/${username}/home-portable.nix
+      ];
 
-          modules = [
-            inputs.noctalia.nixosModules.default
+      mkHomeSpecialArgs =
+        username:
+        inputs
+        // {
+          inherit inputs;
+          inherit username;
+        };
 
-            niri.nixosModules.niri
-            inputs.gpu-screen-recorder-ui.nixosModules.default
-            inputs.run-vm.nixosModules.default
-            inputs.nixos-vrchat.nixosModules.default
-
-            {
-              _module.args.inputs = inputs;
-            }
-
-            ./hosts/spring-t14-gen6
-            ./users/${username}/nixos.nix
-
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-
-              home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
-              home-manager.users.${username}.imports = mkHomeModules username;
-            }
-
-            {
-              programs.noctalia = {
-                enable = true;
-                recommendedServices.enable = true;
-              };
-            }
+      mkPkgs =
+        system:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          config.permittedInsecurePackages = [
+            "electron-38.8.4"
           ];
         };
+
+      mkHomeConfiguration =
+        {
+          username,
+          system,
+        }:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = mkPkgs system;
+          extraSpecialArgs = mkHomeSpecialArgs username;
+          modules = mkHomeModules username;
+        };
+
+      mkPortableHomeConfiguration =
+        {
+          username,
+          system,
+        }:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = mkPkgs system;
+          extraSpecialArgs = mkHomeSpecialArgs username;
+          modules = mkPortableHomeModules username;
+        };
+    in
+    {
+      nixosConfigurations = {
+        spring-t14-gen6 =
+          let
+            username = "spring";
+            specialArgs = inputs // {
+              inherit username;
+            };
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit specialArgs;
+            system = "x86_64-linux";
+
+            modules = [
+              inputs.noctalia.nixosModules.default
+
+              niri.nixosModules.niri
+              inputs.gpu-screen-recorder-ui.nixosModules.default
+              inputs.run-vm.nixosModules.default
+              inputs.nixos-vrchat.nixosModules.default
+
+              {
+                _module.args.inputs = inputs;
+              }
+
+              ./hosts/spring-t14-gen6
+              ./users/${username}/nixos.nix
+
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+
+                home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
+                home-manager.users.${username}.imports = mkHomeModules username;
+              }
+
+              {
+                programs.noctalia = {
+                  enable = true;
+                  recommendedServices.enable = true;
+                };
+              }
+            ];
+          };
+      };
+
+      packages = { };
+
+      devShells = { };
+
+      homeConfigurations = {
+        spring = mkHomeConfiguration {
+          username = "spring";
+          system = "x86_64-linux";
+        };
+
+        "spring@x86_64-linux" = mkPortableHomeConfiguration {
+          username = "spring";
+          system = "x86_64-linux";
+        };
+
+        "spring@aarch64-linux" = mkPortableHomeConfiguration {
+          username = "spring";
+          system = "aarch64-linux";
+        };
+
+        "spring@aarch64-darwin" = mkPortableHomeConfiguration {
+          username = "spring";
+          system = "aarch64-darwin";
+        };
+      };
     };
-
-    packages = { };
-
-    devShells = { };
-
-    homeConfigurations = {
-      spring = mkHomeConfiguration {
-        username = "spring";
-        system = "x86_64-linux";
-      };
-
-      "spring@x86_64-linux" = mkPortableHomeConfiguration {
-        username = "spring";
-        system = "x86_64-linux";
-      };
-
-      "spring@aarch64-linux" = mkPortableHomeConfiguration {
-        username = "spring";
-        system = "aarch64-linux";
-      };
-
-      "spring@aarch64-darwin" = mkPortableHomeConfiguration {
-        username = "spring";
-        system = "aarch64-darwin";
-      };
-    };
-  };
 }

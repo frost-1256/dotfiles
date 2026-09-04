@@ -61,7 +61,11 @@
       };
       backlight = {
         format = "{icon} {percent}%";
-        format-icons = [ "󰃞" "󰃟" "󰃠" ];
+        format-icons = [
+          "󰃞"
+          "󰃟"
+          "󰃠"
+        ];
         justify = "center";
       };
       battery = {
@@ -72,14 +76,26 @@
         format = "{icon} {capacity}%";
         format-charging = "󰂄 {capacity}%";
         format-plugged = "󰂄 {capacity}%";
-        format-icons = [ "󰂎" "󰁼" "󰁾" "󰂀" "󰁹" ];
+        format-icons = [
+          "󰂎"
+          "󰁼"
+          "󰁾"
+          "󰂀"
+          "󰁹"
+        ];
         justify = "center";
       };
       network = {
         format-wifi = "{icon}";
         format-ethernet = "󰈀";
         format-disconnected = "󰖪";
-        format-icons = [ "󰤯" "󰤟" "󰤢" "󰤥" "󰤨" ];
+        format-icons = [
+          "󰤯"
+          "󰤟"
+          "󰤢"
+          "󰤥"
+          "󰤨"
+        ];
         tooltip-format = "{ifname} via {gwaddr}";
         tooltip-format-wifi = "{essid} ({signalStrength}%)";
         tooltip-format-disconnected = "Disconnected";
@@ -89,7 +105,11 @@
         format = "{icon} {volume}%";
         format-bluetooth = "{icon} {volume}%";
         format-muted = "󰖁";
-        format-icons.default = [ "󰕿" "󰖀" "󰕾" ];
+        format-icons.default = [
+          "󰕿"
+          "󰖀"
+          "󰕾"
+        ];
         on-click = "pavucontrol";
         tooltip-format = "{volume}% {desc}";
         justify = "center";

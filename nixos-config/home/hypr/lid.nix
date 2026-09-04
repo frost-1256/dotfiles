@@ -39,6 +39,11 @@ let
       printf '󰒲\n'
     fi
   '';
-in {
-  home.packages = [ lid-action lid-toggle lid-status ];
+in
+{
+  home.packages = [
+    lid-action
+    lid-toggle
+    lid-status
+  ];
 }

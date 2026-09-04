@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   home.packages = with pkgs; [
     lazygit
   ];
@@ -29,9 +29,15 @@
         transparent = true;
         style = "default";
         styles = {
-          comments = { italic = true; };
-          keywords = { bold = true; };
-          functions = { bold = true; };
+          comments = {
+            italic = true;
+          };
+          keywords = {
+            bold = true;
+          };
+          functions = {
+            bold = true;
+          };
         };
       };
     };
