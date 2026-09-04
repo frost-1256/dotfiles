@@ -32,25 +32,41 @@
   };
 
   outputs =
-    inputs@{
-      self,
+    {
       nixpkgs,
       home-manager,
+      nixvim,
+      nix-hazkey,
+      noctalia,
       niri,
+      gpu-screen-recorder-ui,
+      run-vm,
+      nixos-vrchat,
       ...
-    }:
+    }@inputs:
     let
       mkHomeModules = username: [
-        inputs.noctalia.homeModules.default
-        inputs.nix-hazkey.homeModules.hazkey
-        inputs.nixvim.homeModules.nixvim
+        noctalia.homeModules.default
+        nix-hazkey.homeModules.hazkey
+        nixvim.homeModules.nixvim
         ./users/${username}/home.nix
       ];
 
       mkPortableHomeModules = username: [
-        inputs.nixvim.homeModules.nixvim
+        nixvim.homeModules.nixvim
         ./users/${username}/home-portable.nix
       ];
+
+      # standalone HM (homeConfigurations.spring) 用。
+      # NixOS では nixosModules.niri が homeModules.config を sharedModules に
+      # 自動注入するが、standalone にはその経路が無いので programs.niri が未定義になる。
+      # よって niri の home-module を明示的に足す（NixOS 側 mkHomeModules には入れない）。
+      mkStandaloneHomeModules =
+        username:
+        mkHomeModules username
+        ++ [
+          niri.homeModules.niri
+        ];
 
       mkHomeSpecialArgs =
         username:
@@ -64,10 +80,11 @@
         system:
         import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
-          config.permittedInsecurePackages = [
-            "electron-38.8.4"
-          ];
+          config = import ./nixpkgs-config.nix;
+          # standalone HM にも niri overlay を適用し、home/niri が参照する
+          # niri-unstable / xwayland-satellite-unstable 等を解決する
+          # (NixOS では modules/niri.nix が同じ overlay を当てている)。
+          overlays = [ niri.overlays.niri ];
         };
 
       mkHomeConfiguration =
@@ -78,7 +95,7 @@
         home-manager.lib.homeManagerConfiguration {
           pkgs = mkPkgs system;
           extraSpecialArgs = mkHomeSpecialArgs username;
-          modules = mkHomeModules username;
+          modules = mkStandaloneHomeModules username;
         };
 
       mkPortableHomeConfiguration =
@@ -106,19 +123,18 @@
             system = "x86_64-linux";
 
             modules = [
-              inputs.noctalia.nixosModules.default
+              noctalia.nixosModules.default
 
               niri.nixosModules.niri
-              inputs.gpu-screen-recorder-ui.nixosModules.default
-              inputs.run-vm.nixosModules.default
-              inputs.nixos-vrchat.nixosModules.default
+              gpu-screen-recorder-ui.nixosModules.default
+              run-vm.nixosModules.default
+              nixos-vrchat.nixosModules.default
 
               {
                 _module.args.inputs = inputs;
               }
 
               ./hosts/spring-t14-gen6
-              ./users/${username}/nixos.nix
 
               home-manager.nixosModules.home-manager
               {
@@ -138,10 +154,6 @@
             ];
           };
       };
-
-      packages = { };
-
-      devShells = { };
 
       homeConfigurations = {
         spring = mkHomeConfiguration {

@@ -8,12 +8,16 @@
   users.users.${username} = {
     isNormalUser = true;
     description = username;
+    shell = pkgs.zsh;
     extraGroups = [
       "networkmanager"
       "wheel"
       "input"
     ];
   };
+  # ユーザーシェルは zsh (旧 users/spring/nixos.nix から統合)。
+  # home-manager 側で zsh を管理しても、NixOS 側でシェルを許可する必要がある。
+  programs.zsh.enable = true;
 
   nix.settings = {
     experimental-features = [
@@ -36,12 +40,9 @@
     options = lib.mkDefault "--delete-older-than 7d";
   };
 
-  nixpkgs.config = {
-    allowUnfree = true;
-    permittedInsecurePackages = [
-      "electron-38.8.4"
-    ];
-  };
+  # allowUnfree / permittedInsecurePackages は nixpkgs-config.nix で一元管理
+  # (flake.nix の mkPkgs と同一設定を共有)。
+  nixpkgs.config = import ../nixpkgs-config.nix;
 
   time.timeZone = "Asia/Tokyo";
 

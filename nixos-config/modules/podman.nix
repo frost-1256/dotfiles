@@ -1,9 +1,10 @@
 {
   pkgs,
+  username,
   ...
 }:
 {
-  users.users.spring.extraGroups = [ "podman" ];
+  users.users.${username}.extraGroups = [ "podman" ];
 
   virtualisation.podman = {
     enable = true;

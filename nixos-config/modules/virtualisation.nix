@@ -1,11 +1,10 @@
 {
   pkgs,
-  config,
-  lib,
+  username,
   ...
 }:
 {
-  users.users.spring.extraGroups = [ "libvirtd" ];
+  users.users.${username}.extraGroups = [ "libvirtd" ];
 
   virtualisation.libvirtd = {
     enable = true;

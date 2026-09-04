@@ -11,7 +11,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
   - `hosts/<host>/` — ホスト固有設定 + generated な `hardware-configuration.nix`
   - `modules/` — システム側機能モジュール（host の default.nix から import）
   - `home/` — home-manager モジュール（アプリごとに `default.nix` + 細分化ファイル）
-  - `users/spring/` — `nixos.nix`（システム側ユーザー定義）/ `home.nix`（NixOS用 HM）/ `home-portable.nix`（非NixOS用 HM）/ `home/core.nix`（共通: username, homeDirectory, stateVersion）
+  - `users/spring/` — `home.nix`（NixOS用 HM）/ `home-portable.nix`（非NixOS用 HM）/ `home/core.nix`（共通: username, homeDirectory, stateVersion）。システム側のユーザー定義は `modules/system.nix` に統合済み（旧 `nixos.nix` は削除）
 
 ## ビルド・再構築
 
@@ -19,7 +19,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - nixos-rebuild skill（tmux 経由）は **指紋認証ができなかった場合** と **ユーザーが明示的に tmux 使用を指示した場合のみ** 使う。手順: root shell が開いた tmux セッション `nixos-rebuild` へ `sudo nixos-rebuild switch 2>&1 | tee /tmp/rebuild-output` を送り、`/tmp/rebuild-output` を読む。セッションが無ければ自分で作らずユーザーに起動を依頼
 - 構文・評価チェックは `nix flake check` / `nix eval .#nixosConfigurations.spring-t14-gen6`（書き込み禁止なら `--no-write-lock-file` 併用）で可
 - 早めの構文チェックは `nix-instantiate --parse <file>.nix`（評価しない。ファイル単位のタイポ検出に便利）
-- フォーマッタは **`nixfmt-rfc-style`**（home/shell/default.nix で導入済み、CI なし）。編集後は `nixfmt $(git ls-files '*.nix')` で整形、`--check` 付きで差分確認できる。スタイルは nixfmt 準拠（2 インデント）なので手書き時も周りに合わせる
+- フォーマッタは **`pkgs.nixfmt`**（home/shell/default.nix で導入済み、CI なし）。旧 `nixfmt-rfc-style` は `pkgs.nixfmt` と同一になり deprecated 警告が出るため使わない。編集後は `nixfmt $(git ls-files '*.nix')` で整形、`--check` 付きで差分確認できる。スタイルは nixfmt 準拠（2 インデント）なので手書き時も周りに合わせる
 - `flake.lock` はコミット済み。明示的な依頼なく `nix flake update` しない
 
 ## デスクトップ周のクセ
@@ -35,7 +35,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 - `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + Hyprland の有効化と gnome-keyring の mkForce false が本体
 - flake の `specialArgs` / `extraSpecialArgs` で `username` と `inputs` が全モジュールに注入される。モジュール引数で `{ username, ... }` / `{ inputs, ... }` を取れるのが前提
-- `permittedInsecurePackages = [ "electron-38.8.4" ]` が **2 箇所**（flake の `mkPkgs` と `modules/system.nix` の nixpkgs.config）に重複存在。変える時は両方
+- `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixos-config/nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
 - ブランチ `portable-hm` は非 NixOS（macOS 含む）向け home-manager 専用。main にマージする前提で分離されている
 - `modules/perf-mode.nix`: sysfs 書き込みは NOPASSWD sudo を `perf-apply` にのみ許可するスコープ最小化設計。bar の即時更新は signal（RTMIN+9）方式
