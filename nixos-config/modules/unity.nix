@@ -205,6 +205,15 @@ in {
   # VRChat アバター制作環境 (Unity Hub + ALCOM + Android SDK/NDK/JDK)
   programs.vrchat-unity = {
     enable = true;
+    # Unity Editor は FHS 環境内の /usr/share/fonts を参照するため、
+    # 環境内にフォントを入れないとエディタ UI の日本語が表示されない
+    # (同梱の Inter のみ表示される既知問題)
+    extraFhsMultiPackages = with pkgs; [
+      dejavu_fonts
+      liberation_ttf
+      noto-fonts-cjk-sans
+      ipafont
+    ];
   };
 
   environment.systemPackages = [

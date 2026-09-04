@@ -67,6 +67,11 @@
       ])
     ])
 
+    (plain "layer-rule" [
+      (leaf "match" { namespace = "^noctalia-backdrop"; })
+      (leaf "place-within-backdrop" true)
+    ])
+
     # input
     (plain "input" [
       (plain "keyboard" [

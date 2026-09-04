@@ -59,17 +59,33 @@
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
       hackgen-font
+      ipafont
       nerd-fonts.symbols-only 
       nerd-fonts.fira-code
       nerd-fonts.jetbrains-mono
       nerd-fonts.hack
     ];
     fontconfig.defaultFonts = {
-      serif = ["Noto Serif" "Noto Color Emoji"];
-      sansSerif = ["Noto Sans" "Noto Color Emoji"];
-      monospace = ["JetBrainsMono Nerd Font" "Noto Color Emoji"];
+      serif = ["Noto Serif" "IPAMincho" "Noto Color Emoji"];
+      sansSerif = ["Noto Sans" "IPAGothic" "Noto Color Emoji"];
+      monospace = ["JetBrainsMono Nerd Font" "IPAGothic" "Noto Color Emoji"];
       emoji = ["Noto Color Emoji"];
     };
+    fontconfig.localConf = ''
+      <?xml version="1.0"?>
+      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+      <fontconfig>
+        <!-- Unity Editor: 同梱 Inter では日本語グリフが無いため、IPAGothic をフォールバックに挟む -->
+        <match target="pattern">
+          <test qual="any" name="family"><string>Inter</string></test>
+          <edit name="family" mode="prepend" binding="strong"><string>IPAGothic</string></edit>
+        </match>
+        <match target="pattern">
+          <test qual="any" name="family"><string>Liberation Sans</string></test>
+          <edit name="family" mode="prepend" binding="strong"><string>IPAGothic</string></edit>
+        </match>
+      </fontconfig>
+    '';
   };
   programs.dconf.enable = true;
   networking.firewall.enable = true;
