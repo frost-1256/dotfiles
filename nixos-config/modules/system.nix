@@ -116,10 +116,10 @@
     settings = {
       Resolve = {
         DNS = [
-          "45.90.28.0#3ab36d.dns.nextdns.io"
-          "2a07:a8c0::#3ab36d.dns.nextdns.io"
-          "45.90.30.0#3ab36d.dns.nextdns.io"
-          "2a07:a8c1::#3ab36d.dns.nextdns.io"
+          "45.90.28.0#982ac4.dns.nextdns.io"
+          "2a07:a8c0::#982ac4.dns.nextdns.io"
+          "45.90.30.0#982ac4.dns.nextdns.io"
+          "2a07:a8c1::#982ac4.dns.nextdns.io"
         ];
 
         DNSOverTLS = true;
