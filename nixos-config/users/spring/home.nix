@@ -45,6 +45,7 @@
     pavucontrol
     protonup-qt
     protontricks
+    proton-authenticator
     icoutils
     wine
     gpu-screen-recorder-gtk
