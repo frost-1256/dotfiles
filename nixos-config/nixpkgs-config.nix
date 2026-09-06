@@ -6,5 +6,6 @@
   allowUnfree = true;
   permittedInsecurePackages = [
     "electron-38.8.4"
+    "keybase-gui-6.5.1"
   ];
 }

@@ -20,10 +20,6 @@
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    gpu-screen-recorder-ui = {
-      url = "github:rPlakama/gsr-ui-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     run-vm.url = "github:frost-1256/run-vm";
     discord-rpc.url = "github:frost-1256/discord-rpc";
     discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
@@ -39,7 +35,6 @@
       nix-hazkey,
       noctalia,
       niri,
-      gpu-screen-recorder-ui,
       run-vm,
       nixos-vrchat,
       ...
@@ -84,7 +79,10 @@
           # standalone HM にも niri overlay を適用し、home/niri が参照する
           # niri-unstable / xwayland-satellite-unstable 等を解決する
           # (NixOS では modules/niri.nix が同じ overlay を当てている)。
-          overlays = [ niri.overlays.niri ];
+          overlays = [
+            (import ./overlays/niri-compat.nix)
+            niri.overlays.niri
+          ];
         };
 
       mkHomeConfiguration =
@@ -126,7 +124,6 @@
               noctalia.nixosModules.default
 
               niri.nixosModules.niri
-              gpu-screen-recorder-ui.nixosModules.default
               run-vm.nixosModules.default
               nixos-vrchat.nixosModules.default
 

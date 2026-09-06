@@ -341,11 +341,14 @@
           ])
         ])
         (plain "lid-open" [
+          # hazkey-server だけでは fcitx5 側のコネクタが張り付いたままなので
+          # fcitx5 も一緒に再起動する (After 依存により起動順は保証される)
           (leaf "spawn" [
             "systemctl"
             "--user"
             "restart"
             "hazkey-server"
+            "fcitx5-daemon.service"
           ])
         ])
       ])

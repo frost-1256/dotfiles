@@ -3,6 +3,7 @@
   niri-flake.cache.enable = true;
 
   nixpkgs.overlays = [
+    (import ../overlays/niri-compat.nix)
     inputs.niri.overlays.niri
   ];
 

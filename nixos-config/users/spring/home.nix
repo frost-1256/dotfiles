@@ -56,7 +56,6 @@
     thunderbird
     teams-for-linux
     tealdeer
-    keepassxc
     tmux
     vesktop
     transmission_4-qt

@@ -33,7 +33,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 ## モジュール・設定の罠
 
-- `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + Hyprland の有効化と gnome-keyring の mkForce false が本体
+- `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + Hyprland + gnome-keyring の有効化が本体（gnome-keyring はかつて mkForce false だったが有効化に転換済み）
 - flake の `specialArgs` / `extraSpecialArgs` で `username` と `inputs` が全モジュールに注入される。モジュール引数で `{ username, ... }` / `{ inputs, ... }` を取れるのが前提
 - `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixos-config/nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
@@ -45,6 +45,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 - `frost-1256/run-vm`, `frost-1256/discord-rpc`, `frost-1256/nixos-vrchat` はユーザー自身のリポジトリ。挙動のおかしい箇所はこれらの input 側が原因のことがある
 - `noctalia` は cachix ブランチピン、`niri` は sodiboo/niri-flake（overlay + `niri-unstable` パッケージ、cachix 有効）
+- nixpkgs から `libdisplay-info_0_2` が削除されたが niri-flake がまだ要求するため、`overlays/niri-compat.nix` で現行 `libdisplay-info` を 0.2.0 として見せて互換化している（mkPkgs と modules/niri.nix の両方に適用、niri-flake 側が対応したら削除）。`gpu-screen-recorder` の UI は外部 flake `gsr-ui-nix` がオプション衝突を起こすため削除済み。nixpkgs 内蔵の `programs.gpu-screen-recorder.ui` を使うこと
 
 ## コミット・コメントのクセ
 
