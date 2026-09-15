@@ -6,12 +6,9 @@
 }:
 {
   home.packages = with pkgs; [
-    (runCommand "gh-zsh-completion" { } ''
-      mkdir -p $out/share/zsh/site-functions
-      ${lib.getExe gh} completion -s zsh > $out/share/zsh/site-functions/_gh
-    '')
     pure-prompt
     zsh-completions
+    carapace
     ripgrep
     fd
     sd
@@ -35,10 +32,29 @@
 
   programs.bottom.enable = true;
 
+  programs.carapace = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  programs.gh = {
+    enable = true;
+    # home.packages の github-cli と二重に入るのを避けるためこちらに一本化
+    # _gh 補完はパッケージ付属 + carapace で拾われる
+    # 既存 config.yml から移植 (残りは gh デフォルトと同じ値なので省略)
+    settings = {
+      git_protocol = "https";
+      aliases = {
+        co = "pr checkout";
+      };
+    };
+  };
+
   programs.eza = {
     enable = true;
     icons = "auto";
     git = true;
+    enableZshIntegration = true;
   };
 
   programs.fzf = {
@@ -57,13 +73,29 @@
     defaultKeymap = "emacs";
 
     completionInit = ''
+      # --- zstyle は compinit より前に定義する ---
+      # 大文字小文字・ハイフン/アンダースコアを無視
+      zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}' 'r:|=*' 'l:|=* r:|=*'
+      # メニュー選択・色付け・グループ表示
+      zstyle ':completion:*' menu select
+      zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
+      zstyle ':completion:*' group-name ""
+      zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
+      zstyle ':completion:*:warnings' format '%F{red}-- no matches --%f'
+      zstyle ':completion:*' verbose true
+      # キャッシュで高速化 (~/.cache/zsh)
+      zstyle ':completion:*' use-cache on
+      zstyle ':completion:*' cache-path ${config.xdg.cacheHome}/zsh/zcompcache
+      mkdir -p ${config.xdg.cacheHome}/zsh
+
       autoload -Uz compinit
       zcompdump=${config.home.homeDirectory}/.zcompdump
 
-      if [[ -f $zcompdump ]]; then
-        compinit -C -d $zcompdump
-      else
+      # 24時間以内のダンプは -C で即時読込、それ以外は再生成して陳腐化を防ぐ
+      if [[ -n $zcompdump(#qN.mh+24) ]]; then
         compinit -d $zcompdump
+      else
+        compinit -C -d $zcompdump
       fi
     '';
 
@@ -95,7 +127,10 @@
       cd = "z";
     };
 
-    setOptions = [ "NO_NOMATCH" ];
+    setOptions = [
+      "NO_NOMATCH"
+      "EXTENDED_GLOB"
+    ];
 
     plugins = [
       {
@@ -156,12 +191,23 @@
         autoload -Uz promptinit
         promptinit
         prompt pure
+
+        # --- distrobox コンテナ内ではプロンプト先頭にコンテナ名を表示 ---
+        # pure の precustom フックが psvar[22] (custom prefix) を描画するので、
+        # PROMPT を直接書き換えずにここへ載せる。ホストでは何もしない。
+        function prompt_pure_precustom {
+          [[ -f /run/.containerenv ]] || return 0
+          local cname
+          cname=$(sed -n 's/^name="\([^"]*\)"/\1/p' /run/.containerenv)
+          [[ -n $cname ]] && psvar[22]="(distrobox:$cname)"
+        }
       '')
     ];
   };
 
   programs.direnv = {
     enable = true;
+    enableZshIntegration = true;
     nix-direnv.enable = true;
   };
 }

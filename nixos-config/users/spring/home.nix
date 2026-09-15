@@ -36,7 +36,7 @@
     fastfetch
     nix-search-cli
     vrcx
-    github-cli
+    # gh は home/shell の programs.gh に一本化 (補完付き)
     nwg-displays
     obsidian
     keybase
