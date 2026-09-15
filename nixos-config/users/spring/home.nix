@@ -60,6 +60,7 @@
     vesktop
     transmission_4-qt
     podman-desktop
+    rustdesk
   ];
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。

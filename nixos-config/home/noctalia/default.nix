@@ -1,3 +1,30 @@
+{ pkgs, ... }:
+let
+  # 起動時に NetworkManager より先に Noctalia が立ち上がると、WiFi ウィジェットが
+  # disconnected のまま接続確立に追随できなくなる（v5.0.1 で確認）。
+  # ログイン時点で既に connected なら何もしないでちらつきを防ぎ、
+  # 未接続のときだけ接続確立を待って一度だけ noctalia を再同期する。
+  wifiResync = pkgs.writeShellScript "noctalia-wifi-resync" ''
+    set -eu
+    export PATH="/run/current-system/sw/bin:$PATH"
+
+    is_connected() {
+      [ "$(nmcli -t -f STATE general status 2>/dev/null || true)" = "connected" ]
+    }
+
+    if is_connected; then
+      exit 0
+    fi
+
+    for _ in $(seq 1 60); do
+      sleep 2
+      if is_connected; then
+        systemctl --user restart noctalia.service
+        exit 0
+      fi
+    done
+  '';
+in
 {
   programs.noctalia = {
     enable = true;
@@ -57,5 +84,19 @@
         };
       };
     };
+  };
+
+  systemd.user.services.noctalia-wifi-resync = {
+    Unit = {
+      Description = "Sync Noctalia WiFi widget after NetworkManager connects";
+      After = [ "noctalia.service" ];
+      Wants = [ "noctalia.service" ];
+    };
+    Service = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${wifiResync}";
+    };
+    Install.WantedBy = [ "default.target" ];
   };
 }

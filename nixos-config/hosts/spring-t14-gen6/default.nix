@@ -18,6 +18,8 @@
     ../../modules/podman.nix
     ../../modules/steam.nix
     ../../modules/unity.nix
+    ../../modules/tailscale.nix
+    ../../modules/smb.nix
     ./hardware-configuration.nix
   ];
 
