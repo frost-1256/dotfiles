@@ -62,6 +62,7 @@
     podman-desktop
     rustdesk
     distrobox
+    anydesk
     distrobox-tui
   ];
 
