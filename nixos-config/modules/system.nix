@@ -110,6 +110,7 @@
   };
   programs.dconf.enable = true;
   networking.firewall.enable = true;
+  networking.firewall.allowedUDPPorts = [ 9999 ];
   services.resolved = {
     enable = true;
 

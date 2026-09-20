@@ -17,6 +17,7 @@
     ../../home/noctalia
     ../../home/wezterm
     ../../home/kitty
+    ../../home/omp
     ../../home/core.nix
   ];
   # nm-applet / blueman-applet の自動起動を無効化
@@ -40,6 +41,7 @@
     nwg-displays
     obsidian
     keybase
+    gthumb
     aria2
     keybase-gui
     pavucontrol

@@ -25,6 +25,7 @@
     discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
     nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
     nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
+    omp.url = "github:can1357/oh-my-pi";
   };
 
   outputs =
@@ -37,6 +38,7 @@
       niri,
       run-vm,
       nixos-vrchat,
+      omp,
       ...
     }@inputs:
     let
@@ -44,6 +46,7 @@
         noctalia.homeModules.default
         nix-hazkey.homeModules.hazkey
         nixvim.homeModules.nixvim
+	omp.homeManagerModules.default
         ./users/${username}/home.nix
       ];
 
