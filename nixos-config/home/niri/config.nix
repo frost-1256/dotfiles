@@ -258,6 +258,14 @@
           (flag "maximize-column")
         ])
 
+        (plain "Mod+V" [
+          (flag "toggle-window-floating")
+        ])
+
+        (plain "Mod+Shift+Space" [
+          (flag "switch-focus-between-floating-and-tiling")
+        ])
+
         (plain "Mod+U" [
           (flag "focus-workspace-up")
         ])
