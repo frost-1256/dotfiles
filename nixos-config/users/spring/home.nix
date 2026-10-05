@@ -103,9 +103,7 @@
     enable = true;
     enableSshSupport = false;
 
-    pinentry.package = (pkgs.pinentry-curses.override { withLibsecret = false; });
-    # GUIなら:
-    # pinentry.package = pkgs.pinentry-qt;
+    pinentry.package = pkgs.pinentry-gnome3;
   };
 
   # set-SSH_AUTH_SOCK.service が basic.target の後に順序付けられて
