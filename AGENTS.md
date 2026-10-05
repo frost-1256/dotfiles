@@ -56,6 +56,14 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
   - VRR の確認手段（i915/xe 側に専用 debugfs は無いが、**DRM core** が connector ごとに `vrr_range` を作る）: `sudo cat /sys/kernel/debug/dri/0/eDP-1/vrr_range`（=EDID の範囲、この機体は 40–60Hz）、`drm_info | grep VRR_ENABLED`（=1 で有効）、PSR 排他（VRR 有効中は PSR が必ず off / `sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status`）。`niri msg output eDP-1 vrr on|off [--on-demand]` で一時的に A/B できる（config には保存されない）。`i915_` 接頭辞は i915/xe 共有の display コード由来で、GPU ドライバは xe
   - 検証ツール **`nixos-config/scripts/vrr-check.c`**（単一 C ファイル・依存なし・read-only）: `cc -O2 -o vrr-check vrr-check.c` で実行ファイル 1 個。vrr_capable / VRR_ENABLED / EDID レンジ / vblank 周期の実測（基準周期より 10% 以上長い周期が出たら adaptive sync 動作中。VRR off のぶれは ±0.1%）を出す。`-n` 計測スキップ / `-v` プロパティ dump。distrobox の Ubuntu 24.04 で動作確認済み（コンテナ内は `podman exec --user 1000`。container root は uid/gid 未マップで /dev/dri/card0 が EPERM になる）
 
+## omp (oh-my-pi)
+
+- omp 本体とグローバル設定は `home/omp/default.nix` の `programs.omp` 一点に集約（flake input `omp` = `github:can1357/oh-my-pi` の HM モジュール）
+- **`enable = true;` を落とすと omp が PATH から消える**。モジュールは `config = lib.mkIf cfg.enable` で `home.packages` 追加と config 生成 activation の両方を括っているので、`programs.omp.settings` だけ書くと設定もパッケージも無効になる（rebuild 後に `zsh: command not found: omp` になる症状）
+- `~/.omp/agent/config.yml` は HM switch のたびに宣言値で**上書き（writable copy、symlink ではない）**される。omp が flock + 原子的 rename で書き換えるため store symlink にできない。TUI `/settings` や `omp config set` の結果は次の switch で消えるので、変えた分は `settings` に落とす
+- 非デフォルト設定の抽出（TUI 変更 → Nix 同期）: 空 `PI_CODING_AGENT_DIR` で `omp config list --json` を取ると全キーのデフォルトが得られる。実効値と diff して差分だけを `settings` に書く。デフォルトと同値のキーは書かない（上流の既定変更を受けられるように）
+- `models.yml`（カスタム provider/model 定義）と `keybindings.yml` はモジュール非対応で `config.yml` とは別ファイル
+
 ## 自作 flake input
 
 - `frost-1256/run-vm`, `frost-1256/discord-rpc`, `frost-1256/nixos-vrchat` はユーザー自身のリポジトリ。挙動のおかしい箇所はこれらの input 側が原因のことがある
