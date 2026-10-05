@@ -1,14 +1,12 @@
 # modules/perf-mode.nix
 # 電源モードの実行時切り替えを一手に引き受ける一式。
 #
-# ・governor / platform_profile / Intel iGPU 最低クロックを、再ビルド無しで
-#   toggle できるようにする。
+# ・governor / Intel iGPU 最低クロックを、再ビルド無しで toggle できるようにする。
+#   platform_profile は ppd が管理するため perf-apply からは触らない。
 # ・sysfs への書き込みは root が要るので、引数固定(high|balanced)の専用ヘルパ
 #   perf-apply に対してだけ NOPASSWD sudo を許可する(スコープを最小化)。
 # ・platform_profile/EPP は power-profiles-daemon(polkit, パスワード不要)に任せ、
 #   perf-apply は governor と iGPU クロックの sysfs 書き込みだけを担当する。
-# ・Waybar の custom/perf は perf-status-icon を exec、クリックで perf-toggle、
-#   signal=9(SIGRTMIN+9)で即時更新する(lid.nix と同じ作法)。
 # ・ppd のプロファイル(balanced / power-saver)でも低電力時にカクつかないよう、
 #   power-tune が EPP / HWP dynamic boost を補正する(下の power-tune を参照)。
 { pkgs, ... }:
@@ -20,17 +18,20 @@ let
   perf-apply = pkgs.writeShellScriptBin "perf-apply" ''
     case "$1" in
       high)
-        gov=performance; profile=performance; clock=rp0 ;;
+        gov=performance; clock=rp0 ;;
       balanced)
-        gov=powersave;   profile=balanced;    clock=rpe ;;
+        gov=powersave;   clock=rpe ;;
       *)
         echo "usage: perf-apply high|balanced" >&2; exit 2 ;;
     esac
 
+    # platform_profile は書かない。ppd が GFileMonitor で監視しており、外部から
+    # 書き換えると「ドライバが自力で切り替えた」と解釈して ActiveProfile を追随させる
+    # (power-saver が balanced に化ける)。プロファイル変更は呼び出し側
+    # (perf-toggle / highperf / balanced) の powerprofilesctl set に一本化する。
     for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
       [ -w "$c/scaling_governor" ] && echo "$gov" > "$c/scaling_governor"
     done
-    [ -w /sys/firmware/acpi/platform_profile ] && echo "$profile" > /sys/firmware/acpi/platform_profile
 
     for card in /sys/class/drm/card[0-9]*; do
       # i915: rp0 は最低クロックを最大に固定、rpe はドライバ既定のまま解放する。
@@ -69,8 +70,6 @@ let
       sudo ${perf-apply}/bin/perf-apply high
       ${pkgs.libnotify}/bin/notify-send -a Perf -i battery-charging "電源モード" "高性能 (給電時 VR 用)"
     fi
-    # Waybar の custom/perf を即時更新する(signal=9 → SIGRTMIN+9)。
-    ${pkgs.procps}/bin/pkill -RTMIN+9 waybar 2>/dev/null || true
   '';
 
   # Waybar 表示用。JSON(text/class/tooltip)を返し、状態でアイコン・色を変える。

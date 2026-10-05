@@ -25,12 +25,14 @@
     virt-viewer
   ];
 
+  # 注意: vfio_virqfd は kernel 6.x で vfio 本体に統合済みでモジュールが無い。
+  # 書くと systemd-modules-load が毎回
+  # "Failed to find module 'vfio_virqfd'" を出すので入れない。
   boot.kernelModules = [
     "kvm-intel"
     "vfio"
     "vfio_iommu_type1"
     "vfio_pci"
-    "vfio_virqfd"
   ];
   boot.extraModprobeConfig = "options kvm_intel nested=1";
 

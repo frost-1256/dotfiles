@@ -9,6 +9,19 @@
 {
   disabledModules = [ "programs/wayland/noctalia.nix" ];
 
+  # btrfs 圧縮 (新規書き込み分から適用)。store はテキスト比率が高く zstd で
+  # 1.5〜2 倍程度の削減が見込める。noatime は書き込み量を減らす。
+  # 既存データは GC / 再ビルドで順次置き換わる (/nix の defragment は
+  # reflink を壊すので実行しない)。
+  fileSystems."/nix".options = [
+    "compress=zstd"
+    "noatime"
+  ];
+  fileSystems."/home".options = [
+    "compress=zstd"
+    "noatime"
+  ];
+
   imports = [
     ../../modules/system.nix
     ../../modules/perf-mode.nix

@@ -34,6 +34,8 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 ## モジュール・設定の罠
 
 - `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + Hyprland + gnome-keyring の有効化が本体（gnome-keyring はかつて mkForce false だったが有効化に転換済み）
+- `modules/virtualisation.nix` の `boot.kernelModules` に `vfio_virqfd` を**入れない**: kernel 6.x で vfio 本体に統合されてモジュールが消えており、書くと `systemd-modules-load` が毎起動 `Failed to find module 'vfio_virqfd'` を出す
+- ボリューム削減の設定（2026-10 追加）: `/nix` と `/home` に btrfs `compress=zstd,noatime`（`hosts/spring-t14-gen6/default.nix`。反映は reboot か `mount -o remount /nix /home`）、`documentation.doc.enable = false`（HTML マニュアル + `nixos-help` を削除、man は残す）、`environment.defaultPackages` から perl を除外、`system.disableInstallerTools = true`、`nix.settings.auto-optimise-store = true`（system closure は 30427 → 30275 MiB）。既存 store を hardlink 最適化するには `sudo nix store optimise`（自動では新規追加分のみ）
 - flake の `specialArgs` / `extraSpecialArgs` で `username` と `inputs` が全モジュールに注入される。モジュール引数で `{ username, ... }` / `{ inputs, ... }` を取れるのが前提
 - `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixos-config/nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
@@ -46,7 +48,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - ホストは T14 Gen6 / Core Ultra 5 228V（Lunar Lake）。intel_pstate active + HWP、iGPU は **xe** ドライバ（`/sys/class/drm/card0/device/tile*/gt*/freq0` に min_freq 等）
 - 実測（P-core 固定・同一ワークロード）: 持続時間 performance 248ms / balance_performance 264ms / **power 693ms**、3秒アイドル後の初動 34ms / 60ms / (もっと遅い)。体感速度も初動のもたつき（=「ワンテンポ遅れる」）もほぼ EPP で決まる
 - ppd の割り当て: performance→EPP=performance + platform=performance、balanced→balance_power(バッテリ)/balance_performance(AC) + balanced、power-saver→**EPP=power** + platform=**low-power**（PL1 が 37W→10W。time window は 28 秒なのでバーストは効く）
-- **`/sys/firmware/acpi/platform_profile` を外部から書いてはいけない**: ppd が GFileMonitor で監視しており「ドライバが自力で切り替えた」と解釈して ActiveProfile を追随させる（power-saver が balanced に化ける）。EPP は監視されていないので上書き可
+- **`/sys/firmware/acpi/platform_profile` を外部から書いてはいけない**: ppd が GFileMonitor で監視しており「ドライバが自力で切り替えた」と解釈して ActiveProfile を追随させる（power-saver が balanced に化ける）。EPP は監視されていないので上書き可。`perf-apply` は governor / iGPU クロックのみを書き、このファイルには触らない（プロファイル変更は呼び出し側の `powerprofilesctl set` に一本化）
 - ppd は EPP を「プロファイル変更 / AC・バッテリ切替 / レジューム」の 3 契機で書き戻す。`modules/perf-mode.nix` の `power-tune` は同じ 3 契機（state.ini の path unit・AC の udev uevent・suspend.target）で再適用する。state.ini は atomic rename なので watch はディレクトリ単位にする
 - **AC 抜き差しのレース**: ppd の EPP 書き戻しは UPower 経由で非同期に少し遅れて来るため、udev 契機の即時 1 回では負ける（実測: 2026-10-05 12:36:23 に再適用した直後に ppd が EPP=power を書き戻した）。そのため AC / レジュームは `power-tune-delayed`（1,2,4,8 秒後に複数回再適用、冪等）経由で叩く。プロファイル変更は ppd が state.ini を書く前に EPP を書くので即時 1 回で勝てる
 - `hwp_dynamic_boost=1`（power-tune が設定）: I/O 待ち復帰直後だけ最低 P-state を上げる HWP 機能。低電力時の初動もたつきを消す

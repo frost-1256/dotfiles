@@ -25,6 +25,10 @@
   programs.zsh.enableGlobalCompInit = false;
 
   nix.settings = {
+    # store 内の同一ファイルを hardlink で重複排除する。
+    # btrfs に自動 dedup は無く、現状 GC ログも
+    # "note: hard linking is currently saving 0.0 KiB" になっている。
+    auto-optimise-store = true;
     experimental-features = [
       "nix-command"
       "flakes"
@@ -48,6 +52,20 @@
   # allowUnfree / permittedInsecurePackages は nixpkgs-config.nix で一元管理
   # (flake.nix の mkPkgs と同一設定を共有)。
   nixpkgs.config = import ../nixpkgs-config.nix;
+
+  # --- rebuild / closure を軽くする削減 ---
+  # HTML マニュアル (nixos-manual-html, 約 29MiB) と nixos-help を落とす。
+  # man configuration.nix(5) は documentation.man 側なので残る。
+  documentation.doc.enable = false;
+
+  # 既定の perl / rsync / strace のうち perl を外す (closure が一番重い)。
+  environment.defaultPackages = with pkgs; [
+    rsync
+    strace
+  ];
+
+  # nixos-install / nixos-generate-config を system profile から外す。
+  system.disableInstallerTools = true;
 
   time.timeZone = "Asia/Tokyo";
 

@@ -46,7 +46,7 @@
         noctalia.homeModules.default
         nix-hazkey.homeModules.hazkey
         nixvim.homeModules.nixvim
-	omp.homeManagerModules.default
+        omp.homeManagerModules.default
         ./users/${username}/home.nix
       ];
 
