@@ -91,12 +91,18 @@
       autoload -Uz compinit
       zcompdump=${config.home.homeDirectory}/.zcompdump
 
-      # 24時間以内のダンプは -C で即時読込、それ以外は再生成して陳腐化を防ぐ
-      if [[ -n $zcompdump(#qN.mh+24) ]]; then
-        compinit -d $zcompdump
+      # ダンプが無い / 24 時間より古いときだけフル compinit で再生成し、
+      # それ以外は -C で読み込むだけにして起動パスからスキャンを外す。
+      # 注意: `[[ -n $zcompdump(#qN.mh+24) ]]` は `[[ ]]` 内では glob 展開されず
+      # 常に真になり、毎回フル compinit（実測 +0.6 秒）になっていた。
+      # glob qualifier は必ず外側で展開すること。
+      zcompdump_stale=( ${config.home.homeDirectory}/.zcompdump(N.mh+24) )
+      if (( $#zcompdump_stale )); then
+        compinit -d "$zcompdump"
       else
-        compinit -C -d $zcompdump
+        compinit -C -d "$zcompdump"
       fi
+      unset zcompdump_stale
     '';
 
     history = {

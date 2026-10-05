@@ -19,6 +19,11 @@
   # home-manager 側で zsh を管理しても、NixOS 側でシェルを許可する必要がある。
   programs.zsh.enable = true;
 
+  # /etc/zshrc は無条件に `autoload -U compinit && compinit`（-C なし）を実行するため、
+  # 起動ごとに ~0.4 秒かかる。compinit は home/shell/default.nix の completionInit が
+  # 唯一の呼び出し元になるよう、システム側は無効化する。
+  programs.zsh.enableGlobalCompInit = false;
+
   nix.settings = {
     experimental-features = [
       "nix-command"
