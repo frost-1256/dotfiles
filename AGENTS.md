@@ -62,6 +62,18 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - **罠**: `[[ -n $var(#qN.mh+24) ]]` は `[[ ]]` 内では glob 展開されず**常に真**。そのため毎回フル compinit（= ダンプ全走査、起動 +0.6 秒）になっていた。glob qualifier は `zcompdump_stale=( $HOME/.zcompdump(N.mh+24) )` のように `[[ ]]` の外で展開する
 - **罠**: 検証で HM 管理の dotfile リンク（`~/.zshrc` 等）を一時的に差し替えたあと戻すときは `readlink -f` を使わない。store の実体へ直接張り直すと HM activation が `Existing file ... would be clobbered` で失敗する。`readlink`（= `.../home-manager-files/.zshrc` 形式）で復元する
 
+## nvim (nixvim)
+
+- `home/nvim/default.nix` が唯一の nvim 設定（flake input `nixvim` の HM モジュール）。`~/.config/nvim/init.lua` は HM が生成する symlink（`programs.nixvim.nixpkgs.*` 以外はすべて nixvim の `plugins.*` で書く。`extraPlugins`/`extraConfigLua` は原則使わない）
+- **tree-sitter は nvim-treesitter を使わない**（nvim 0.12 で core に統合、本家は archived）。parser は `nvim-treesitter-parsers.<lang>`、queries は `nvim-treesitter.queries.<lang>` を `extraPlugins` に入れて Nix 固定し、`:TSInstall` 等が必要な言語だけ `tree-sitter-manager.nvim`（`buildVimPlugin` + `fetchFromGitHub` で固定）で実行時導入する。manager には `assume_installed` で Nix 固定言語を渡す（二重管理防止）
+  - **罠**: core には tree-sitter の `indentexpr` が無い（`vim.treesitter.indentexpr` は存在しない）。nvim-treesitter を外すと TS ベースのインデントは失われ、Vim の filetype indent にフォールバックする
+  - manager が parser を clone/ビルドできるよう `extraPackages = [ git gcc tree-sitter ]` を nvim の PATH に追加している
+- **LSP**: `plugins.lsp.servers.{nixd,lua_ls}.enable`
+  - **罠**: `plugins.lsp.servers.<name>.settings` は nixvim がルートキー（lua_ls → `Lua = {}`、nixd → `nixd = {}`）で包む。`settings` 側にそのキーを書くと二重になる（例: `Lua.Lua.runtime`）
+  - `plugins.cmp.autoEnableSources = false` にしているので、LSP の補完能力は `plugins.lsp.capabilities` に `cmp_nvim_lsp.default_capabilities()` を明示的に足している（auto-enable 任せだと入らない）
+- **罠**: nixvim は `nixpkgs.source` から**独自に pkgs を作る**ため、NixOS 側の `nixpkgs.config`（allowUnfree 等）が引き継がれない。`programs.nixvim.nixpkgs.config = import ../../nixpkgs-config.nix;` を渡さないと `barbar-nvim`（unfree 扱い）で評価が落ちる
+- ビルド検証は `nix build --impure --no-link --print-out-paths --expr '(builtins.getFlake "/home/spring/dotfiles/nixos-config").nixosConfigurations.spring-t14-gen6.config.home-manager.users.spring.programs.nixvim.build.package'`。実機確認は `XDG_CONFIG_HOME` に生成 init.lua を置いて headless 起動（`xdg.configFile."nvim/init.lua".source` で store path が取れる）
+
 ## omp (oh-my-pi)
 
 - omp 本体とグローバル設定は `home/omp/default.nix` の `programs.omp` 一点に集約（flake input `omp` = `github:can1357/oh-my-pi` の HM モジュール）
