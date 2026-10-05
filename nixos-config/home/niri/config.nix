@@ -39,8 +39,10 @@
       ])
 
       # 背景ブラー
+      # passes は 1 で十分(3 pass は 1920x1200 で GPU 負荷が約 3 倍になり、
+      # power-saver の PL1=10W 下でドラッグ中などにカクつく)。見た目の差は小さい。
       (plain "blur" [
-        (leaf "passes" 3)
+        (leaf "passes" 1)
         (leaf "offset" 2.0)
         (leaf "noise" 0.02)
         (leaf "saturation" 1.2)
@@ -109,6 +111,9 @@
         (leaf "scale" 1.0)
         (leaf "transform" "normal")
         (leaf "mode" "1920x1200@60")
+        # パネル(AUO B140UAN02.7)が VRR 対応。フレーム提示が vblank 待ちから
+        # 解放され、遅延とジャダーが減る(この niri では引数なし=常時有効)。
+        (flag "variable-refresh-rate")
         (leaf "position" {
           x = 0;
           y = 0;

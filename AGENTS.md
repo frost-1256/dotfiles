@@ -38,8 +38,23 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixos-config/nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
 - ブランチ `portable-hm` は非 NixOS（macOS 含む）向け home-manager 専用。main にマージする前提で分離されている
-- `modules/perf-mode.nix`: sysfs 書き込みは NOPASSWD sudo を `perf-apply` にのみ許可するスコープ最小化設計。bar の即時更新は signal（RTMIN+9）方式
+- `modules/perf-mode.nix`: sysfs 書き込みは NOPASSWD sudo を `perf-apply` にのみ許可するスコープ最小化設計。bar の即時更新は signal（RTMIN+9）方式。`perf-apply balanced` は iGPU 下限を既定の rpe に戻すだけで rpn(100MHz) まで下げない（DVFS の立ち上がりが間に合わずカクつくため）
 - 固有机能: fprintd（TOD goodix ドライバ + hid-multitouch unbind udev ルール）、NextDNS DoT、Syncthing で `~/Passwords`（KeePassXC）同期、VRChat/Unity 一式（`modules/unity.nix` に fzf ベースの `unity` CLI ラッパ、ALCOM/vrc-get、unityhub:// ハンドラ）
+
+## 電源プロファイル (power-profiles-daemon) 周
+
+- ホストは T14 Gen6 / Core Ultra 5 228V（Lunar Lake）。intel_pstate active + HWP、iGPU は **xe** ドライバ（`/sys/class/drm/card0/device/tile*/gt*/freq0` に min_freq 等）
+- 実測（P-core 固定・同一ワークロード）: 持続時間 performance 248ms / balance_performance 264ms / **power 693ms**、3秒アイドル後の初動 34ms / 60ms / (もっと遅い)。体感速度も初動のもたつき（=「ワンテンポ遅れる」）もほぼ EPP で決まる
+- ppd の割り当て: performance→EPP=performance + platform=performance、balanced→balance_power(バッテリ)/balance_performance(AC) + balanced、power-saver→**EPP=power** + platform=**low-power**（PL1 が 37W→10W。time window は 28 秒なのでバーストは効く）
+- **`/sys/firmware/acpi/platform_profile` を外部から書いてはいけない**: ppd が GFileMonitor で監視しており「ドライバが自力で切り替えた」と解釈して ActiveProfile を追随させる（power-saver が balanced に化ける）。EPP は監視されていないので上書き可
+- ppd は EPP を「プロファイル変更 / AC・バッテリ切替 / レジューム」の 3 契機で書き戻す。`modules/perf-mode.nix` の `power-tune` は同じ 3 契機（state.ini の path unit・AC の udev uevent・suspend.target）で再適用する。state.ini は atomic rename なので watch はディレクトリ単位にする
+- **AC 抜き差しのレース**: ppd の EPP 書き戻しは UPower 経由で非同期に少し遅れて来るため、udev 契機の即時 1 回では負ける（実測: 2026-10-05 12:36:23 に再適用した直後に ppd が EPP=power を書き戻した）。そのため AC / レジュームは `power-tune-delayed`（1,2,4,8 秒後に複数回再適用、冪等）経由で叩く。プロファイル変更は ppd が state.ini を書く前に EPP を書くので即時 1 回で勝てる
+- `hwp_dynamic_boost=1`（power-tune が設定）: I/O 待ち復帰直後だけ最低 P-state を上げる HWP 機能。低電力時の初動もたつきを消す
+- power-tune は power-saver の EPP を `balance_performance` へ書き戻す（ppd 既定の `power` は持続/初動とも 2〜3 倍遅い）。PL1=10W は温存するので持続消費の上限は ppd のまま。さらにキビキビさせたい時は `balance_performance` → `performance`、省電力を優先するなら `balance_power` にこの 1 箇所だけ変える
+- Niri の `blur passes` は 1（3 pass は GPU 負荷が約 3 倍になり、power-saver の PL1=10W 下でカクつく）
+- Niri の `output "eDP-1"` に `variable-refresh-rate`（引数なし=常時有効）。パネルは VRR 対応で、vblank 待ちから解放され遅延・ジャダーが減る。ちらつく場合はこの 1 行を外す
+  - VRR の確認手段（i915/xe 側に専用 debugfs は無いが、**DRM core** が connector ごとに `vrr_range` を作る）: `sudo cat /sys/kernel/debug/dri/0/eDP-1/vrr_range`（=EDID の範囲、この機体は 40–60Hz）、`drm_info | grep VRR_ENABLED`（=1 で有効）、PSR 排他（VRR 有効中は PSR が必ず off / `sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status`）。`niri msg output eDP-1 vrr on|off [--on-demand]` で一時的に A/B できる（config には保存されない）。`i915_` 接頭辞は i915/xe 共有の display コード由来で、GPU ドライバは xe
+  - 検証ツール **`nixos-config/scripts/vrr-check.c`**（単一 C ファイル・依存なし・read-only）: `cc -O2 -o vrr-check vrr-check.c` で実行ファイル 1 個。vrr_capable / VRR_ENABLED / EDID レンジ / vblank 周期の実測（基準周期より 10% 以上長い周期が出たら adaptive sync 動作中。VRR off のぶれは ±0.1%）を出す。`-n` 計測スキップ / `-v` プロパティ dump。distrobox の Ubuntu 24.04 で動作確認済み（コンテナ内は `podman exec --user 1000`。container root は uid/gid 未マップで /dev/dri/card0 が EPERM になる）
 
 ## 自作 flake input
 

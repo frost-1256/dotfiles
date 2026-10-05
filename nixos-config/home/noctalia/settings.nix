@@ -1,10 +1,12 @@
 {
+  # Dracula カスタムパレットを使う
   theme = {
     mode = "dark";
     source = "custom";
     custom_palette = "Dracula";
-    builtin = "Kanagawa";
-    wallpaper_scheme = "m3-tonal-spot";
+    builtin = "Dracula";
+    community_palette = "Catppuccin Mocha Lavender";
+    wallpaper_scheme = "m3-monochrome";
   };
 
   wallpaper = {
@@ -25,15 +27,22 @@
     niri_overview_type_to_launch_enabled = true;
     polkit_agent = true;
     screen_time_enabled = true;
+    avatar_path = "/home/spring/Pictures/images.jpg";
+    password_style = "random";
     animation.speed = 2.5;
     shadow.direction = "center";
+    launcher = {
+      compact = true;
+      show_app_actions = true;
+    };
     panel = {
       open_near_click_control_center = true;
-      open_near_click_launcher = true;
+      open_near_click_launcher = false;
       open_near_click_clipboard = true;
       open_near_click_wallpaper = true;
-      session_position = "center";
+      session_position = "auto";
     };
+    window_switcher.style = "compact";
   };
 
   bar.default.start = [
@@ -55,9 +64,21 @@
 
   bar.default.background_opacity = 0.5;
 
+  bar.default.contact_shadow = true;
+
   bar.default.dead_zone.actions.right = "none";
 
   battery.warning_threshold = 20;
+
+  brightness.minimum_brightness = 0.1;
+
+  calendar = {
+    enabled = true;
+    account.personal_google = {
+      name = "Google Calender";
+      type = "google";
+    };
+  };
 
   control_center.shortcuts = [
     { type = "wifi"; }
@@ -68,7 +89,14 @@
     { type = "power_profile"; }
   ];
 
+  control_center.calendar.show_events_card = false;
+
   location.auto_locate = true;
+
+  osd = {
+    background_opacity = 0.5;
+    border = false;
+  };
 
   idle = {
     behavior_order = [
@@ -79,12 +107,12 @@
       "screen-off" = {
         timeout = 300;
         action = "screen_off";
-        enabled = true;
+        enabled = false;
       };
       suspend = {
         timeout = 420;
         action = "lock_and_suspend";
-        enabled = true;
+        enabled = false;
       };
     };
   };
@@ -102,11 +130,13 @@
       visible = true;
     };
     widget."lockscreen-login-box@eDP-1" = {
-      box_height = 229.0;
+      box_height = 196.0;
       box_width = 810.0;
       cx = 960.0;
       cy = 1061.5;
       output = "eDP-1";
+      placement_height = 1200.0;
+      placement_width = 1920.0;
       rotation = 0.0;
       type = "login_box";
       settings = {
@@ -122,6 +152,7 @@
         show_login_button = true;
         show_media = true;
         show_session_buttons = true;
+        show_unlock_hint = true;
         show_weather = true;
       };
     };
@@ -131,6 +162,8 @@
       cx = 960.0;
       cy = 72.0;
       output = "eDP-1";
+      placement_height = 1200.0;
+      placement_width = 1920.0;
       rotation = 0.0;
       type = "clock";
       settings = {
