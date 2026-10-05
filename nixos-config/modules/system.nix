@@ -64,8 +64,10 @@
     strace
   ];
 
-  # nixos-install / nixos-generate-config を system profile から外す。
-  system.disableInstallerTools = true;
+  # 注意: system.disableInstallerTools は使わない。nixos-install /
+  # nixos-generate-config / nixos-option だけでなく nixos-rebuild(-ng) 本体も
+  # system path から消えるため、rebuild の主経路 (sudo nixos-rebuild switch) が
+  # 死ぬ。
 
   time.timeZone = "Asia/Tokyo";
 
