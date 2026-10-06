@@ -25,6 +25,7 @@
     discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
     nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
     nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     omp.url = "github:can1357/oh-my-pi";
   };
 
@@ -38,6 +39,7 @@
       niri,
       run-vm,
       nixos-vrchat,
+      chaotic,
       omp,
       ...
     }@inputs:
@@ -129,6 +131,7 @@
               niri.nixosModules.niri
               run-vm.nixosModules.default
               nixos-vrchat.nixosModules.default
+              chaotic.nixosModules.default
 
               {
                 _module.args.inputs = inputs;
