@@ -21,6 +21,13 @@
     tint_intensity = 0.3;
   };
 
+  lockscreen = {
+    # 空 Enter でも PAM (顔認証) まで回す。既定 false では空 submit が無視され、
+    # ロック画面で Enter だけ押しても顔が起動しない。
+    # 注意: ウェイク時の誤キーで pam_faillock が進む可能性あり (上流ドキュメント)。
+    allow_empty_password = true;
+  };
+
   shell = {
     font_family = "JetBrains Mono";
     launch_apps_as_systemd_services = true;

@@ -152,19 +152,50 @@
       storage.unlock_gnome_keyring = true;
       # 上の前提条件。既定 true だが明示する。
       liveness.enabled = true;
+      # ハイブリッド判定は "or" (RGB・IR のどちらか通れば OK)。
+      # 既定は両方必須 (RGB 暗所時のみ IR に委譲) だが、この個体の IR は
+      # emitter 未制御で明暗が安定しないため、厳格側に倒すと誤拒否が増える。
+      security.hybrid_policy = "or";
       # IR カメラ (Chicony 04f2:b840)。ランタイム側で PipeWire target に
       # 解決されていたのでその値を採用 (/dev/video2 指定からの変更)。
       # emitter は LED が自動点灯しない時だけ true にする
       # (b840 は上流 ir-profiles 未収録。doctor の報告で判断)。
       cameras.ir = "pipewiresrc target-object=v4l2_input.pci-0000_00_14.0-usb-0_4_1.2";
-      # RGB・IR 同時キャプチャ (ランタイム側で auto になっていた)。
-      cameras.parallel_capture = "auto";
-      # 推論は Lunar Lake NPU (ランタイム側で auto/npu になっていた)。
-      # 効いているかは `gaze doctor --benchmark` で確認。ダメなら CPU に戻す。
+      # RGB・IR 同時キャプチャは "never" (逐次) に固定。
+      # "auto" だと単一 UVC 機器なのに並列と誤判定してストリームが壊れ、
+      # 検出が間欠的に空振りする (上流 troubleshooting の既知事項)。
+      cameras.parallel_capture = "never";
+      # 推論は Lunar Lake NPU。/usr/lib/gaze/runtimes/openvino/ 以下
+      # (下の tmpfiles で用意) に vendor ORT + library-path が要る。
+      # 検出空振りの真因は並列キャプチャ側だったため NPU に戻す。
+      # 初期化失敗時は daemon が CPU にフォールバックする。
       inference.execution_provider = "auto";
       inference.device = "npu";
     };
   };
+
+  # Gaze NPU ランタイム登録 (`/usr/lib` は不変なので tmpfiles で symlink)。
+  # daemon は library-path を読んで LD_LIBRARY_PATH 付きで自己 re-exec し、
+  # libonnxruntime.so を dlopen する。nixpkgs の onnxruntime は OpenVINO EP
+  # 付き (libonnxruntime_providers_openvino.so 同梱) のため vendor ビルド不要。
+  # /dev/accel/accel0 は world RW のため gazed の到達性に問題なし。
+  systemd.tmpfiles.rules =
+    let
+      sdkLibDirs = [
+        "${pkgs.onnxruntime}/lib"
+        "${pkgs.openvino.lib}/lib"
+        "${pkgs.intel-npu-driver}/lib"
+        "${pkgs.level-zero}/lib"
+      ];
+    in
+    [
+      "d /usr/lib/gaze/runtimes/openvino 0755 root root -"
+      "L+ /usr/lib/gaze/runtimes/openvino/libonnxruntime.so - - - - ${pkgs.onnxruntime}/lib/libonnxruntime.so.1"
+      # EP の解決は vendor lib と同ディレクトリから行われるため providers も置く。
+      "L+ /usr/lib/gaze/runtimes/openvino/libonnxruntime_providers_openvino.so - - - - ${pkgs.onnxruntime}/lib/libonnxruntime_providers_openvino.so"
+      "L+ /usr/lib/gaze/runtimes/openvino/libonnxruntime_providers_shared.so - - - - ${pkgs.onnxruntime}/lib/libonnxruntime_providers_shared.so"
+      "L+ /usr/lib/gaze/runtimes/openvino/library-path - - - - ${pkgs.writeText "gaze-openvino-library-path" (builtins.concatStringsSep ":" sdkLibDirs)}"
+    ];
 
   system.stateVersion = "26.11"; # Did you read the comment?
 }
