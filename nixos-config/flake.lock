@@ -371,6 +371,26 @@
         "url": "https://flakehub.com/f/DeterminateSystems/flake-schemas/%3D0.5.0.tar.gz"
       }
     },
+    "gaze": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791302073,
+        "narHash": "sha256-WzJuTrXf1cQpuxOAquBBFahSvbEXmG8HGdOOwXHqa7c=",
+        "owner": "GunduLabs",
+        "repo": "gaze",
+        "rev": "7000012379161c9c7a13ab5559dc9b7e3d3cb7d8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "GunduLabs",
+        "repo": "gaze",
+        "type": "github"
+      }
+    },
     "git-hooks": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -872,6 +892,7 @@
         "ccusage": "ccusage",
         "chaotic": "chaotic",
         "discord-rpc": "discord-rpc",
+        "gaze": "gaze",
         "home-manager": "home-manager_2",
         "llm-agents": "llm-agents",
         "niri": "niri",

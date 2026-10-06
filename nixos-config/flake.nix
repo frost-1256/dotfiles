@@ -27,6 +27,8 @@
     nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     omp.url = "github:can1357/oh-my-pi";
+    gaze.url = "github:GunduLabs/gaze";
+    gaze.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -40,6 +42,7 @@
       run-vm,
       nixos-vrchat,
       chaotic,
+      gaze,
       omp,
       ...
     }@inputs:
@@ -132,6 +135,7 @@
               run-vm.nixosModules.default
               nixos-vrchat.nixosModules.default
               chaotic.nixosModules.default
+              gaze.nixosModules.default
 
               {
                 _module.args.inputs = inputs;

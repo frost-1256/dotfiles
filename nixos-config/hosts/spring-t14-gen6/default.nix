@@ -117,5 +117,54 @@
     ui.enable = true;
   };
 
+  # Face or Fingerprint の OR 構成:
+  # - ロック画面: Noctalia が指紋を D-Bus で常時待ち受け (指を置けば即解除)、
+  #   Enter → PAM で顔 → パスワード。PAM 側の fprintd は外す
+  #   (Noctalia が reader を握る設計で二重に要らない。外さないと Enter 後に
+  #   「指を置け」と二度聞かれる)。
+  # - sudo/su/polkit-1: PAM 内で顔 (最大12秒) → 指紋 → パスワードの順。
+  #   前に座っていれば顔で即通る。
+  # 注意: `login` から fprintd を外すと GDM・TTY ログインの指紋は消える
+  # (顔・パスワードは残る)。戻す時はこの 1 行を消す。
+  security.pam.services.login.fprintAuth = false;
+  services.gaze = {
+    enable = true;
+    gui.enable = true;
+    pam.defaultServices = [
+      "sudo"
+      "polkit-1"
+      "login"
+      "su"
+    ];
+    # keyring 受け渡しは gdm-face サービス経由でしか起きない (pam_gaze の仕様)。
+    # GDM の greeter は GNOME Shell なので Niri でも extension 方式が使える。
+    # enableForUsers=false で Niri 側ユーザセッションの dconf には触らない。
+    gnome = {
+      enable = true;
+      enableForUsers = false;
+      gdmFaceLogin = true;
+    };
+    settings = {
+      # TPM で顔テンプレートを暗号化 (要 TPM 2.0。/dev/tpmrm0 あり)。
+      storage.encrypt_templates = true;
+      # GDM 顔ログイン後の GNOME Keyring 自動アンロック
+      # (要 encrypt_templates + liveness。登録は `gaze keyring`)。
+      storage.unlock_gnome_keyring = true;
+      # 上の前提条件。既定 true だが明示する。
+      liveness.enabled = true;
+      # IR カメラ (Chicony 04f2:b840)。ランタイム側で PipeWire target に
+      # 解決されていたのでその値を採用 (/dev/video2 指定からの変更)。
+      # emitter は LED が自動点灯しない時だけ true にする
+      # (b840 は上流 ir-profiles 未収録。doctor の報告で判断)。
+      cameras.ir = "pipewiresrc target-object=v4l2_input.pci-0000_00_14.0-usb-0_4_1.2";
+      # RGB・IR 同時キャプチャ (ランタイム側で auto になっていた)。
+      cameras.parallel_capture = "auto";
+      # 推論は Lunar Lake NPU (ランタイム側で auto/npu になっていた)。
+      # 効いているかは `gaze doctor --benchmark` で確認。ダメなら CPU に戻す。
+      inference.execution_provider = "auto";
+      inference.device = "npu";
+    };
+  };
+
   system.stateVersion = "26.11"; # Did you read the comment?
 }
