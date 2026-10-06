@@ -114,7 +114,9 @@ let
       echo 1 > "$boost"
     fi
 
-    [ "$(${ppd} get 2>/dev/null)" = power-saver ] || exit 0
+    # ppd 未起動の起動直後は D-Bus 呼び出しが固まるため timeout 付き
+    # (素の powerprofilesctl get が約50秒ブロックし boot 完了を引き留めていた)。
+    [ "$(${pkgs.coreutils}/bin/timeout 5 ${ppd} get 2>/dev/null)" = power-saver ] || exit 0
 
     for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
       pref="$c/energy_performance_preference"
@@ -165,9 +167,14 @@ in
 
   systemd.services.power-tune = {
     description = "Re-apply EPP / HWP dynamic boost for power-profiles-daemon";
-    wantedBy = [ "multi-user.target" ];
+    # multi-user.target の WantedBy に入れない: Type=oneshot は完了まで target 到達を
+    # 引き留める。ppd は multi-user 到達後に起動するため、起動直後の powerprofilesctl が
+    # D-Bus タイムアウト(約50秒)まで固まり userspace 68秒の主因になっていた。
+    # 起動時は power-tune.path / udev / power-tune-delayed からの trigger で足りる。
+    after = [ "power-profiles-daemon.service" ];
     serviceConfig = {
       Type = "oneshot";
+      TimeoutStartSec = "30s";
       ExecStart = "${power-tune}/bin/power-tune";
     };
   };

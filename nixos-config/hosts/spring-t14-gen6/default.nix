@@ -44,6 +44,11 @@
     };
     systemd-boot.enable = true;
   };
+  # ブートメニュー待ちを短縮 (loader 5.7秒 → 約2秒。世代選択時は起動時に Space 長押し)。
+  boot.loader.timeout = 2;
+  # SSD の TRIM を週次で実行 (timer のみで boot 時のコストは無い)。
+  # 長期的な書き込み性能の劣化を防ぐ。
+  services.fstrim.enable = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
