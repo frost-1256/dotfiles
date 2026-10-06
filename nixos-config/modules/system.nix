@@ -182,6 +182,11 @@
 
   services.pulseaudio.enable = false;
 
+  # 画面読み上げ (speech-dispatcher + mbrola 音声で約 0.7GB)。
+  # NixOS が graphical desktop 向けの既定 (mkDefault) で入れるが、
+  # orca 不使用なら不要。無効化で closure から落ちる。
+  services.speechd.enable = false;
+
   security.polkit.enable = true;
   security.pam.services.polkit-1.fprintAuth = true;
 
@@ -190,34 +195,90 @@
     tod.enable = true;
     tod.driver = pkgs.libfprint-2-tod1-goodix;
   };
-  # fprintd 自動復旧 (2026-10-06 実測)。
+  # fprintd 自動復旧。指紋センサは USB の Synaptics 06cb:00f9 (TOD goodix driver)。
   # resume で USB デバイスが黙って切れ、fprintd は死んだ handle を握ったまま claim を保持する。
-  # 以後 Claim は "Device was already claimed" で全滅し、さらに client の Release 時に
-  # 「Error closing device after disconnect: transfer timed out」→ fprint_device_release で
-  # SIGSEGV(core-dump)。SEGV 後の endpoint halt は fprintd の restart だけでは消えず
-  # (Ignoring device ... endpoint stalled が出続ける)、USB の unbind/bind で再列挙させる
-  # 必要がある。3 方向から同じ recover unit を叩く。
+  # 以後 Claim は "already claimed" で全滅し、client の Release 時に transfer timed out →
+  # fprint_device_release で SIGSEGV。endpoint halt は restart では消えず USB 再列挙が要る。
+  # さらにこのセンサは resume 毎に degraded 化する (列挙できるのに NoEnrolledPrints /
+  # transfer failed。restart 無効・unbind/bind のみ有効。2026-10-07 00:02/00:11 実測)。
+  # resume 後に unit から restart すると noctalia の再 arm (PrepareForSleep(false) の
+  # 約 14ms 後) と衝突して NoReply になり同セッション permanent dead
+  # (2026-10-06 23:37:51 実測) のため、D-Bus activation 待ちで直列化する:
+  # 睡眠前に止め (presuspend)、resume 後の初回利用時に ExecStartPre が USB 再列挙して
+  # から起動する。呼び出し側はバスが最大 25 秒待つので競合しない。通常の idle 復帰は
+  # stamp 判定で素通しする。
   systemd.services.fprintd.serviceConfig = {
     Restart = "on-failure";
     RestartSec = "2s";
+    # 上流 unit は ProtectSystem=strict + ProtectKernelTunables で /sys が
+    # read-only のため、ExecStartPre からの unbind/bind には例外が要る
+    # (無いと Read-only file system で再列挙が黙って死ぬ。00:42:09 実測)。
+    ReadWritePaths = [
+      "/sys/bus/usb/drivers/usb"
+      "/sys/bus/usb/devices"
+    ];
+    ExecStartPre = [
+      "${pkgs.writeShellScript "fprintd-usb-cycle" ''
+        set -u
+        pre=/run/fprintd-presuspend-stamp
+        cyc=/run/fprintd-usb-cycled
+        force=/run/fprintd-force-cycle
+        need=0
+        # 睡眠を跨いだ直後の初回起動だけ再列挙する (通常の idle 復帰は素通し)。
+        if [ -e "$pre" ] && { [ ! -e "$cyc" ] || [ "$pre" -nt "$cyc" ]; }; then need=1; fi
+        # guard 経由の強制再列挙 (crash 後の stall 用)。
+        if [ -e "$force" ]; then rm -f "$force"; need=1; fi
+        [ "$need" = 0 ] && exit 0
+        cycled=0
+        for d in /sys/bus/usb/devices/*; do
+          [ -f "$d/idVendor" ] || continue
+          [ "$(cat "$d/idVendor")" = 06cb ] || continue
+          [ "$(cat "$d/idProduct")" = 00f9 ] || continue
+          dev=''${d##*/}
+          echo "fprintd-usb-cycle: re-enumerating USB device $dev"
+          if echo "$dev" > /sys/bus/usb/drivers/usb/unbind; then
+            ${pkgs.coreutils}/bin/sleep 1
+            if echo "$dev" > /sys/bus/usb/drivers/usb/bind; then
+              cycled=1
+            else
+              echo "fprintd-usb-cycle: bind failed for $dev" >&2
+            fi
+          else
+            echo "fprintd-usb-cycle: unbind failed for $dev (sandbox?)" >&2
+          fi
+          # bind 直後の probe は Entity not found で Ignoring device になる
+          # (00:14:40 実測)。settle してから daemon 本体を起動する。
+          ${pkgs.coreutils}/bin/sleep 2
+          # udev の add rule が再適用されるはずだが、念のため明示的に常時給電へ。
+          [ -w "$d/power/control" ] && echo on > "$d/power/control"
+        done
+        # デバイス不在でも起動は通す (daemon が空列挙を正直に返す)。
+        # stamp は実際に回せた時だけ (失敗時は次回起動で再試行する)。
+        [ "$cycled" = 1 ] && ${pkgs.coreutils}/bin/touch "$cyc"
+      ''}"
+    ];
   };
+  # 睡眠前 stop (sleep.target の Before で実 sleep より確定的に先)。
+  # 停止自体は 30 秒 idle 終了と同等で無害。stamp を残し resume 後初回起動の
+  # 再列挙目印にする。
+  systemd.services.fprintd-presuspend = {
+    description = "Stop fprintd before sleep so no stale claim crosses suspend/resume";
+    wantedBy = [ "sleep.target" ];
+    before = [ "sleep.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutStartSec = "15s";
+      ExecStart = "${pkgs.writeShellScript "fprintd-presuspend" ''
+        set -u
+        ${pkgs.systemd}/bin/systemctl stop fprintd.service
+        ${pkgs.coreutils}/bin/touch /run/fprintd-presuspend-stamp
+      ''}";
+    };
+  };
+  # guard からの復旧専用 (resume 契機では叩かない)。force stamp + restart のみで
+  # USB 再列挙の実作業は ExecStartPre に一本化 (二重化しない)。
   systemd.services.fprintd-recover = {
-    description = "Re-enumerate fingerprint sensor and restart fprintd";
-    # ppd の EPP 書き戻しと同じく resume 直後はデバイスが落ち着いていないことがあるため、
-    # suspend 系 target 群からは復帰後に active になるこちらのサービスで叩く
-    # (power-tune-delayed と同じ pattern)。
-    after = [
-      "suspend.target"
-      "hibernate.target"
-      "hybrid-sleep.target"
-      "suspend-then-hibernate.target"
-    ];
-    wantedBy = [
-      "suspend.target"
-      "hibernate.target"
-      "hybrid-sleep.target"
-      "suspend-then-hibernate.target"
-    ];
+    description = "Force USB re-enumeration and restart fprintd";
     serviceConfig = {
       Type = "oneshot";
       TimeoutStartSec = "30s";
@@ -236,33 +297,8 @@
             *) return 1 ;;
           esac
         }
+        ${pkgs.coreutils}/bin/touch /run/fprintd-force-cycle
         $ctl restart fprintd.service
-        # D-Bus activation 完了を最大 5 秒待つ (SEGV 直後の連打で起動中の場合に備える)。
-        for _ in 1 2 3 4 5 6 7 8 9 10; do
-          have_device && exit 0
-          ${pkgs.coreutils}/bin/sleep 0.5
-        done
-        # デバイスが列挙されない = endpoint が halt している。
-        # USB から外して挿し直す (実機検証済み: unbind で :1.0 消滅、bind で再列挙、
-        # その後の fprintd-list 正常)。30 秒 idle で自死しないよう stop してから触る。
-        found=0
-        for d in /sys/bus/usb/devices/*; do
-          [ -f "$d/idVendor" ] || continue
-          [ "$(cat "$d/idVendor")" = 06cb ] || continue
-          [ "$(cat "$d/idProduct")" = 00f9 ] || continue
-          found=1
-          dev=''${d##*/}
-          echo "fprintd-recover: re-enumerating USB device $dev"
-          $ctl stop fprintd.service
-          echo "$dev" > /sys/bus/usb/drivers/usb/unbind
-          ${pkgs.coreutils}/bin/sleep 1
-          echo "$dev" > /sys/bus/usb/drivers/usb/bind
-          ${pkgs.coreutils}/bin/sleep 1
-          # udev の add rule が再適用されるはずだが、念のため明示的に常時給電へ。
-          [ -w "$d/power/control" ] && echo on > "$d/power/control"
-        done
-        [ "$found" = 1 ] || { echo "fprintd-recover: sensor not found on USB"; exit 1; }
-        $ctl start fprintd.service
         for _ in 1 2 3 4 5 6 7 8 9 10; do
           have_device && exit 0
           ${pkgs.coreutils}/bin/sleep 0.5
@@ -272,9 +308,9 @@
       ''}";
     };
   };
-  # ジャーナル監視: resume 契機以外 (起動中の自然切断 "device was disconnected" /
-  # crash "code=dumped" / init 失敗 "Ignoring device") で死んだ handle・halt を検知。
-  # guard 自体は passive (fprintd に触らない) で、復旧は recover に一本化する。
+  # ジャーナル監視 ("device was disconnected" / "transfer timed out" /
+  # "transfer failed" / "code=dumped" / "Ignoring device")。passive に検知だけし、
+  # 復旧は recover に一本化する。
   systemd.services.fprintd-guard = {
     description = "Watch fprintd journal and trigger fprintd-recover on device loss";
     wantedBy = [ "multi-user.target" ];
@@ -289,7 +325,7 @@
         ${pkgs.systemd}/bin/journalctl -f -n0 -o cat -u fprintd |
         while IFS= read -r line; do
           case "$line" in
-            *'device was disconnected'*|*'transfer timed out'*|*'Ignoring device due to initialization error'*|*'code=dumped'*)
+            *'device was disconnected'*|*'transfer timed out'*|*'transfer failed'*|*'Ignoring device due to initialization error'*|*'code=dumped'*)
               if ${pkgs.systemd}/bin/systemctl start --wait fprintd-recover.service; then
                 delay=10
               else

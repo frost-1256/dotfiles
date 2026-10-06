@@ -1,0 +1,196 @@
+Suspend/resume (and USB re-enumeration / daemon restarts in general) makes
+the first VerifyStart after wake fail with NoReply, ClaimDevice,
+NoEnrolledPrints or NoSuchDevice while the device is still settling. Only
+ClaimDevice was retried; anything else left the lock session without working
+fingerprint until re-lock. Poll transient failures with backoff instead, and
+re-arm silently-dead verifications via a watchdog.
+
+Bounded (16 x 500ms) so a genuinely print-less setup still gives up and
+falls back to password exactly like before. Existing test contracts are kept:
+disconnect still does not re-arm, foreign claims are left alone.
+
+Upstream: github:noctalia-dev/noctalia (cachix), rev 4237bc28.
+Local carry until upstream handles more than ClaimDevice.
+
+--- a/src/auth/fingerprint_authenticator.cpp
++++ b/src/auth/fingerprint_authenticator.cpp
+@@ -30,6 +30,15 @@
+   constexpr int kMaxRetries = 3;
+   constexpr auto kRetryDelay = std::chrono::milliseconds(250);
+ 
++  // Transient VerifyStart failures (resume races, USB re-enumeration, daemon
++  // restarts) are worth retrying with backoff; genuine absence gives up after
++  // the budget below.
++  constexpr int kStartMaxAttempts = 16;
++  constexpr auto kStartRetryDelay = std::chrono::milliseconds(500);
++  // Silent daemon death mid-verify leaves no reply behind; re-arm periodically.
++  // Fires only while a verification is actually running (see armWatchdog).
++  constexpr auto kVerifyWatchdog = std::chrono::seconds(30);
++
+   enum class MatchResult {
+     Invalid,
+     NoMatch,
+@@ -56,12 +65,6 @@
+     const auto it = kResults.find(result);
+     return it == kResults.end() ? MatchResult::Invalid : it->second;
+   }
+-
+-  bool isRecoverableVerifyStartError(const sdbus::Error& error) {
+-    // Suspend/resume can drop the claim while the proxy survives; only that case is worth
+-    // recreating+reclaiming. Other VerifyStart failures are permanent for this lock attempt.
+-    return error.getName() == sdbus::Error::Name{"net.reactivated.Fprint.Error.ClaimDevice"};
+-  }
+ } // namespace
+ 
+ FingerprintAuthenticator::FingerprintAuthenticator(SystemBus& bus) : m_bus(bus) {
+@@ -77,6 +80,7 @@
+         // the sensor with a stalled endpoint on resume. startVerify() already
+         // refuses to run while m_sleeping, so only the re-arm state needs clearing.
+         m_retryTimer.stop();
++        m_watchdogTimer.stop();
+         m_verifying = false;
+       } else if (m_active && !m_abort) {
+         startVerify(false);
+@@ -104,7 +108,7 @@
+   m_active = true;
+   m_abort = false;
+   m_retries = 0;
+-  m_reclaimAttempted = false;
++  m_startAttempts = 0;
+   if (m_sleeping) {
+     return;
+   }
+@@ -113,6 +117,7 @@
+ 
+ void FingerprintAuthenticator::stop() {
+   m_retryTimer.stop();
++  m_watchdogTimer.stop();
+   m_active = false;
+   m_verifying = false;
+   m_claiming = false;
+@@ -200,6 +205,9 @@
+   if (m_device == nullptr) {
+     if (!createDeviceProxy()) {
+       m_verifying = false;
++      // The daemon may be (re)starting or the device mid re-enumeration
++      // (NoSuchDevice); poll with the same bounded budget.
++      scheduleStartRetry();
+       return;
+     }
+ 
+@@ -218,22 +226,17 @@
+         if (e.has_value()) {
+           kLog.info("could not start fingerprint verification: {}", e->what());
+           m_verifying = false;
+-          // A claim dropped across suspend/resume makes VerifyStart fail with ClaimDevice; drop the
+-          // stale proxy and recreate+reclaim once. Destroying the proxy here would use-after-free
+-          // the async reply handler, so defer the reset until after it returns.
+-          if (!m_reclaimAttempted && m_active && !m_sleeping && !m_abort && isRecoverableVerifyStartError(*e)) {
+-            m_reclaimAttempted = true;
+-            m_retryTimer.start(kRetryDelay, [this]() {
+-              m_device.reset();
+-              startVerify(false);
+-            });
+-            return;
+-          }
+-          emitStatus({}, false); // issue loading: drop the status message
++          // Transient failures (daemon restarting, USB re-enumerating, claim
++          // dropped across suspend/resume) usually clear on their own; poll
++          // with a bounded budget. Destroying the proxy here would
++          // use-after-free the async reply handler, so the reset happens in
++          // the deferred retry instead.
++          scheduleStartRetry();
+           return;
+         }
+         kLog.debug("fingerprint verification started");
+-        m_reclaimAttempted = false;
++        m_startAttempts = 0;
++        armWatchdog();
+         if (isRetry) {
+           m_retries++;
+         }
+@@ -243,6 +246,7 @@
+ 
+ void FingerprintAuthenticator::stopVerify() {
+   m_retryTimer.stop();
++  m_watchdogTimer.stop();
+   m_verifying = false;
+   if (m_device == nullptr) {
+     return;
+@@ -255,6 +259,38 @@
+   }
+ }
+ 
++void FingerprintAuthenticator::armWatchdog() {
++  m_watchdogTimer.start(kVerifyWatchdog, [this]() {
++    if (!m_active || m_sleeping) {
++      return;
++    }
++    // No result and no error for a whole period: the daemon may have died
++    // silently mid-verify. Light re-arm; any failure consumes the retry budget.
++    kLog.debug("fingerprint watchdog fired; re-arming verification");
++    stopVerify();
++    startVerify(false);
++  });
++}
++
++void FingerprintAuthenticator::scheduleStartRetry() {
++  if (!m_active || m_sleeping || m_abort) {
++    return;
++  }
++  if (m_startAttempts >= kStartMaxAttempts) {
++    kLog.info("fingerprint start retries exhausted; giving up for this session");
++    m_abort = true;
++    emitStatus({}, false); // issue loading: drop the status message
++    return;
++  }
++  m_startAttempts++;
++  m_retryTimer.start(kStartRetryDelay, [this]() {
++    // Recreate the proxy: the daemon may have restarted (new bus owner) or the
++    // device may have re-enumerated (new object path) while we were waiting.
++    m_device.reset();
++    startVerify(false);
++  });
++}
++
+ void FingerprintAuthenticator::releaseDevice() {
+   if (m_device == nullptr) {
+     return;
+@@ -280,6 +316,11 @@
+   kLog.debug("verify status: {} (done={})", result, done);
+   const MatchResult match = parseVerifyResult(result);
+ 
++  if (match != MatchResult::Disconnected) {
++    // Any real signal proves the daemon is alive; refresh the watchdog window.
++    armWatchdog();
++  }
++
+   bool authenticated = false;
+   bool retryInPlace = false;
+   // Set when a branch fully owns the post-verify restart decision (capped rearm or deliberate stop),
+--- a/src/auth/fingerprint_authenticator.h
++++ b/src/auth/fingerprint_authenticator.h
+@@ -33,6 +33,8 @@
+   bool createDeviceProxy();
+   void claimDevice();
+   void startVerify(bool isRetry);
++  void armWatchdog();
++  void scheduleStartRetry();
+   void stopVerify();
+   void releaseDevice();
+   void handleVerifyStatus(const std::string& result, bool done);
+@@ -46,12 +48,13 @@
+   StatusCallback m_onStatus;
+ 
+   Timer m_retryTimer;
++  Timer m_watchdogTimer;
+ 
+   bool m_active = false;
+   bool m_verifying = false;
+   bool m_claiming = false;
+   bool m_sleeping = false;
+   bool m_abort = false;
+-  bool m_reclaimAttempted = false;
++  int m_startAttempts = 0;
+   int m_retries = 0;
+ };
