@@ -18,10 +18,6 @@
     "compress=zstd"
     "noatime"
   ];
-  fileSystems."/home".options = [
-    "compress=zstd"
-    "noatime"
-  ];
 
   imports = [
     ../../modules/system.nix
