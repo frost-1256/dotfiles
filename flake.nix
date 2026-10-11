@@ -25,8 +25,8 @@
     # Rust 製のネイティブ Discord クライアント (egui/wgpu)。
     # 上流 flake は packages のみ (nixosModules / homeManagerModules は無い) なので
     # home/serein で home.packages に積むだけになる。
-#    serein.url = "github:ViceVerse-cz/Serein";
-#    serein.inputs.nixpkgs.follows = "nixpkgs";
+    serein.url = "github:ViceVerse-cz/Serein";
+    serein.inputs.nixpkgs.follows = "nixpkgs";
     gaze.inputs.nixpkgs.follows = "nixpkgs";
     # Droidspaces (Android 上の LXC ランタイム) 用 NixOS モジュール。
     # lxc-aarch64 からのみ参照する。follows は付けない (公式手順通り)。
