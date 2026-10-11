@@ -21,6 +21,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - 早めの構文チェックは `nix-instantiate --parse <file>.nix`（評価しない。ファイル単位のタイポ検出に便利）
 - フォーマッタは **`pkgs.nixfmt`**（home/shell/default.nix で導入済み、CI なし）。旧 `nixfmt-rfc-style` は `pkgs.nixfmt` と同一になり deprecated 警告が出るため使わない。編集後は `nixfmt $(git ls-files '*.nix')` で整形、`--check` 付きで差分確認できる。スタイルは nixfmt 準拠（2 インデント）なので手書き時も周りに合わせる
 - `flake.lock` はコミット済み。明示的な依頼なく `nix flake update` しない
+- **罠**: `inputs.<name>` の宣言だけコメントアウトして outputs 引数・モジュール参照・lock を残すと、全ビルドが lock 更新時の `cannot find flake 'flake:<name>'` で落ちる（2026-10-11 実測）。外すなら3箇所まとめて消す、使うなら宣言を戻す
 
 ## デスクトップ周のクセ
 
