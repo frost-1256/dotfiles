@@ -63,6 +63,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - **Niri 統合の要は `login` サービス**: Noctalia のロック画面は PAM `login` 経由で認証し (上流 FAQ)、GDM も login サブスタックを取り込む。`login` に gaze を入れればロック画面・GDM とも顔が効く。hyprlock は不要
 - **Gaze NPU (Lunar Lake intel_vpu)**: daemon は `/usr/lib/gaze/runtimes/<provider>/libonnxruntime.so` + `library-path` を見て LD_LIBRARY_PATH 付き自己 re-exec する。`/usr` 不変のため tmpfiles (`d` + `L+`) で symlink を張る (host default.nix)。nixpkgs の onnxruntime は OpenVINO EP 同梱なので vendor ビルド不要。**罠**: EP 解決は vendor lib と同ディレクトリから行われるため `libonnxruntime_providers_openvino.so` (+ `providers_shared`) も同所に置く (無いと `SessionOptionsAppendExecutionProvider_OpenVINO_V2: Failed to load shared library` になる)。SDK 側は `openvino.lib` (NPU plugin 同梱) + `intel-npu-driver` (libze_intel_npu) + `level-zero` (libze_loader)。`/dev/accel/accel0` は world RW で到達性問題なし。失敗時は daemon が CPU フォールバックする
 - **罠**: `environment.etc` では `/etc/systemd/system` 以下に置けない。NixOS が生成ディレクトリとして source 管理しており `mkdir ... Permission denied` で etc.drv が死ぬ (2026-10-07 実測)。unit の上書きは `systemd.services."<name>@".serviceConfig` (既定 asDropinIfExists で overrides.conf になる) か `systemd.packages` の drop-in 同梱を使う
+- **Noctalia の lockscreen アニメ無効化は `transition = [ ]` (単数形)**。`transitions` (複数形) は黙って無視され既定アニメが残る。復帰時のデスクトップ透けはロック直後サスペンドでのアニメ途中凍結が原因だった (2026-10-07 実測)。キー名の正誤は `nix/.../src/config/schema/config_schema.cpp` で確認する
 - Niri の `blur passes` は 1（3 pass は GPU 負荷が約 3 倍になり、power-saver の PL1=10W 下でカクつく）
 - Niri の `output "eDP-1"` に `variable-refresh-rate`（引数なし=常時有効）。パネルは VRR 対応で、vblank 待ちから解放され遅延・ジャダーが減る。ちらつく場合はこの 1 行を外す
   - VRR の確認手段（i915/xe 側に専用 debugfs は無いが、**DRM core** が connector ごとに `vrr_range` を作る）: `sudo cat /sys/kernel/debug/dri/0/eDP-1/vrr_range`（=EDID の範囲、この機体は 40–60Hz）、`drm_info | grep VRR_ENABLED`（=1 で有効）、PSR 排他（VRR 有効中は PSR が必ず off / `sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status`）。`niri msg output eDP-1 vrr on|off [--on-demand]` で一時的に A/B できる（config には保存されない）。`i915_` 接頭辞は i915/xe 共有の display コード由来で、GPU ドライバは xe
@@ -93,6 +94,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - `~/.omp/agent/config.yml` は HM switch のたびに宣言値で**上書き（writable copy、symlink ではない）**される。omp が flock + 原子的 rename で書き換えるため store symlink にできない。TUI `/settings` や `omp config set` の結果は次の switch で消えるので、変えた分は `settings` に落とす
 - 非デフォルト設定の抽出（TUI 変更 → Nix 同期）: 空 `PI_CODING_AGENT_DIR` で `omp config list --json` を取ると全キーのデフォルトが得られる。実効値と diff して差分だけを `settings` に書く。デフォルトと同値のキーは書かない（上流の既定変更を受けられるように）
 - `models.yml`（カスタム provider/model 定義）と `keybindings.yml` はモジュール非対応で `config.yml` とは別ファイル
+- OpenCode Zen無料枠はopencode UA(1.18以降)/Referer/`ses_`形式セッションでないと403。内蔵`opencode-zen`にはOMPがUUID形式の`x-opencode-session`を後付けするためmodels.ymlのheaders上書きでは消せない → 別名カスタムプロバイダ`zenfix`でZenに向けるのが確実 (カスタム側には後付けが入らないことをnc実測)。`modelRoles.default`は`config.yml`側なのでNixの`settings`にも書くこと。Zen認証は`~/.omp/agent/.env`の`OPENCODE_API_KEY` (600) を使用
 
 ## 自作 flake input
 

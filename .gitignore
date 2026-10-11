@@ -1,2 +1,11 @@
 old-dots
 flake-lock.nix
+
+# Nix ビルド成果物
+/nixos-config/result*
+
+# エディタ・OS の一時ファイル
+*~
+*.swp
+*.swo
+.DS_Store
