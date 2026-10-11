@@ -14,10 +14,6 @@
   # 1.5〜2 倍程度の削減が見込める。noatime は書き込み量を減らす。
   # 既存データは GC / 再ビルドで順次置き換わる (/nix の defragment は
   # reflink を壊すので実行しない)。
-  fileSystems."/nix".options = [
-    "compress=zstd"
-    "noatime"
-  ];
 
   imports = [
     ../../modules/system.nix
