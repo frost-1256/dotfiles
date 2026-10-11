@@ -2,7 +2,7 @@ old-dots
 flake-lock.nix
 
 # Nix ビルド成果物
-/nixos-config/result*
+/result*
 
 # エディタ・OS の一時ファイル
 *~

@@ -204,12 +204,12 @@ in
             enable = true;
             # nixvim が settings を { nixd = ... } で包むのでルートキーは書かない
             settings = {
-              nixpkgs.expr = "import (builtins.getFlake \"/home/spring/dotfiles/nixos-config\").inputs.nixpkgs { }";
+              nixpkgs.expr = "import (builtins.getFlake \"/home/spring/dotfiles\").inputs.nixpkgs { }";
               formatting.command = [ "nixfmt" ];
               # リポジトリのオプション補完を使いたい場合は以下を有効化（評価が重い）
               # options = {
-              #   nixos.expr = "(builtins.getFlake \"/home/spring/dotfiles/nixos-config\").nixosConfigurations.spring-t14-gen6.options";
-              #   home-manager.expr = "(builtins.getFlake \"/home/spring/dotfiles/nixos-config\").nixosConfigurations.spring-t14-gen6.options.home-manager.users.spring";
+              #   nixos.expr = "(builtins.getFlake \"/home/spring/dotfiles\").nixosConfigurations.spring-t14-gen6.options";
+              #   home-manager.expr = "(builtins.getFlake \"/home/spring/dotfiles\").nixosConfigurations.spring-t14-gen6.options.home-manager.users.spring";
               # };
             };
           };

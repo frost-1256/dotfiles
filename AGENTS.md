@@ -4,7 +4,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 ## 基本構成
 
-- Flake は `nixos-config/flake.nix`（git root は `~/dotfiles`、Nix 設定は `nixos-config/` 配下）
+- Flake は `flake.nix`（git root は `~/dotfiles`）
 - ホスト: `spring-t14-gen6`（ThinkPad T14 Gen6 / Intel）。ユーザーは `spring`
 - nixpkgs は `nixos-unstable-small`、カーネル `linuxPackages_latest`、stateVersion `26.11`（system/home 両方）
 - ディレクトリ役割:
@@ -38,7 +38,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - ボリューム削減の設定（2026-10 追加）: `/nix` と `/home` に btrfs `compress=zstd,noatime`（`hosts/spring-t14-gen6/default.nix`。反映は reboot か `mount -o remount /nix /home`）、`documentation.doc.enable = false`（HTML マニュアル + `nixos-help` を削除、man は残す）、`environment.defaultPackages` から perl を除外、`nix.settings.auto-optimise-store = true`。既存 store を hardlink 最適化するには `sudo nix store optimise`（自動では新規追加分のみ）。`services.speechd.enable = false`（graphical-desktop の mkDefault で入る画面読み上げ。orca 不使用なら不要で mbrola voices 含め約 0.7GB 削減）。`/tmp` の Android ROM 残骸（system.new.dat 等）は都度捨てる（9/27 分で約 9GB。10 月分は現役の可能性あり温存）
 - **`system.disableInstallerTools = true` にしてはいけない**: `nixos-install`/`nixos-generate-config`/`nixos-option` だけでなく `nixos-rebuild`(-ng) 本体も system path から消え、`sudo nixos-rebuild switch` が `command not found` になる（2026-10-05 に実際に踏んだ。復旧は前世代の `sw/bin/nixos-rebuild` を絶対パスで叩く）
 - flake の `specialArgs` / `extraSpecialArgs` で `username` と `inputs` が全モジュールに注入される。モジュール引数で `{ username, ... }` / `{ inputs, ... }` を取れるのが前提
-- `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixos-config/nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
+- `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
 - ブランチ `portable-hm` は非 NixOS（macOS 含む）向け home-manager 専用。main にマージする前提で分離されている
 - `modules/perf-mode.nix`: sysfs 書き込みは NOPASSWD sudo を `perf-apply` にのみ許可するスコープ最小化設計。bar の即時更新は signal（RTMIN+9）方式。`perf-apply balanced` は iGPU 下限を既定の rpe に戻すだけで rpn(100MHz) まで下げない（DVFS の立ち上がりが間に合わずカクつくため）
@@ -67,7 +67,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - Niri の `blur passes` は 1（3 pass は GPU 負荷が約 3 倍になり、power-saver の PL1=10W 下でカクつく）
 - Niri の `output "eDP-1"` に `variable-refresh-rate`（引数なし=常時有効）。パネルは VRR 対応で、vblank 待ちから解放され遅延・ジャダーが減る。ちらつく場合はこの 1 行を外す
   - VRR の確認手段（i915/xe 側に専用 debugfs は無いが、**DRM core** が connector ごとに `vrr_range` を作る）: `sudo cat /sys/kernel/debug/dri/0/eDP-1/vrr_range`（=EDID の範囲、この機体は 40–60Hz）、`drm_info | grep VRR_ENABLED`（=1 で有効）、PSR 排他（VRR 有効中は PSR が必ず off / `sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status`）。`niri msg output eDP-1 vrr on|off [--on-demand]` で一時的に A/B できる（config には保存されない）。`i915_` 接頭辞は i915/xe 共有の display コード由来で、GPU ドライバは xe
-  - 検証ツール **`nixos-config/scripts/vrr-check.c`**（単一 C ファイル・依存なし・read-only）: `cc -O2 -o vrr-check vrr-check.c` で実行ファイル 1 個。vrr_capable / VRR_ENABLED / EDID レンジ / vblank 周期の実測（基準周期より 10% 以上長い周期が出たら adaptive sync 動作中。VRR off のぶれは ±0.1%）を出す。`-n` 計測スキップ / `-v` プロパティ dump。distrobox の Ubuntu 24.04 で動作確認済み（コンテナ内は `podman exec --user 1000`。container root は uid/gid 未マップで /dev/dri/card0 が EPERM になる）
+  - 検証ツール **`scripts/vrr-check.c`**（単一 C ファイル・依存なし・read-only）: `cc -O2 -o vrr-check vrr-check.c` で実行ファイル 1 個。vrr_capable / VRR_ENABLED / EDID レンジ / vblank 周期の実測（基準周期より 10% 以上長い周期が出たら adaptive sync 動作中。VRR off のぶれは ±0.1%）を出す。`-n` 計測スキップ / `-v` プロパティ dump。distrobox の Ubuntu 24.04 で動作確認済み（コンテナ内は `podman exec --user 1000`。container root は uid/gid 未マップで /dev/dri/card0 が EPERM になる）
 
 ## zsh 起動速度
 
@@ -85,7 +85,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
   - **罠**: `plugins.lsp.servers.<name>.settings` は nixvim がルートキー（lua_ls → `Lua = {}`、nixd → `nixd = {}`）で包む。`settings` 側にそのキーを書くと二重になる（例: `Lua.Lua.runtime`）
   - `plugins.cmp.autoEnableSources = false` にしているので、LSP の補完能力は `plugins.lsp.capabilities` に `cmp_nvim_lsp.default_capabilities()` を明示的に足している（auto-enable 任せだと入らない）
 - **罠**: nixvim は `nixpkgs.source` から**独自に pkgs を作る**ため、NixOS 側の `nixpkgs.config`（allowUnfree 等）が引き継がれない。`programs.nixvim.nixpkgs.config = import ../../nixpkgs-config.nix;` を渡さないと `barbar-nvim`（unfree 扱い）で評価が落ちる
-- ビルド検証は `nix build --impure --no-link --print-out-paths --expr '(builtins.getFlake "/home/spring/dotfiles/nixos-config").nixosConfigurations.spring-t14-gen6.config.home-manager.users.spring.programs.nixvim.build.package'`。実機確認は `XDG_CONFIG_HOME` に生成 init.lua を置いて headless 起動（`xdg.configFile."nvim/init.lua".source` で store path が取れる）
+- ビルド検証は `nix build --impure --no-link --print-out-paths --expr '(builtins.getFlake "/home/spring/dotfiles").nixosConfigurations.spring-t14-gen6.config.home-manager.users.spring.programs.nixvim.build.package'`。実機確認は `XDG_CONFIG_HOME` に生成 init.lua を置いて headless 起動（`xdg.configFile."nvim/init.lua".source` で store path が取れる）
 
 ## omp (oh-my-pi)
 
@@ -122,5 +122,5 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 ## その他
 
-- `nixos-config/.codex` は中身 0 バイトの残骸。`.gitignore` には `old-dots/` と `flake-lock.nix` がある
+- `.codex` は中身 0 バイトの残骸（既に削除済み）。`.gitignore` には `old-dots/` と `flake-lock.nix` がある
 - i18n は `en_US.UTF-8` ベース + `extraLocaleSettings` で ja_JP を個別指定（fcitx5 + hazkey 入力）
