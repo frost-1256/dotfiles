@@ -26,6 +26,10 @@
     # ロック画面で Enter だけ押しても顔が起動しない。
     # 注意: ウェイク時の誤キーで pam_faillock が進む可能性あり (上流ドキュメント)。
     allow_empty_password = true;
+    # ロックアニメを無効化 (即時ロック)。既定の Fade 1500ms は、ロック直後の
+    # サスペンドでアニメ途中凍結 → 復帰時にデスクトップが見える原因になる。
+    # 罠: キー名は単数形 `transition` (`transitions` は無視される)。
+    transition = [ ];
   };
 
   shell = {

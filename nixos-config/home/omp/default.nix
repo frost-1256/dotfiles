@@ -72,8 +72,72 @@ in
         enableOpencodeUser = true;
         enableClaudeUser = true;
       };
+
+      # 既定モデルは Zen 無料枠 (zenfix 経由。内蔵 opencode-zen は
+      # OMP が UUID 形式の x-opencode-session を後付けして 403 になる)。
+      # config.yml は HM switch で上書きされるため宣言側にも書く。
+      modelRoles.default = "zenfix/muse-spark-1.3-contributor-free";
     };
   };
+
+  # models.yml はモジュール非対応のため home.file で宣言化。
+  # zenfix: 内蔵 opencode-zen の UUID セッション付与を避け、
+  # opencode UA + ses_/msg_ 形式ヘッダで Zen 無料枠を通す。
+  home.file.".omp/agent/models.yml".text = ''
+    providers:
+      zenfix:
+        baseUrl: https://opencode.ai/zen/v1
+        api: openai-completions
+        apiKey: OPENCODE_API_KEY
+        headers:
+          User-Agent: opencode/1.18.31
+          Referer: https://opencode.ai/
+          x-opencode-client: cli
+          x-opencode-session: ses_ee9213315ffeMXYcXtQVAeJ5IB
+          x-opencode-request: msg_0b176f647001bIJxq0BSRHt8pu
+        models:
+          - id: fledge-alpha-free
+            name: Fledge Alpha Free (zenfix)
+            reasoning: true
+            input: [text, image]
+            contextWindow: 1048576
+            maxTokens: 131072
+            thinking:
+              mode: effort
+              efforts: [minimal, low, medium, high, xhigh]
+          - id: muse-spark-1.3-contributor-free
+            name: Muse Spark 1.3 Free (zenfix)
+            api: openai-responses
+            reasoning: true
+            input: [text, image]
+            contextWindow: 1048576
+            maxTokens: 131072
+            thinking:
+              mode: effort
+              efforts: [minimal, low, medium, high, xhigh]
+            compat:
+              supportsReasoningSummary: true
+              includeEncryptedReasoning: false
+              filterReasoningHistory: true
+              replayReasoningContent: false
+              reasoningContentField: reasoning_content
+              allowsSyntheticReasoningContentForToolCalls: true
+      orcarouter:
+        baseUrl: https://api.orcarouter.ai/v1
+        api: openai-completions
+        apiKey: orcakey
+        authHeader: true
+        models:
+          - id: deepseek/deepseek-v4-flash-free
+            name: DeepSeek V4 Flash Free
+            reasoning: false
+            input: [text]
+            contextWindow: 200000
+            maxTokens: 8192
+            compat:
+              supportsDeveloperRole: false
+              maxTokensField: max_tokens
+  '';
 
   home.sessionVariables = walkerEnv;
 }

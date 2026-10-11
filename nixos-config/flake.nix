@@ -9,12 +9,6 @@
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
     nix-hazkey.url = "github:aster-void/nix-hazkey";
     nix-hazkey.inputs.nixpkgs.follows = "nixpkgs";
-    nix-claude-code.url = "github:ryoppippi/nix-claude-code";
-    nix-claude-code.inputs.nixpkgs.follows = "nixpkgs";
-    ccusage.url = "github:ryoppippi/ccusage";
-    ccusage.inputs.nixpkgs.follows = "nixpkgs";
-    llm-agents.url = "github:numtide/llm-agents.nix";
-    llm-agents.inputs.nixpkgs.follows = "nixpkgs";
     noctalia.url = "github:noctalia-dev/noctalia/cachix";
     niri = {
       url = "github:sodiboo/niri-flake";
@@ -28,7 +22,15 @@
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     omp.url = "github:can1357/oh-my-pi";
     gaze.url = "github:GunduLabs/gaze";
+    # Rust 製のネイティブ Discord クライアント (egui/wgpu)。
+    # 上流 flake は packages のみ (nixosModules / homeManagerModules は無い) なので
+    # home/serein で home.packages に積むだけになる。
+#    serein.url = "github:ViceVerse-cz/Serein";
+#    serein.inputs.nixpkgs.follows = "nixpkgs";
     gaze.inputs.nixpkgs.follows = "nixpkgs";
+    # Droidspaces (Android 上の LXC ランタイム) 用 NixOS モジュール。
+    # lxc-aarch64 からのみ参照する。follows は付けない (公式手順通り)。
+    droidspaces.url = "github:ravindu644/Droidspaces-OSS";
   };
 
   outputs =
@@ -44,6 +46,8 @@
       chaotic,
       gaze,
       omp,
+      serein,
+      droidspaces,
       ...
     }@inputs:
     let
@@ -157,6 +161,83 @@
                   enable = true;
                   recommendedServices.enable = true;
                 };
+              }
+            ];
+          };
+
+        spring-desktop =
+          let
+            username = "spring";
+            specialArgs = inputs // {
+              inherit username;
+            };
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit specialArgs;
+            system = "x86_64-linux";
+
+            modules = [
+              noctalia.nixosModules.default
+
+              niri.nixosModules.niri
+              run-vm.nixosModules.default
+              nixos-vrchat.nixosModules.default
+              chaotic.nixosModules.default
+              gaze.nixosModules.default
+
+              {
+                _module.args.inputs = inputs;
+              }
+
+              ./hosts/spring-t14-gen6
+
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+
+                home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
+                home-manager.users.${username}.imports = mkHomeModules username;
+              }
+
+              {
+                programs.noctalia = {
+                  enable = true;
+                  recommendedServices.enable = true;
+                };
+              }
+            ];
+          };
+
+
+        # aarch64 NixOS LXC コンテナ用。既存ホストとは独立した最小構成 +
+        # portable home (nvim + shell + core)。デスクトップ系 flake モジュール
+        # (noctalia / niri / gaze 等) はコンテナに不要なため付けない。
+        lxc-aarch64 =
+          let
+            username = "spring";
+            specialArgs = inputs // {
+              inherit username;
+            };
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit specialArgs;
+            system = "aarch64-linux";
+
+            modules = [
+              # Droidspaces 公式手順 (https://www.droidspaces.org/docs/nix-nixos.html)。
+              # lxc-container.nix の import と tarball ビルド
+              # (system.build.tarball) を提供する。
+              droidspaces.nixosModules.working-droidspaces-rootfs-minimal
+              ./hosts/lxc-aarch64
+
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+
+                home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
+                home-manager.users.${username}.imports = mkPortableHomeModules username;
               }
             ];
           };

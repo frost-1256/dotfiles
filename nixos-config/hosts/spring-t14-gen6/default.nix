@@ -53,11 +53,36 @@
   # CachyOS kernel (chaotic-nyx の既定バリアント = 上流 parity の LTO+BORE)。
   # nyx-cache でバイナリが降ってくるので Hydra のビルド状況は気にしなくて良い。
   boot.kernelPackages = pkgs.linuxPackages_cachyos;
-  # Panel Replay を明示有効 (既定は per-chip auto)。LNL 世代の省電力機能で、
-  # 対応パネルなら PSR より深く DC 側を落とせる。非対応パネルでは何も起きない。
+  # PSR2 を使う (Panel Replay は明示無効)。復帰直後のデスクトップ透け対策の
+  # 切り分けとして、パネル側フレーム保持 (Replay) を外して PSR2 に寄せる。
   # 新しめのカーネルでは VRR との共存に対応しているので Niri 側の VRR は残す。
   # 確認: sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status
-  boot.kernelParams = [ "xe.enable_panel_replay=1" ];
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  # nixbuild.net リモートビルダー (aarch64 カーネル/イメージ用)。
+  # 公開鍵 (~/.ssh/id_ed25519.pub) を https://nixbuild.net/settings/ssh-keys に登録すること。
+  programs.ssh.extraConfig = ''
+    Host eu.nixbuild.net
+      ServerAliveInterval 60
+      IdentityFile /home/spring/.ssh/id_ed25519
+  '';
+  programs.ssh.knownHosts.nixbuild = {
+    hostNames = [ "eu.nixbuild.net" ];
+    publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIQCZc54poJ8vqawd8TraNryQeJnvH1eLpIDgbiqymM";
+  };
+  nix = {
+    distributedBuilds = true;
+    settings.builders-use-substitutes = true;
+    buildMachines = [{
+      hostName = "eu.nixbuild.net";
+      system = "aarch64-linux";
+      maxJobs = 100;
+      supportedFeatures = [ "benchmark" "big-parallel" ];
+    }];
+  };
+  boot.kernelParams = [
+    "xe.enable_psr=2"
+    "xe.enable_panel_replay=0"
+  ];
 
   # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
   # logind 側で suspend してしまうと lid-toggle が効かないため ignore にする。
@@ -116,7 +141,6 @@
     enable = true;
     ui.enable = true;
   };
-
   # Face or Fingerprint の OR 構成:
   # - ロック画面: Noctalia が指紋を D-Bus で常時待ち受け (指を置けば即解除)、
   #   Enter → PAM で顔 → パスワード。PAM 側の fprintd は外す
@@ -127,6 +151,13 @@
   # 注意: `login` から fprintd を外すと GDM・TTY ログインの指紋は消える
   # (顔・パスワードは残る)。戻す時はこの 1 行を消す。
   security.pam.services.login.fprintAuth = false;
+  # `login` では顔を pam_unix の後に回す。空 submit → unix が即失敗 →
+  # 顔 → パスワード不要で解除。パスワード入力済み → unix が即成功し
+  # 顔を待たない (顔→unix の順だと入力後も顔の最大5秒待ちが発生する)。
+  # GDM の顔ログインは gdm-face 経由なので影響なし。sudo/su は顔優先の
+  # まま (端末では空 submit の流れが無いため)。
+  security.pam.services.login.gaze.order =
+    config.security.pam.services.login.rules.auth.unix.order + 10;
   services.gaze = {
     enable = true;
     gui.enable = true;

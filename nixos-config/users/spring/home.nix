@@ -1,7 +1,4 @@
 {
-  ccusage,
-  llm-agents,
-  nix-claude-code,
   pkgs,
   ...
 }:
@@ -18,6 +15,7 @@
     ../../home/wezterm
     ../../home/kitty
     ../../home/omp
+    ../../home/serein
     ../../home/core.nix
   ];
   # nm-applet / blueman-applet の自動起動を無効化
@@ -51,9 +49,6 @@
     icoutils
     wine
     gpu-screen-recorder-gtk
-    nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
-    ccusage.packages.${pkgs.stdenv.hostPlatform.system}.default
-    llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
     mpv
     thunderbird
     teams-for-linux
@@ -66,7 +61,10 @@
     distrobox
     anydesk
     distrobox-tui
+    vm-curator
+    (bottles.override { removeWarningPopup = true; })
   ];
+  
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。
   # Syncthing はファイル単体ではなくフォルダ単位で同期するため、
@@ -81,19 +79,6 @@
         id = "passwords";
         path = "/home/spring/Passwords";
         devices = [ "remote" ];
-      };
-    };
-  };
-  home.file.".claude/settings.json" = {
-    force = true;
-    text = builtins.toJSON {
-      effortLevel = "medium";
-      theme = "auto";
-      statusLine = {
-        type = "command";
-        command = "ccstatusline";
-        padding = 0;
-        refreshInterval = 10;
       };
     };
   };

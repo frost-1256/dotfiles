@@ -103,6 +103,8 @@
         (plain "touchpad" [
           (flag "tap")
           (flag "natural-scroll")
+          # ポインタ感度を上げる (-1.0〜1.0、既定 0.0)。遅い/速いときはこの値を振る
+          (leaf "accel-speed" 0.6)
         ])
       ])
 
@@ -379,6 +381,10 @@
 
       (plain "debug" [
         (flag "honor-xdg-activation-with-invalid-serial")
+        # 復帰時に全出力を modeset し直してブランクにする。
+        # サスペンド中にロック済みでも復帰直後にデスクトップが
+        # 一瞬見える (session lock より先に描画される) 対策。
+        (flag "force-disable-connectors-on-resume")
       ])
     ];
 }

@@ -41,10 +41,12 @@
     substituters = [
       "https://cache.nixos.org/"
       "https://noctalia.cachix.org"
+      "https://nixos-nothing-spacewar.cachix.org"
     ];
     trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+      "nixos-nothing-spacewar.cachix.org-1:TWmfQAaPB47M0zWUX6m2YgjKKu+WJYqwFtt9nR9pZDU="
     ];
   };
 
@@ -164,9 +166,13 @@
     wget
     curl
     git
+    # binary cache クライアント。nixos-nothing-spacewar への push と
+    # 取得可否の確認 (cachix ls-store / cachix watch-store) に使う。
+    cachix
     libimobiledevice
     ifuse
     gnome-firmware
+    cloudflare-warp
 
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-good
@@ -179,6 +185,7 @@
     enable = true;
     package = pkgs.usbmuxd2;
   };
+  services.cloudflare-warp.enable = true;
 
   services.pulseaudio.enable = false;
 
