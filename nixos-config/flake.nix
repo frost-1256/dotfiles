@@ -189,7 +189,7 @@
                 _module.args.inputs = inputs;
               }
 
-              ./hosts/spring-t14-gen6
+              ./hosts/spring-desktop
 
               home-manager.nixosModules.home-manager
               {
