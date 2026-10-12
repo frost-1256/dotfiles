@@ -42,12 +42,16 @@
   # CachyOS kernel (chaotic-nyx の既定バリアント = 上流 parity の LTO+BORE)。
   # nyx-cache でバイナリが降ってくるので Hydra のビルド状況は気にしなくて良い。
   boot.kernelPackages = pkgs.linuxPackages_cachyos;
-  # PSR2 を使う (Panel Replay は明示無効)。復帰直後のデスクトップ透け対策の
-  # 切り分けとして、パネル側フレーム保持 (Replay) を外して PSR2 に寄せる。
-  # 新しめのカーネルでは VRR との共存に対応しているので Niri 側の VRR は残す。
-  # 確認: sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status
+  # simpledrm (platform-simple-framebuffer) の無効化。
+  # このマシンは GTX 1080 単GPUなのに simplefb が card0 として残り、
+  # nvidia が card1 になる二重DRM構成になる。GDM (Mutter) は boot_vga を
+  # 選ぶので無事だが、Niri が無出力側 (card0) に張り付いて真っ暗になる。
+  # コンソールは nvidia-drm fbdev (=1、modprobe で有効) が担うので問題ない。
+  # 組み込み・モジュールのどちらの simpledrm にも効くよう両方書く。
   boot.kernelParams = [
+    "initcall_blacklist=simpledrm_platform_driver_init"
   ];
+  boot.blacklistedKernelModules = [ "simpledrm" ];
 
   # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
   # logind 側で suspend してしまうと lid-toggle が効かないため ignore にする。

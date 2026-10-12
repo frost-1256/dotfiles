@@ -25,6 +25,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - **罠**: `modules/system.nix` の `nix.settings` は完成系の `/etc/nix/nix.conf` にしか効かず、`nixos-install` 実行中の ISO 側 nix には効かない。新規インストールで chaotic カーネル等のソースビルドを避けるため flake 直下に `nixConfig`（extra-substituters / extra-trusted-public-keys）を置いている。インストール時は `nixos-install --accept-flake-config --flake .#<host>` で有効化する。`nixConfig` が無い状態で `--accept-flake-config` を付けても何も起きない（フラグ無しだと `ignoring untrusted flake configuration` で無視される。2026-10-12 実測）
 - `nix.settings.substituters` / `trusted-public-keys` に cache.nixos.org を書かない。NixOS の既定値と連結して重複するだけ（lxc-aarch64 の eval で既定提供を確認済み）
 - `cachix.nix` + `cachix/` は `cachix use` の残骸でどこからも import されていなかったため削除済み（2026-10-12）。復活させない
+- spring-desktop（GTX 1080 単GPU）: simplefb が card0 に残り nvidia が card1 になる二重DRM構成だと、Niri が無出力側に張り付いて GDM ログイン後に真っ暗になる（Mutter は boot_vga を選ぶので GDM 自体は無事）。host 側で simpledrm を無効化する（kernelParams の `initcall_blacklist=simpledrm_platform_driver_init` + `boot.blacklistedKernelModules`。コンソールは nvidia-drm fbdev が担う。2026-10-12）
 
 ## デスクトップ周のクセ
 
