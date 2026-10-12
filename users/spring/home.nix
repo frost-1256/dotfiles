@@ -15,7 +15,6 @@
     ../../home/wezterm
     ../../home/kitty
     ../../home/omp
-    ../../home/serein
     ../../home/core.nix
   ];
   # nm-applet / blueman-applet の自動起動を無効化

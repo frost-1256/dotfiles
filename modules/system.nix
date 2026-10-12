@@ -38,13 +38,13 @@
       "nix-command"
       "flakes"
     ];
+    # cache.nixos.org と鍵は NixOS の既定値が提供するので書かない
+    # (書くと既定と連結して重複するだけ。nyx / niri は各 flake モジュールが足す)。
     substituters = [
-      "https://cache.nixos.org/"
       "https://noctalia.cachix.org"
       "https://nixos-nothing-spacewar.cachix.org"
     ];
     trusted-public-keys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       "nixos-nothing-spacewar.cachix.org-1:TWmfQAaPB47M0zWUX6m2YgjKKu+WJYqwFtt9nR9pZDU="
     ];

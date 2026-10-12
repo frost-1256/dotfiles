@@ -1,6 +1,27 @@
 {
   description = "haru's NixOS and Home-manager configuration";
 
+  # インストール時 (ISO 側 nix) のバイナリキャッシュ。
+  # modules/system.nix の nix.settings は完成系の /etc/nix/nix.conf にしか効かず、
+  # nixos-install 実行中の ISO 側には効かないため、chaotic カーネル等が
+  # ソースビルドになる。これで nixos-install --accept-flake-config --flake .#<host>
+  # とすれば ISO 側でも代替キャッシュが使われる (通常の rebuild には無影響)。
+  # nixConfig に書けるのは extra-* 系のみ。鍵は下の実測値と同一に保つこと。
+  nixConfig = {
+    extra-substituters = [
+      "https://nyx-cache.chaotic.cx/"
+      "https://niri.cachix.org"
+      "https://noctalia.cachix.org"
+      "https://nixos-nothing-spacewar.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk="
+      "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+      "nixos-nothing-spacewar.cachix.org-1:TWmfQAaPB47M0zWUX6m2YgjKKu+WJYqwFtt9nR9pZDU="
+    ];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable-small";
     home-manager.url = "github:nix-community/home-manager";
@@ -22,11 +43,6 @@
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     omp.url = "github:can1357/oh-my-pi";
     gaze.url = "github:GunduLabs/gaze";
-    # Rust 製のネイティブ Discord クライアント (egui/wgpu)。
-    # 上流 flake は packages のみ (nixosModules / homeManagerModules は無い) なので
-    # home/serein で home.packages に積むだけになる。
-    serein.url = "github:ViceVerse-cz/Serein";
-    serein.inputs.nixpkgs.follows = "nixpkgs";
     gaze.inputs.nixpkgs.follows = "nixpkgs";
     # Droidspaces (Android 上の LXC ランタイム) 用 NixOS モジュール。
     # lxc-aarch64 からのみ参照する。follows は付けない (公式手順通り)。
@@ -46,7 +62,6 @@
       chaotic,
       gaze,
       omp,
-      serein,
       droidspaces,
       ...
     }@inputs:

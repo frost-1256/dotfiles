@@ -22,6 +22,9 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - フォーマッタは **`pkgs.nixfmt`**（home/shell/default.nix で導入済み、CI なし）。旧 `nixfmt-rfc-style` は `pkgs.nixfmt` と同一になり deprecated 警告が出るため使わない。編集後は `nixfmt $(git ls-files '*.nix')` で整形、`--check` 付きで差分確認できる。スタイルは nixfmt 準拠（2 インデント）なので手書き時も周りに合わせる
 - `flake.lock` はコミット済み。明示的な依頼なく `nix flake update` しない
 - **罠**: `inputs.<name>` の宣言だけコメントアウトして outputs 引数・モジュール参照・lock を残すと、全ビルドが lock 更新時の `cannot find flake 'flake:<name>'` で落ちる（2026-10-11 実測）。外すなら3箇所まとめて消す、使うなら宣言を戻す
+- **罠**: `modules/system.nix` の `nix.settings` は完成系の `/etc/nix/nix.conf` にしか効かず、`nixos-install` 実行中の ISO 側 nix には効かない。新規インストールで chaotic カーネル等のソースビルドを避けるため flake 直下に `nixConfig`（extra-substituters / extra-trusted-public-keys）を置いている。インストール時は `nixos-install --accept-flake-config --flake .#<host>` で有効化する。`nixConfig` が無い状態で `--accept-flake-config` を付けても何も起きない（フラグ無しだと `ignoring untrusted flake configuration` で無視される。2026-10-12 実測）
+- `nix.settings.substituters` / `trusted-public-keys` に cache.nixos.org を書かない。NixOS の既定値と連結して重複するだけ（lxc-aarch64 の eval で既定提供を確認済み）
+- `cachix.nix` + `cachix/` は `cachix use` の残骸でどこからも import されていなかったため削除済み（2026-10-12）。復活させない
 
 ## デスクトップ周のクセ
 
