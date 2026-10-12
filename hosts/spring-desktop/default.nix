@@ -50,6 +50,12 @@
   # 組み込み・モジュールのどちらの simpledrm にも効くよう両方書く。
   boot.kernelParams = [
     "initcall_blacklist=simpledrm_platform_driver_init"
+    # zswap 明示有効化 (backing は /swap/swapfile。CachyOS 既定も enabled だが宣言的に)。
+    # shrinker はメモリ逼迫時の回収をカーネルに任せる (6.10+ の推奨)。
+    "zswap.enabled=1"
+    "zswap.compressor=zstd"
+    "zswap.max_pool_percent=20"
+    "zswap.shrinker_enabled=1"
   ];
   boot.blacklistedKernelModules = [ "simpledrm" ];
 
@@ -65,22 +71,23 @@
   networking.networkmanager.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
 
-  # メモリ圧時の SSD スワップ代替。zstd 圧縮 RAM 上なので遅くなく、
-  # アイドルページ退避で実効メモリが増える。ノートの体感・消費電力両得。
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-  };
+  # zram から zswap + disk swapfile へ切り替え。
+  # zswap は backing swap デバイスへの書き込み前段キャッシュなので、受け皿の
+  # disk swap が無いと働かない。zram との併用は二重圧縮になるため外す。
+  zramSwap.enable = false;
+
+  # zswap の受け皿。btrfs 上なので /swap を別 subvolume に切り、
+  # 中の swapfile は `btrfs filesystem mkswapfile` で作成する (nocow + prealloc)。
+  swapDevices = [ { device = "/swap/swapfile"; } ];
 
   hardware.bluetooth.enable = true;
 
-  # 最新 Mesa (Lunar Lake の Xe2 iGPU 向け)。無効化時のフォールバック用に
-  # hardware.graphics 側の intel-media-driver 残しはそのままにする。
-  chaotic.mesa-git = {
-    enable = true;
-    extraPackages = with pkgs; [
-    ];
-  };
+  # mesa-git はこのホストでは無効化する。有効化すると hardware.graphics 一式を
+  # mkForce で上書きするため、nvidia モジュールの GL/EGL/GBM 配線まで消えて
+  # /run/opengl-driver が Mesa のみになり、Niri が renderer を作れず無出力で
+  # 真っ黒になる (2026-10-12 実測: driver (null) → no allocator)。
+  # 最新 Mesa が要るのは Lunar Lake 機 (t14) だけで、GTX 1080 機は不要。
+  chaotic.mesa-git.enable = false;
 
   # sched-ext (CachyOS カーネルで利用可)。LAVD は応答性と省電力のバランス型で
   # ノート向け。EPP 側の調整 (perf-mode) とは併用できる。
@@ -133,13 +140,13 @@
       ];
     };
 
+  # NVIDIA の GL/EGL/GBM は hardware.nvidia モジュールが
+  # hardware.graphics.extraPackages へ自動配線する (xserver 不要)。
+  # ここで extraPackages を mkForce するモジュール (mesa-git 等) を
+  # 有効化すると配線ごと消えるので注意 (上記 mesa-git コメント参照)。
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
-
-    extraPackages = with pkgs; [
-
-    ];
   };
 
   programs.gpu-screen-recorder = {

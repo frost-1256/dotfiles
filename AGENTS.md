@@ -35,10 +35,12 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - Noctalia の declarative 設定は `home/noctalia/settings.nix`（`pkgs.formats.toml` で TOML 化）。設定アプリの変更はランタイム側 `~/.local/state/noctalia/settings.toml` に書かれ、Nix には自動で入らない → declarative に落とすときは noctalia-sync skill を使う。反映は `systemctl --user restart noctalia.service`
 - `programs.waybar.enable = lib.mkForce false`（home/niri/config.nix）: Noctalia 側のバーを使うため waybar は意図的に無効。`modules/perf-mode.nix` 内の `pkill -RTMIN+9 waybar` は Hyprland 時代の名残で実質 no-op
 - host default.nix の `disabledModules = [ "programs/wayland/noctalia.nix" ]` は nixpkgs 内蔵版を無効化して flake input 版を使うため。外さない
+- **罠**: GDM 50 の `gdm-wayland-session` は .desktop の `Exec=niri-session` を PATH で解決するが、`display-manager.service` の PATH には gnome-session しか入らない。`services.displayManager.sessionPackages`（XDG_DATA_DIRS）だけでは足りず、全ログインが `Unable to run session` → `Session never registered` で即落ちする（2026-10-12 実測）。`modules/niri.nix` で `systemd.services.display-manager.path = [ config.programs.niri.package ]` を足すこと。さらに `services.displayManager.defaultSession` 未設定だと存在しない gnome-session を起動しようとして同じ症状になる（GNOME 本体未導入のため user 側 PATH に無い）ため `defaultSession = "niri"` も必須。PATH 追加だけでは直らない
 
 ## モジュール・設定の罠
 
 - `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + Hyprland + gnome-keyring の有効化が本体（gnome-keyring はかつて mkForce false だったが有効化に転換済み）
+- **罠**: `chaotic.mesa-git.enable = true` は `hardware.graphics` 一式を `mkForce` で上書きするため、nvidia モジュールの GL/EGL/GBM 配線（`extraPackages` の nvidia ドライバ）まで消えて `/run/opengl-driver` が Mesa のみになる。Niri (Smithay) は software renderer を使わないため `driver (null)` → `no allocator` で renderer を作れず、ログインは成功するのに無出力で真っ黒になる（2026-10-12 実測、GTX 1080 機）。mesa-git が要るのは Lunar Lake 機 (t14) だけ。NVIDIA 単GPU機 (spring-desktop) では無効化すること。自前の `extraPackages = [ nvidiaPkg ]` を足しても mkForce の前では無力（リスト結合ではなく上書きで消える）
 - `modules/virtualisation.nix` の `boot.kernelModules` に `vfio_virqfd` を**入れない**: kernel 6.x で vfio 本体に統合されてモジュールが消えており、書くと `systemd-modules-load` が毎起動 `Failed to find module 'vfio_virqfd'` を出す
 - ボリューム削減の設定（2026-10 追加）: `/nix` と `/home` に btrfs `compress=zstd,noatime`（`hosts/spring-t14-gen6/default.nix`。反映は reboot か `mount -o remount /nix /home`）、`documentation.doc.enable = false`（HTML マニュアル + `nixos-help` を削除、man は残す）、`environment.defaultPackages` から perl を除外、`nix.settings.auto-optimise-store = true`。既存 store を hardlink 最適化するには `sudo nix store optimise`（自動では新規追加分のみ）。`services.speechd.enable = false`（graphical-desktop の mkDefault で入る画面読み上げ。orca 不使用なら不要で mbrola voices 含め約 0.7GB 削減）。`/tmp` の Android ROM 残骸（system.new.dat 等）は都度捨てる（9/27 分で約 9GB。10 月分は現役の可能性あり温存）
 - **`system.disableInstallerTools = true` にしてはいけない**: `nixos-install`/`nixos-generate-config`/`nixos-option` だけでなく `nixos-rebuild`(-ng) 本体も system path から消え、`sudo nixos-rebuild switch` が `command not found` になる（2026-10-05 に実際に踏んだ。復旧は前世代の `sw/bin/nixos-rebuild` を絶対パスで叩く）
@@ -48,6 +50,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - ブランチ `portable-hm` は非 NixOS（macOS 含む）向け home-manager 専用。main にマージする前提で分離されている
 - `modules/perf-mode.nix`: sysfs 書き込みは NOPASSWD sudo を `perf-apply` にのみ許可するスコープ最小化設計。bar の即時更新は signal（RTMIN+9）方式。`perf-apply balanced` は iGPU 下限を既定の rpe に戻すだけで rpn(100MHz) まで下げない（DVFS の立ち上がりが間に合わずカクつくため）
 - 固有机能: fprintd（TOD goodix ドライバ + hid-multitouch unbind udev ルール）、NextDNS DoT、Syncthing で `~/Passwords`（KeePassXC）同期、VRChat/Unity 一式（`modules/unity.nix` に fzf ベースの `unity` CLI ラッパ、ALCOM/vrc-get、unityhub:// ハンドラ）
+- **罠**: btrfs 上の swapfile は `swapDevices` の `size` 指定（NixOS 自動作成）に頼れない。sparse/nocow 未設定で作られるため `swapon` が `Invalid argument` で死ぬ。正解は `/swap` を別 subvolume に切り `btrfs filesystem mkswapfile` で手作りし、`swapDevices = [ { device = "/swap/swapfile"; } ]` と device のみ宣言する（`size = null` だと NixOS はファイルに触らず swapon のみ。eval で確認済み）。zswap は backing disk swap が無いと働かないため zram との併用は二重圧縮になる（spring-desktop は zram 無効化 + 16G swapfile + `zswap.*` kernelParams。2026-10-12）
 
 ## 電源プロファイル (power-profiles-daemon) 周
 

@@ -63,7 +63,6 @@
     vm-curator
     (bottles.override { removeWarningPopup = true; })
   ];
-  
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。
   # Syncthing はファイル単体ではなくフォルダ単位で同期するため、
@@ -96,6 +95,7 @@
     Unit.DefaultDependencies = false;
   };
   programs.git = {
+    enable = true;
     settings = {
       user.name = "spring";
       user.email = "harusan@spring-server.com";

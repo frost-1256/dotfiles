@@ -13,6 +13,7 @@
     nix-search-cli
   ];
   programs.gpg.enable = true;
+  programs.git.enable = true;
   programs.git.settings = {
     user.name = "spring";
     user.email = "harusan@spring-server.com";
