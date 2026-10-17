@@ -48,6 +48,10 @@
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       "nixos-nothing-spacewar.cachix.org-1:TWmfQAaPB47M0zWUX6m2YgjKKu+WJYqwFtt9nR9pZDU="
     ];
+    # nixConfig (extra-*) の信任確認と restricted 設定の上書きを許すユーザー。
+    # 無いと flake 利用時に extra-substituters/extra-trusted-public-keys の
+    # y/N プロンプトが毎回出て、trusted-public-keys は無視される。
+    trusted-users = [ username ];
   };
 
   nix.gc = {

@@ -39,6 +39,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 ## モジュール・設定の罠
 
+- **GDM グリーターの背景**: `modules/gnome.nix` の overlay で `pkgs.gnome-shell` を `hosts/spring-t14-gen6/gdm-bg.nix`（`overrideAttrs` の `postInstall` で gnome-shell-theme.gresource を再パッケージ）に差し替え、`#lockDialogGroup` に `assets/boot-wallpaper.png` を敷いている。GDM 50.x の loginDialog は画像レイヤーを持たず、背景は gnome-shell テーマ CSS の `#lockDialogGroup` 単色がそのまま出る。画像差し替えは assets/boot-wallpaper.png を挿し替えるだけ。**必殺**: 別 out へ `cp -r` するだけの runCommand では効かない（libshell-18.so がビルド時の datadir と unit の ExecStart が元 store パスを指し続ける。gen376 実測）。overrideAttrs で自 $out に作る必要がある。gnome-shell / GDM の更新で `#lockDialogGroup` ルールの記述が変わると sed の注入が外れて失敗する（build 時に気付く）
 - `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + Hyprland + gnome-keyring の有効化が本体（gnome-keyring はかつて mkForce false だったが有効化に転換済み）
 - **罠**: `chaotic.mesa-git.enable = true` は `hardware.graphics` 一式を `mkForce` で上書きするため、nvidia モジュールの GL/EGL/GBM 配線（`extraPackages` の nvidia ドライバ）まで消えて `/run/opengl-driver` が Mesa のみになる。Niri (Smithay) は software renderer を使わないため `driver (null)` → `no allocator` で renderer を作れず、ログインは成功するのに無出力で真っ黒になる（2026-10-12 実測、GTX 1080 機）。mesa-git が要るのは Lunar Lake 機 (t14) だけ。NVIDIA 単GPU機 (spring-desktop) では無効化すること。自前の `extraPackages = [ nvidiaPkg ]` を足しても mkForce の前では無力（リスト結合ではなく上書きで消える）
 - `modules/virtualisation.nix` の `boot.kernelModules` に `vfio_virqfd` を**入れない**: kernel 6.x で vfio 本体に統合されてモジュールが消えており、書くと `systemd-modules-load` が毎起動 `Failed to find module 'vfio_virqfd'` を出す
@@ -132,3 +133,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 - `.codex` は中身 0 バイトの残骸（既に削除済み）。`.gitignore` には `old-dots/` と `flake-lock.nix` がある
 - i18n は `en_US.UTF-8` ベース + `extraLocaleSettings` で ja_JP を個別指定（fcitx5 + hazkey 入力）
+
+## nix 信任 (trusted-users)
+
+- **罠**: `nixConfig`（flake 直下の `extra-*`）を使うにはユーザーが trusted-user である必要がある。`trusted-users` 未指定（既定 `root`）だと、flake 利用のたびに extra-substituters / extra-trusted-public-keys の y/N プロンプトが出続け、さらにクライアント側から restricted 設定（`trusted-public-keys` 等）を渡すと `ignoring the client-specified setting ... not a trusted user` で無視される（2026-10-17 実測）。`modules/system.nix` の `nix.settings.trusted-users = [ username ]` で解決済み。`spring` を trusted にすると flake の nixConfig は確認なしで自動適用される（初回 prompt の "permanently mark" は `~/.local/share/nix/trusted-settings.json` に保存される派であり、trusted-users 化後は出ない）

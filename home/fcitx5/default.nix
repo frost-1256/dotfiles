@@ -19,7 +19,9 @@ in
     enable = true;
     type = "fcitx5";
     fcitx5.addons = with pkgs; [
-      fcitx5-mozc
+      # fcitx5-mozc は mozc の bazel ビルドが qt6 uictool の
+      # "Invalid class name" で落ちるため、回復するまで外す
+      # fcitx5-mozc
       qt6Packages.fcitx5-configtool
     ];
   };

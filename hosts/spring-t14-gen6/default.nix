@@ -36,13 +36,12 @@
     ./hardware-configuration.nix
   ];
 
-  # Bootloader.
-  boot.loader = {
-    efi = {
-      canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot"; # ← use the same mount point here.
-    };
-    systemd-boot.enable = true;
+  # Bootloader: Limine (wallpaper 付き TUI)。壁紙は ~/Pictures の VRChat スクショ
+  # (2026-10-16 時点) を assets/boot-wallpaper.png にコピーしたもの。
+  boot.loader.limine = {
+    enable = true;
+    style.wallpapers = [ ./assets/boot-wallpaper.png ];
+    style.wallpaperStyle = "stretched"; # 1920x1080 ネイティブ解像度なので stretch で OK
   };
   # ブートメニュー待ちを短縮 (loader 5.7秒 → 約2秒。世代選択時は起動時に Space 長押し)。
   boot.loader.timeout = 1;
@@ -264,12 +263,12 @@
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = pkgs.writeShellScriptBin "charge-thresholds" ''
+      ExecStart = "${pkgs.writeShellScriptBin "charge-thresholds" ''
         t=/sys/class/power_supply/BAT0/charge_start_threshold
         s=/sys/class/power_supply/BAT0/charge_stop_threshold
         [ "$(cat "$t")" = 75 ] || echo 75 > "$t"
         [ "$(cat "$s")" = 80 ] || echo 80 > "$s"
-      '';
+      ''}/bin/charge-thresholds";
     };
   };
 
