@@ -23,9 +23,15 @@
 {
   lib,
   gnome-shell,
+  imagemagick,
   boot-wallpaper,
 }:
 let
+  # 背景の見やすさ調整 (ログイン UI の文字・アバターが画像に埋もれるのを防ぐ)。
+  # 実行時コストを増やさないよう build 時に焼き込む (gresource に載るのは加工済み PNG)。
+  blurSigma = 24; # ガウシアンぼかし半径。上げるほど平坦になる
+  darkenPercent = 8; # 黒で覆う割合。上げるほど文字コントラストが上がるが暗くなる
+
   injectCss = css: ''
     sed -i 's|^#lockDialogGroup {|#lockDialogGroup {\n  background-image: url("resource:///org/gnome/shell/theme/gdm-background.png");\n  background-size: cover;\n  background-position: center;\n|' ${css}
   '';
@@ -53,8 +59,11 @@ let
           "gnome-shell-high-contrast.css"
         ]}
 
-        # 3. 背景画像をコピー
-        cp ${boot-wallpaper} gdm-background.png
+        # 3. 背景画像を加工して配置 (ぼかし + 減光。-strip で date チャンクを落とし再現性を確保)
+        ${imagemagick}/bin/magick ${boot-wallpaper} \
+          -gaussian-blur 0x${toString blurSigma} \
+          -fill black -colorize ${toString darkenPercent}% \
+          -strip gdm-background.png
 
         # 4. gresource.xml を再生成 (upstream data/gnome-shell-theme.gresource.xml に画像 File を追加)
         cat > gdm-theme.gresource.xml <<XML
@@ -85,6 +94,7 @@ let
 in
 gnome-shell.overrideAttrs (old: {
   postInstall = (old.postInstall or "") + gdmBgPostInstall;
+  nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ imagemagick ];
   # 独自生成なので区別可能に (nixpkgs 側の name に gdm-bg を足す)。
   name = old.name or "${old.pname}-gdm-bg";
 })
