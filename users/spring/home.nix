@@ -5,15 +5,12 @@
 {
   imports = [
     ../../home/fcitx5
-    # Hyprland → Niri に移行済みのため無効化
-    # ../../home/hypr
     ../../home/discord-rpc
     ../../home/niri
     ../../home/nvim
     ../../home/shell
     ../../home/noctalia
     ../../home/wezterm
-    ../../home/kitty
     ../../home/omp
     ../../home/core.nix
   ];
@@ -33,10 +30,8 @@
     gimp
     fastfetch
     nix-search-cli
-    vrcx
     # gh は home/shell の programs.gh に一本化 (補完付き)
     nwg-displays
-    obsidian
     keybase
     gthumb
     aria2

@@ -35,11 +35,8 @@
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    run-vm.url = "github:frost-1256/run-vm";
     discord-rpc.url = "github:frost-1256/discord-rpc";
     discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
-    nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
-    nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     omp.url = "github:can1357/oh-my-pi";
     gaze.url = "github:GunduLabs/gaze";
@@ -57,8 +54,6 @@
       nix-hazkey,
       noctalia,
       niri,
-      run-vm,
-      nixos-vrchat,
       chaotic,
       gaze,
       omp,
@@ -151,8 +146,6 @@
               noctalia.nixosModules.default
 
               niri.nixosModules.niri
-              run-vm.nixosModules.default
-              nixos-vrchat.nixosModules.default
               chaotic.nixosModules.default
               gaze.nixosModules.default
 
@@ -195,8 +188,6 @@
               noctalia.nixosModules.default
 
               niri.nixosModules.niri
-              run-vm.nixosModules.default
-              nixos-vrchat.nixosModules.default
               chaotic.nixosModules.default
               gaze.nixosModules.default
 
@@ -223,7 +214,6 @@
               }
             ];
           };
-
 
         # aarch64 NixOS LXC コンテナ用。既存ホストとは独立した最小構成 +
         # portable home (nvim + shell + core)。デスクトップ系 flake モジュール

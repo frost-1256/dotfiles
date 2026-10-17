@@ -48,8 +48,8 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
 - ブランチ `portable-hm` は非 NixOS（macOS 含む）向け home-manager 専用。main にマージする前提で分離されている
-- `modules/perf-mode.nix`: sysfs 書き込みは NOPASSWD sudo を `perf-apply` にのみ許可するスコープ最小化設計。bar の即時更新は signal（RTMIN+9）方式。`perf-apply balanced` は iGPU 下限を既定の rpe に戻すだけで rpn(100MHz) まで下げない（DVFS の立ち上がりが間に合わずカクつくため）
-- 固有机能: fprintd（TOD goodix ドライバ + hid-multitouch unbind udev ルール）、NextDNS DoT、Syncthing で `~/Passwords`（KeePassXC）同期、VRChat/Unity 一式（`modules/unity.nix` に fzf ベースの `unity` CLI ラッパ、ALCOM/vrc-get、unityhub:// ハンドラ）
+- `modules/perf-mode.nix`: VR 専用だった手動トグル (perf-toggle / perf-apply / perf-status-icon、NOPASSWD sudo rule、waybar widget) は 2026-10-17 に削除済み。残っているのは ppd 追随の `power-tune` (EPP=power-saver 時だけ balance_performance に補正 + hwp_dynamic_boost) とその systemd トリガのみ。プロファイル変更は `powerprofilesctl set` を直接叩く (home/shell の highperf/balanced/power エイリアス)。`perf-apply balanced` は iGPU 下限を既定の rpe に戻すだけで rpn(100MHz) まで下げない（DVFS の立ち上がりが間に合わずカクつくため）
+- 固有机能: fprintd（TOD goodix ドライバ + hid-multitouch unbind udev ルール）、NextDNS DoT、Syncthing で `~/Passwords`（KeePassXC）同期。VRChat/Unity 一式 (`modules/unity.nix`) と `nixos-vrchat` / `run-vm` input は 2026-10-17 に削除済み（VR 運用終了。`programs.vrchat-unity` オプションは nixos-vrchat input の `nixosModules.default` が提供していたため、unity.nix を生かすなら input も必要）
 - **罠**: btrfs 上の swapfile は `swapDevices` の `size` 指定（NixOS 自動作成）に頼れない。sparse/nocow 未設定で作られるため `swapon` が `Invalid argument` で死ぬ。正解は `/swap` を別 subvolume に切り `btrfs filesystem mkswapfile` で手作りし、`swapDevices = [ { device = "/swap/swapfile"; } ]` と device のみ宣言する（`size = null` だと NixOS はファイルに触らず swapon のみ。eval で確認済み）。zswap は backing disk swap が無いと働かないため zram との併用は二重圧縮になる（spring-desktop は zram 無効化 + 16G swapfile + `zswap.*` kernelParams。2026-10-12）
 
 ## 電源プロファイル (power-profiles-daemon) 周
@@ -57,7 +57,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - ホストは T14 Gen6 / Core Ultra 5 228V（Lunar Lake）。intel_pstate active + HWP、iGPU は **xe** ドライバ（`/sys/class/drm/card0/device/tile*/gt*/freq0` に min_freq 等）
 - 実測（P-core 固定・同一ワークロード）: 持続時間 performance 248ms / balance_performance 264ms / **power 693ms**、3秒アイドル後の初動 34ms / 60ms / (もっと遅い)。体感速度も初動のもたつき（=「ワンテンポ遅れる」）もほぼ EPP で決まる
 - ppd の割り当て: performance→EPP=performance + platform=performance、balanced→balance_power(バッテリ)/balance_performance(AC) + balanced、power-saver→**EPP=power** + platform=**low-power**（PL1 が 37W→10W。time window は 28 秒なのでバーストは効く）
-- **`/sys/firmware/acpi/platform_profile` を外部から書いてはいけない**: ppd が GFileMonitor で監視しており「ドライバが自力で切り替えた」と解釈して ActiveProfile を追随させる（power-saver が balanced に化ける）。EPP は監視されていないので上書き可。`perf-apply` は governor / iGPU クロックのみを書き、このファイルには触らない（プロファイル変更は呼び出し側の `powerprofilesctl set` に一本化）
+- **`/sys/firmware/acpi/platform_profile` を外部から書いてはいけない**: ppd が GFileMonitor で監視しており「ドライバが自力で切り替えた」と解釈して ActiveProfile を追随させる（power-saver が balanced に化ける）。EPP は監視されていないので上書き可。プロファイル変更は `powerprofilesctl set` に一本化（旧 `perf-apply` は governor / iGPU クロックのみを書き、このファイルには触らない設計だった。2026-10-17 削除）
 - ppd は EPP を「プロファイル変更 / AC・バッテリ切替 / レジューム」の 3 契機で書き戻す。`modules/perf-mode.nix` の `power-tune` は同じ 3 契機（state.ini の path unit・AC の udev uevent・suspend.target）で再適用する。state.ini は atomic rename なので watch はディレクトリ単位にする
 - **AC 抜き差しのレース**: ppd の EPP 書き戻しは UPower 経由で非同期に少し遅れて来るため、udev 契機の即時 1 回では負ける（実測: 2026-10-05 12:36:23 に再適用した直後に ppd が EPP=power を書き戻した）。そのため AC / レジュームは `power-tune-delayed`（1,2,4,8 秒後に複数回再適用、冪等）経由で叩く。プロファイル変更は ppd が state.ini を書く前に EPP を書くので即時 1 回で勝てる
 - `hwp_dynamic_boost=1`（power-tune が設定）: I/O 待ち復帰直後だけ最低 P-state を上げる HWP 機能。低電力時の初動もたつきを消す
@@ -106,7 +106,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 ## 自作 flake input
 
-- `frost-1256/run-vm`, `frost-1256/discord-rpc`, `frost-1256/nixos-vrchat` はユーザー自身のリポジトリ。挙動のおかしい箇所はこれらの input 側が原因のことがある
+- `frost-1256/discord-rpc` はユーザー自身のリポジトリ。挙動のおかしい箇所は input 側が原因のことがある (`run-vm` / `nixos-vrchat` は 2026-10-17 に input ごと削除)
 - `noctalia` は cachix ブランチピン、`niri` は sodiboo/niri-flake（overlay + `niri-unstable` パッケージ、cachix 有効）
   - noctalia に local carry パッチあり (`home/noctalia/patches/*.patch`。現在は未適用・dormant): 指紋 VerifyStart の bounded retry (16 x 500ms) + watchdog 再 arm。素は ClaimDevice 時にしか再試行せず resume 直後の NoReply/NoEnrolledPrints/NoSuchDevice で同セッション死亡する。ExecStartPre 方式 (activation 待ち直列化) で解決したため適用していないが、再発時は `programs.noctalia.package.overrideAttrs` で当てる。既存テストの契約 (disconnect で再 arm しない・他人の claim に手を出さない) は保ってある。input 更新でパッチが当たらなくなったらビルド失敗で気付くので中身を見直す
 - nixpkgs から `libdisplay-info_0_2` が削除されたが niri-flake がまだ要求するため、`overlays/niri-compat.nix` で現行 `libdisplay-info` を 0.2.0 として見せて互換化している（mkPkgs と modules/niri.nix の両方に適用、niri-flake 側が対応したら削除）。`gpu-screen-recorder` の UI は外部 flake `gsr-ui-nix` がオプション衝突を起こすため削除済み。nixpkgs 内蔵の `programs.gpu-screen-recorder.ui` を使うこと

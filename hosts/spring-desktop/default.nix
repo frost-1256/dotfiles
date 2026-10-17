@@ -21,7 +21,6 @@
     ../../modules/niri.nix
     ../../modules/podman.nix
     ../../modules/steam.nix
-    ../../modules/unity.nix
     ../../modules/tailscale.nix
     ./hardware-configuration.nix
   ];

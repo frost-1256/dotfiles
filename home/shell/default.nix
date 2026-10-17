@@ -158,34 +158,24 @@
 
       (lib.mkOrder 1000 ''
         # --- 電源モード手動切り替え ---
-        # highperf  : 最大性能。governor=performance / platform_profile=performance に加え
-        #             Intel iGPU の最低クロックを最大(RP0)へ固定。給電時の VR 用。
-        # balanced  : 省電力寄りへ戻す (governor=powersave / iGPU 最低クロックを RPn へ解放)。
+        # highperf : performance プロファイルへ。重めビルド・ベンチ等の一時使用用
+        #            (旧来の governor/iGPU pin は VR 専用だったため削除)。
+        # balanced : バランスへ戻す。
+        # power    : 省電力 (power-tune が EPP だけ balance_performance に補正する)。
         # perf-status: 現在のプロファイル/governor/iGPU クロックを表示。
-        # ※ sysfs 書き込みは modules/perf-mode.nix の perf-apply(NOPASSWD sudo)に委譲し、
-        #   Waybar の custom/perf トグルとロジックを共有する。
-        function highperf {
-          powerprofilesctl set performance
-          sudo perf-apply high && echo "high performance mode: ON"
-        }
-
-        function balanced {
-          # governor=performance のままだと EPP 書き込みが busy になり
-          # powerprofilesctl set balanced が失敗するので、先に governor を解放する。
-          sudo perf-apply balanced
-          powerprofilesctl set balanced && echo "high performance mode: OFF (balanced)"
-        }
+        function highperf { powerprofilesctl set performance }
+        function balanced { powerprofilesctl set balanced }
+        function power { powerprofilesctl set power-saver }
 
         function perf-status {
           echo "power profile : $(powerprofilesctl get 2>/dev/null)"
           echo "platform      : $(cat /sys/firmware/acpi/platform_profile 2>/dev/null)"
           echo "governor      : $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)"
+          echo "EPP           : $(cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference 2>/dev/null)"
           for card in /sys/class/drm/card[0-9]*; do
-            [ -r "$card/gt_min_freq_mhz" ] && \
-              echo "iGPU min/cur/max: $(cat "$card/gt_min_freq_mhz")/$(cat "$card/gt_cur_freq_mhz")/$(cat "$card/gt_max_freq_mhz") MHz"
             for gt in "$card"/device/tile*/gt*/freq0; do
               [ -r "$gt/min_freq" ] && \
-                echo "iGPU(xe) min/cur: $(cat "$gt/min_freq")/$(cat "$gt/cur_freq") MHz"
+                echo "iGPU(xe) min/cur/max: $(cat "$gt/min_freq")/$(cat "$gt/cur_freq" 2>/dev/null)/$(cat "$gt/rp0_freq" 2>/dev/null) MHz"
             done
           done
         }

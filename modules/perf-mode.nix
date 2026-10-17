@@ -1,85 +1,15 @@
 # modules/perf-mode.nix
-# 電源モードの実行時切り替えを一手に引き受ける一式。
+# ppd (power-profiles-daemon) 周りの実行時補正を一手に引き受ける一式。
 #
-# ・governor / Intel iGPU 最低クロックを、再ビルド無しで toggle できるようにする。
-#   platform_profile は ppd が管理するため perf-apply からは触らない。
-# ・sysfs への書き込みは root が要るので、引数固定(high|balanced)の専用ヘルパ
-#   perf-apply に対してだけ NOPASSWD sudo を許可する(スコープを最小化)。
-# ・platform_profile/EPP は power-profiles-daemon(polkit, パスワード不要)に任せ、
-#   perf-apply は governor と iGPU クロックの sysfs 書き込みだけを担当する。
-# ・ppd のプロファイル(balanced / power-saver)でも低電力時にカクつかないよう、
-#   power-tune が EPP / HWP dynamic boost を補正する(下の power-tune を参照)。
+# ・高性能⇄バランスの手動トグル (perf-toggle/perf-apply/perf-status-icon) は
+#   VR 専用に設計されていたため削除 (2026-10-17)。performance プロファイルが
+#   要る時は `powerprofilesctl set performance` を直接叩けば足りる。
+# ・ppd のプロファイル (balanced / power-saver) でも低電力時にカクつかないよう、
+#   power-tune が EPP / HWP dynamic boost を補正する (下の power-tune を参照)。
+#   platform_profile/EPP の本来の管理者は ppd。perf-mode はそれに追随するだけ。
 { pkgs, ... }:
 let
-  username = "spring";
   ppd = "${pkgs.power-profiles-daemon}/bin/powerprofilesctl";
-
-  # 特権部分。$1 = high | balanced。sysfs への書き込みのみを行う(冪等)。
-  perf-apply = pkgs.writeShellScriptBin "perf-apply" ''
-    case "$1" in
-      high)
-        gov=performance; clock=rp0 ;;
-      balanced)
-        gov=powersave;   clock=rpe ;;
-      *)
-        echo "usage: perf-apply high|balanced" >&2; exit 2 ;;
-    esac
-
-    # platform_profile は書かない。ppd が GFileMonitor で監視しており、外部から
-    # 書き換えると「ドライバが自力で切り替えた」と解釈して ActiveProfile を追随させる
-    # (power-saver が balanced に化ける)。プロファイル変更は呼び出し側
-    # (perf-toggle / highperf / balanced) の powerprofilesctl set に一本化する。
-    for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
-      [ -w "$c/scaling_governor" ] && echo "$gov" > "$c/scaling_governor"
-    done
-
-    for card in /sys/class/drm/card[0-9]*; do
-      # i915: rp0 は最低クロックを最大に固定、rpe はドライバ既定のまま解放する。
-      # (rpn=100MHz まで下げると DVFS の立ち上がりが間に合わずカクつきの原因になる)
-      if [ "$clock" = rp0 ] && [ -r "$card/gt_RP0_freq_mhz" ]; then
-        rp0=$(cat "$card/gt_RP0_freq_mhz")
-        [ -w "$card/gt_min_freq_mhz" ]   && echo "$rp0" > "$card/gt_min_freq_mhz"
-        [ -w "$card/gt_boost_freq_mhz" ] && echo "$rp0" > "$card/gt_boost_freq_mhz"
-      elif [ "$clock" = rpe ] && [ -r "$card/gt_RPe_freq_mhz" ]; then
-        rpe=$(cat "$card/gt_RPe_freq_mhz")
-        [ -w "$card/gt_min_freq_mhz" ] && echo "$rpe" > "$card/gt_min_freq_mhz"
-      fi
-      # xe ドライバ: tile/gt 配下の min_freq を rp0_freq(高性能) / rpe_freq(バランス) に合わせる。
-      for gt in "$card"/device/tile*/gt*/freq0; do
-        src="$gt/''${clock}_freq"
-        [ -r "$src" ] && [ -w "$gt/min_freq" ] && echo "$(cat "$src")" > "$gt/min_freq"
-      done
-    done
-  '';
-
-  # 現在のプロファイルを見て高性能⇄バランスを切り替える(CLI / Waybar クリック)。
-  #
-  # 順序が重要: intel_pstate では scaling_governor=performance の間 EPP
-  # (energy_performance_preference)への書き込みが EBUSY になり、
-  # powerprofilesctl set が失敗する(→ ppd が performance のまま=アイコンが更新されない)。
-  # そのため balanced へ落とす時は「先に perf-apply で governor を powersave へ解放」→
-  # 「その後 powerprofilesctl set balanced」の順にする。高性能へ上げる時は逆に、
-  # 先に powerprofilesctl set performance(EPP 書き込み)→ その後 governor/iGPU を pin。
-  perf-toggle = pkgs.writeShellScriptBin "perf-toggle" ''
-    if [ "$(${ppd} get 2>/dev/null)" = performance ]; then
-      sudo ${perf-apply}/bin/perf-apply balanced
-      ${ppd} set balanced
-      ${pkgs.libnotify}/bin/notify-send -a Perf -i battery "電源モード" "バランス"
-    else
-      ${ppd} set performance
-      sudo ${perf-apply}/bin/perf-apply high
-      ${pkgs.libnotify}/bin/notify-send -a Perf -i battery-charging "電源モード" "高性能 (給電時 VR 用)"
-    fi
-  '';
-
-  # Waybar 表示用。JSON(text/class/tooltip)を返し、状態でアイコン・色を変える。
-  perf-status-icon = pkgs.writeShellScriptBin "perf-status-icon" ''
-    if [ "$(${ppd} get 2>/dev/null)" = performance ]; then
-      printf '{"text":"󰓅","class":"highperf","tooltip":"高性能モード (クリックでバランス)"}\n'
-    else
-      printf '{"text":"󰾅","class":"balanced","tooltip":"バランスモード (クリックで高性能)"}\n'
-    fi
-  '';
 
   # ppd のプロファイルに追随して「低電力でもカクつかない最低限」まで応答性を上げる。
   # root で動く(power-tune.service)。再ビルド不要。
@@ -120,7 +50,6 @@ let
 
     for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
       pref="$c/energy_performance_preference"
-      # perf-toggle で governor=performance の間は EPP 書き込みが EBUSY になる
       [ -w "$pref" ] || continue
       if [ "$(cat "$pref")" != balance_performance ]; then
         echo balance_performance > "$pref" 2>/dev/null || true
@@ -144,9 +73,6 @@ in
   services.power-profiles-daemon.enable = true;
 
   environment.systemPackages = [
-    perf-apply
-    perf-toggle
-    perf-status-icon
     power-tune
   ];
 
@@ -206,17 +132,4 @@ in
   services.udev.extraRules = ''
     ACTION=="change", SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_TYPE}=="Mains", RUN+="${pkgs.systemd}/bin/systemctl --no-block restart power-tune-delayed.service"
   '';
-
-  # 引数固定の perf-apply にだけパスワード無しの sudo を許可する。
-  security.sudo.extraRules = [
-    {
-      users = [ username ];
-      commands = [
-        {
-          command = "${perf-apply}/bin/perf-apply";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-  ];
 }

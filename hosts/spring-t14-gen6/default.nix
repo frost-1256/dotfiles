@@ -31,7 +31,6 @@
     ../../modules/virtualisation.nix
     ../../modules/podman.nix
     ../../modules/steam.nix
-    ../../modules/unity.nix
     ../../modules/tailscale.nix
     ../../modules/smb.nix
     ./hardware-configuration.nix
@@ -72,16 +71,28 @@
   nix = {
     distributedBuilds = true;
     settings.builders-use-substitutes = true;
-    buildMachines = [{
-      hostName = "eu.nixbuild.net";
-      system = "aarch64-linux";
-      maxJobs = 100;
-      supportedFeatures = [ "benchmark" "big-parallel" ];
-    }];
+    buildMachines = [
+      {
+        hostName = "eu.nixbuild.net";
+        system = "aarch64-linux";
+        maxJobs = 100;
+        supportedFeatures = [
+          "benchmark"
+          "big-parallel"
+        ];
+      }
+    ];
   };
   boot.kernelParams = [
     "xe.enable_psr=2"
     "xe.enable_panel_replay=0"
+    # バッテリ運転時の低消費電力チューニング (performance を落とさない範囲のみ)。
+    # - iwlmvm.power_scheme=3 (low power): 無線のアイドル消費を下げる。
+    #   スループット影響は大容量転送時の末尾に出るだけでデスクトップ用途では無縁。
+    # - nmi_watchdog=0: アイドル時にパッケージ C-state が深く入るのを阻害する
+    #   要因の一つを除去 (障害時の NMI レポートは失われる)。
+    "iwlmvm.power_scheme=3"
+    "nmi_watchdog=0"
   ];
 
   # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
@@ -226,7 +237,41 @@
       "L+ /usr/lib/gaze/runtimes/openvino/libonnxruntime_providers_openvino.so - - - - ${pkgs.onnxruntime}/lib/libonnxruntime_providers_openvino.so"
       "L+ /usr/lib/gaze/runtimes/openvino/libonnxruntime_providers_shared.so - - - - ${pkgs.onnxruntime}/lib/libonnxruntime_providers_shared.so"
       "L+ /usr/lib/gaze/runtimes/openvino/library-path - - - - ${pkgs.writeText "gaze-openvino-library-path" (builtins.concatStringsSep ":" sdkLibDirs)}"
+      # ThinkPad の充電しきい値 (下の charge-thresholds service と同じ目的。
+      # こちらは reboot 時に tmpfiles が、rebuild 直後は service が担当する)。
+      "w /sys/class/power_supply/BAT0/charge_start_threshold - - - - 75"
+      "w /sys/class/power_supply/BAT0/charge_stop_threshold - - - - 80"
     ];
+
+  # バッテリ運転時の低消費電力チューニング (performance を落とさない範囲のみ)。
+  # - dirty_writeback_centisecs=1500: 5秒→15秒。書き込みをまとめて 1 回にし、
+  #   ディスク起動回数を減らす (停電・突然のリセット時の喪失幅は最大15秒に伸びる)。
+  # - USB autosuspend は既定値のままで十分 (usbcore.autosuspend=2 が既に適用)。
+  # - iwlmvm.power_scheme は上の boot.kernelParams で設定 (モジュールパラメータ)。
+
+  boot.kernel.sysctl = {
+    "vm.dirty_writeback_centisecs" = 1500;
+  };
+
+  # 充電しきい値 (ThinkPad 標準の charge threshold sysfs)。
+  # 開始 75% / 停止 80% で Li-ion の劣化要因である高 SOC 保持を避ける。
+  # nixpkgs に専用オプションは無いため tmpfiles (再起動時) + systemd service
+  # (reboot 無しの反映・冪等) で書く。一時的に満充電したい時は:
+  #   echo 100 | sudo tee /sys/class/power_supply/BAT0/charge_stop_threshold
+  #   echo 60 | sudo tee /sys/class/power_supply/BAT0/charge_start_threshold
+  systemd.services.charge-thresholds = {
+    description = "Apply ThinkPad battery charge thresholds";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeShellScriptBin "charge-thresholds" ''
+        t=/sys/class/power_supply/BAT0/charge_start_threshold
+        s=/sys/class/power_supply/BAT0/charge_stop_threshold
+        [ "$(cat "$t")" = 75 ] || echo 75 > "$t"
+        [ "$(cat "$s")" = 80 ] || echo 80 > "$s"
+      '';
+    };
+  };
 
   system.stateVersion = "26.11"; # Did you read the comment?
 }

@@ -440,26 +440,6 @@
         "type": "github"
       }
     },
-    "nixos-vrchat": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1782702925,
-        "narHash": "sha256-iit7ebn9LyLS0A/vFEvBaZevFA6OqnpvVmU6wY5HTLQ=",
-        "owner": "frost-1256",
-        "repo": "nixos-vrchat",
-        "rev": "3bf9368dde2bca9d761ec2247e250b4a239282a8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "frost-1256",
-        "repo": "nixos-vrchat",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1791594108,
@@ -613,22 +593,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_6": {
-      "locked": {
-        "lastModified": 1785318670,
-        "narHash": "sha256-dN6Ou5x/+23FZLEpYP3IffO+NyJFzUlGumt1uu3MMaY=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "0954f7ee2f6bb3dc7d4e3d0d8bcb8fd4bde4cfc5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixvim": {
       "inputs": {
         "flake-parts": "flake-parts_2",
@@ -702,30 +666,10 @@
         "home-manager": "home-manager_2",
         "niri": "niri",
         "nix-hazkey": "nix-hazkey",
-        "nixos-vrchat": "nixos-vrchat",
         "nixpkgs": "nixpkgs_3",
         "nixvim": "nixvim",
         "noctalia": "noctalia",
-        "omp": "omp",
-        "run-vm": "run-vm"
-      }
-    },
-    "run-vm": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_6"
-      },
-      "locked": {
-        "lastModified": 1785385949,
-        "narHash": "sha256-A2C6/Okm8IvrCHUArYGdX1fZOJZ1dCcGj37raN9FX8g=",
-        "owner": "frost-1256",
-        "repo": "run-vm",
-        "rev": "3351b746e183a8c95452d331704aeff7e8a0e0b4",
-        "type": "github"
-      },
-      "original": {
-        "owner": "frost-1256",
-        "repo": "run-vm",
-        "type": "github"
+        "omp": "omp"
       }
     },
     "rust-overlay": {
