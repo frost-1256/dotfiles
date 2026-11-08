@@ -33,7 +33,7 @@
   };
 
   shell = {
-    font_family = "JetBrains Mono";
+    font_family = "HackGen Console NF";
     launch_apps_as_systemd_services = true;
     niri_overview_type_to_launch_enabled = true;
     polkit_agent = true;

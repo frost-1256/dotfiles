@@ -12,6 +12,7 @@
     ../../home/noctalia
     ../../home/wezterm
     ../../home/omp
+    ../../home/claude
     ../../home/core.nix
   ];
   # nm-applet / blueman-applet の自動起動を無効化
@@ -48,6 +49,7 @@
     teams-for-linux
     tealdeer
     tmux
+    tor-browser
     vesktop
     transmission_4-qt
     podman-desktop

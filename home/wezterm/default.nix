@@ -5,6 +5,16 @@
       automatically_reload_config = true;
       # fcitx5 を Wayland の text-input-v3 経由で使うには IME を有効化する必要がある
       use_ime = true;
+      font = {
+        font = [
+          {
+            family = "HackGen Console NF";
+            is_fallback = false;
+            is_synthetic = false;
+          }
+        ];
+      };
+      font_size = 12.5;
       window_background_opacity = 0.3;
       hide_tab_bar_if_only_one_tab = true;
       use_fancy_tab_bar = false;

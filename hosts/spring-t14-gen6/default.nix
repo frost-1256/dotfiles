@@ -32,7 +32,9 @@
     ../../modules/podman.nix
     ../../modules/steam.nix
     ../../modules/tailscale.nix
+    ../../modules/tor.nix
     ../../modules/smb.nix
+    ../../modules/sshd.nix
     ./hardware-configuration.nix
   ];
 

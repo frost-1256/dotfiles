@@ -50,6 +50,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
 - ブランチ `portable-hm` は非 NixOS（macOS 含む）向け home-manager 専用。main にマージする前提で分離されている
+- Tor Browser は nixpkgs の `tor-browser` を `users/spring/home.nix` の `home.packages` に直書き（NixOS/HM 双方に専用モジュールは無い）。`meta.platforms` が i686/x86_64-linux のみなので **portable 側 (Darwin) には置けない**。バンドルに tor 本体を含むため `services.tor` は不要。ライセンスは MPL-2.0 等で free（allowUnfree 不要）
 - `modules/perf-mode.nix`: VR 専用だった手動トグル (perf-toggle / perf-apply / perf-status-icon、NOPASSWD sudo rule、waybar widget) は 2026-10-17 に削除済み。残っているのは ppd 追随の `power-tune` (EPP=power-saver 時だけ balance_performance に補正 + hwp_dynamic_boost) とその systemd トリガのみ。プロファイル変更は `powerprofilesctl set` を直接叩く (home/shell の highperf/balanced/power エイリアス)。`perf-apply balanced` は iGPU 下限を既定の rpe に戻すだけで rpn(100MHz) まで下げない（DVFS の立ち上がりが間に合わずカクつくため）
 - 固有机能: fprintd（TOD goodix ドライバ + hid-multitouch unbind udev ルール）、NextDNS DoT、Syncthing で `~/Passwords`（KeePassXC）同期。VRChat/Unity 一式 (`modules/unity.nix`) と `nixos-vrchat` / `run-vm` input は 2026-10-17 に削除済み（VR 運用終了。`programs.vrchat-unity` オプションは nixos-vrchat input の `nixosModules.default` が提供していたため、unity.nix を生かすなら input も必要）
 - **罠**: btrfs 上の swapfile は `swapDevices` の `size` 指定（NixOS 自動作成）に頼れない。sparse/nocow 未設定で作られるため `swapon` が `Invalid argument` で死ぬ。正解は `/swap` を別 subvolume に切り `btrfs filesystem mkswapfile` で手作りし、`swapDevices = [ { device = "/swap/swapfile"; } ]` と device のみ宣言する（`size = null` だと NixOS はファイルに触らず swapon のみ。eval で確認済み）。zswap は backing disk swap が無いと働かないため zram との併用は二重圧縮になる（spring-desktop は zram 無効化 + 16G swapfile + `zswap.*` kernelParams。2026-10-12）
@@ -129,6 +130,19 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - `noctalia-sync` — 設定アプリが書いたランタイム側 `~/.local/state/noctalia/settings.toml` を settings.nix へ反映する。設定アプリで変更があった・ランタイム設定を declarative に落としたい時に使う
 - `nixos-rebuild` — tmux セッション経由のリビルド手順。指紋認証失敗時か明示指示時のみ (上記「ビルド・再構築」参照)
 - `agent-workflow` — 非自明タスクをサブエージェントへ委譲して実装するワークフロー
+
+## Tor
+
+- システム側の tor daemon は `modules/tor.nix`（`services.tor.enable` + `client.enable`、spring-t14-gen6 のみ import）。SOCKS5 は `127.0.0.1:9050`。Tor Browser 同梱 tor とは独立
+- **罠**: 現行 nixpkgs の tor モジュールは socks 系オプションが `services.tor.settings.SOCKSPort`（client ロール時は `client.socksListenAddress` から自動生成）へ移行済み。`client.socksPort` / `client.dns.isolationOptions` 等は `mkRemovedOptionModule` になっており、`services.tor` サブツリー全体を nix eval で JSON dump すると（未定義でも apply が throw するため）エラーになる。検証は個別属性で行う
+- クライアント用途では `SOCKSPort` に `IsolateDestAddr` が付く。DNS はプロキシ側で解決させる（`curl --socks5-hostname 127.0.0.1:9050 ...`）。2026-10-18 実測: bootstrap 100% → `check.torproject.org/api/ip` が `IsTor:true`
+
+## SSH サーバー
+
+- `modules/sshd.nix`（spring-t14-gen6 のみ import）でパスワード認証の sshd を有効化。`PasswordAuthentication = true` / `KbdInteractiveAuthentication = false` / `PermitRootLogin = no`、`openFirewall = true`（TCP 22）
+- **`startWhenNeeded = false` を維持すること**: socket activation だと `systemctl stop sshd` しても sshd.socket が 22 番を listen し続け「off」にならない
+- オン/オフは home/shell の `ssh-on` / `ssh-off` / `ssh-toggle` / `ssh-status`。`security.sudo.extraRules` で `systemctl start|stop|restart sshd` のみ NOPASSWD（汎用 systemctl は許可しない）。ルールを増やす時は `modules/sshd.nix` の verb リストに足す
+- パスワードは Nix 管理外（`users.mutableUsers` 既定 true）。未設定ならログイン不可なので `passwd` で設定する
 
 ## その他
 

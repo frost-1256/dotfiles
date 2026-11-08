@@ -103,11 +103,10 @@
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
-      hackgen-font
+      hackgen-nf-font
       ipafont
       nerd-fonts.symbols-only
       nerd-fonts.fira-code
-      nerd-fonts.jetbrains-mono
       nerd-fonts.hack
     ];
     fontconfig.defaultFonts = {
@@ -122,7 +121,7 @@
         "Noto Color Emoji"
       ];
       monospace = [
-        "JetBrainsMono Nerd Font"
+        "HackGen Console NF"
         "IPAGothic"
         "Noto Color Emoji"
       ];
@@ -146,7 +145,15 @@
   };
   programs.dconf.enable = true;
   networking.firewall.enable = true;
+  networking.enableIPv6 = false;
   networking.firewall.allowedUDPPorts = [ 9999 ];
+  # Open WebUI / llama-server
+  networking.firewall.allowedTCPPorts = [
+    3000
+    8000
+    8080
+    9999
+  ];
   services.resolved = {
     enable = true;
 
@@ -177,6 +184,7 @@
     ifuse
     gnome-firmware
     cloudflare-warp
+    proton-vpn
 
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-good

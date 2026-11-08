@@ -6,6 +6,7 @@
   imports = [
     ../../home/nvim
     ../../home/shell
+    ../../home/claude
     ../../home/core.nix
   ];
   home.packages = with pkgs; [

@@ -203,6 +203,27 @@ in
               input: [text]
               contextWindow: 262144
               maxTokens: 262144
+        qwen-local:
+          baseUrl: https://spies-and-genius-sms.trycloudflare.com/v1
+          auth: none
+          api: openai-completions
+          models:
+            - id: qwen3.8-27b
+              name: Qwen 3.8 27B (llama.cpp)
+              reasoning: true
+              input: [text]
+              contextWindow: 131072
+              maxTokens: 32768
+              thinking:
+                mode: effort
+                efforts: [low, high, xhigh]
+              compat:
+                supportsReasoningSummary: true
+                includeEncryptedReasoning: false
+                filterReasoningHistory: true
+                replayReasoningContent: false
+                reasoningContentField: reasoning_content
+                allowsSyntheticReasoningContentForToolCalls: true
         orcarouter:
           baseUrl: https://api.orcarouter.ai/v1
           api: openai-completions
@@ -217,6 +238,89 @@ in
               maxTokens: 8192
               compat:
                 supportsDeveloperRole: false
+                maxTokensField: max_tokens
+        river:
+          baseUrl: https://api.river.ai/v1
+          api: openai-completions
+          # 実際のキーは ~/.omp/agent/.env の RIVER_API_KEY に置く（リポジトリには入れない）。
+          apiKey: RIVER_API_KEY
+          authHeader: true
+          models:
+            - id: deepseek-ai/DeepSeek-V4.1-Flash-1017
+              name: DeepSeek V4.1 Flash 1017 (River)
+              reasoning: true
+              input: [text]
+              contextWindow: 1048576
+              maxTokens: 384000
+              thinking:
+                mode: effort
+                efforts: [low, high, max]
+                defaultLevel: high
+              compat:
+                supportsReasoningEffort: true
+                thinkingFormat: openai
+                reasoningContentField: reasoning_content
+                maxTokensField: max_tokens
+            - id: deepseek-ai/DeepSeek-V4.1-Flash
+              name: DeepSeek V4.1 Flash (River)
+              reasoning: true
+              input: [text]
+              contextWindow: 1048576
+              maxTokens: 384000
+              thinking:
+                mode: effort
+                efforts: [low, high, max]
+                defaultLevel: high
+              compat:
+                supportsReasoningEffort: true
+                thinkingFormat: openai
+                reasoningContentField: reasoning_content
+                maxTokensField: max_tokens
+            # Qwen3.8 は low 以外の reasoning_effort を上流が拒否する。
+            - id: Qwen/Qwen3.8-27B-FP8
+              name: Qwen3.8 27B FP8 (River)
+              reasoning: true
+              input: [text]
+              contextWindow: 131072
+              maxTokens: 32768
+              thinking:
+                mode: effort
+                efforts: [low]
+                defaultLevel: low
+              compat:
+                supportsReasoningEffort: true
+                thinkingFormat: openai
+                reasoningContentField: reasoning_content
+                maxTokensField: max_tokens
+            - id: zai-org/GLM-5.3-Flash
+              name: GLM-5.3 Flash (River)
+              reasoning: true
+              input: [text]
+              contextWindow: 200000
+              maxTokens: 32000
+              thinking:
+                mode: effort
+                efforts: [low, high, max]
+                defaultLevel: high
+              compat:
+                supportsReasoningEffort: true
+                thinkingFormat: openai
+                reasoningContentField: reasoning_content
+                maxTokensField: max_tokens
+            - id: nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4
+              name: Nemotron 3.5 Super VL 120B (River)
+              reasoning: true
+              input: [text, image]
+              contextWindow: 1048576
+              maxTokens: 131072
+              thinking:
+                mode: effort
+                efforts: [low, high, max]
+                defaultLevel: high
+              compat:
+                supportsReasoningEffort: true
+                thinkingFormat: openai
+                reasoningContentField: reasoning_content
                 maxTokensField: max_tokens
     '';
   };

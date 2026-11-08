@@ -180,6 +180,18 @@
           done
         }
 
+        # --- SSH サーバーのオン/オフ (modules/sshd.nix の sudo ルール使用) ---
+        # off は 22 番ポートが閉じる (socket activation 無効)。
+        function ssh-on { sudo systemctl start sshd && echo "sshd: on" }
+        function ssh-off { sudo systemctl stop sshd && echo "sshd: off" }
+        function ssh-toggle {
+          if systemctl is-active --quiet sshd; then ssh-off; else ssh-on; fi
+        }
+        function ssh-status {
+          echo "sshd   : $(systemctl is-active sshd 2>/dev/null)"
+          ss -ltnH 'sport = :22' | awk '{print "listen : " $4}'
+        }
+
         bindkey "^[OH" beginning-of-line
         bindkey "^[OF" end-of-line
         bindkey "^[[3~" delete-char

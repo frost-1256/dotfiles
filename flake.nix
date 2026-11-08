@@ -30,6 +30,12 @@
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
     nix-hazkey.url = "github:aster-void/nix-hazkey";
     nix-hazkey.inputs.nixpkgs.follows = "nixpkgs";
+    nix-claude-code.url = "github:ryoppippi/nix-claude-code";
+    nix-claude-code.inputs.nixpkgs.follows = "nixpkgs";
+    ccusage.url = "github:ryoppippi/ccusage";
+    ccusage.inputs.nixpkgs.follows = "nixpkgs";
+    llm-agents.url = "github:numtide/llm-agents.nix";
+    llm-agents.inputs.nixpkgs.follows = "nixpkgs";
     noctalia.url = "github:noctalia-dev/noctalia/cachix";
     niri = {
       url = "github:sodiboo/niri-flake";
