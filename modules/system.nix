@@ -146,7 +146,10 @@
   programs.dconf.enable = true;
   networking.firewall.enable = true;
   networking.enableIPv6 = false;
-  networking.firewall.allowedUDPPorts = [ 9999 ];
+  networking.firewall.allowedUDPPorts = [
+    9999
+    4242 # lan-mouse
+  ];
   # Open WebUI / llama-server
   networking.firewall.allowedTCPPorts = [
     3000

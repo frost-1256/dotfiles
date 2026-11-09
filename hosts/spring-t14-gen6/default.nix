@@ -28,6 +28,7 @@
     ../../modules/perf-mode.nix
     ../../modules/gnome.nix
     ../../modules/niri.nix
+    ../../modules/deskflow.nix
     ../../modules/virtualisation.nix
     ../../modules/podman.nix
     ../../modules/steam.nix

@@ -50,6 +50,7 @@
     tealdeer
     tmux
     tor-browser
+    lan-mouse
     vesktop
     transmission_4-qt
     podman-desktop
