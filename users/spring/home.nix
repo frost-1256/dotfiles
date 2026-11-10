@@ -26,7 +26,6 @@
   };
 
   home.packages = with pkgs; [
-    filezilla
     floorp-bin
     gimp
     fastfetch
@@ -52,13 +51,9 @@
     tor-browser
     lan-mouse
     vesktop
-    transmission_4-qt
-    podman-desktop
     rustdesk
     distrobox
-    anydesk
     distrobox-tui
-    vm-curator
     (bottles.override { removeWarningPopup = true; })
   ];
 
