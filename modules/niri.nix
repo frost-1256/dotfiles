@@ -2,6 +2,7 @@
   pkgs,
   inputs,
   config,
+  lib,
   ...
 }:
 {
@@ -25,4 +26,10 @@
   # 同じく "Unable to run session" で即落ちする (gnome 本体は未導入のため
   # user 側 PATH に gnome-session が無い)。niri を既定に固定する。
   services.displayManager.defaultSession = "niri";
+
+  # niri-flake 既定の polkit agent は polkit-kde-agent-1 で、
+  # KDE Frameworks → pyside6 → qtwebengine (Chromium ビルド) を引いてしまう。
+  # 軽量な polkit-gnome に差し替える。
+  systemd.user.services.niri-flake-polkit.serviceConfig.ExecStart =
+    lib.mkForce "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
 }

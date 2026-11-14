@@ -18,12 +18,75 @@ in
   i18n.inputMethod = {
     enable = true;
     type = "fcitx5";
-    fcitx5.addons = with pkgs; [
-      # fcitx5-mozc は mozc の bazel ビルドが qt6 uictool の
-      # "Invalid class name" で落ちるため、回復するまで外す
-      # fcitx5-mozc
-      qt6Packages.fcitx5-configtool
-    ];
+    # fcitx5-mozc は mozc の bazel ビルドが qt6 uictool の
+    # "Invalid class name" で落ちるため、回復するまで外す
+    # fcitx5-mozc
+    #
+    # qt6Packages.fcitx5-configtool は KDE Frameworks → pyside6 → qtwebengine
+    # (Chromium ビルド) を引いて重いため外し、設定は下の settings で宣言する
+    fcitx5.addons = [ ];
+    # fcitx5-with-addons は既定で configtool を同梱するので明示的に外す
+    fcitx5.fcitx5-with-addons = pkgs.qt6Packages.fcitx5-with-addons.override {
+      withConfigtool = false;
+    };
+
+    fcitx5.settings = {
+      # ~/.config/fcitx5/config
+      globalOptions = {
+        Hotkey = {
+          ModifierOnlyKeyTimeout = 500;
+        };
+        # Windows サーバー (Deskflow) 側の MS-IME が Alt+` の ` を握りつぶし
+        # Alt 単打しか届かないため Alt_L も切替キーにしている
+        "Hotkey/TriggerKeys" = {
+          "0" = "Alt+grave";
+          "1" = "Control+space";
+          "2" = "Alt_L";
+        };
+        "Hotkey/EnumerateBackwardKeys" = {
+          "0" = "";
+          "1" = "";
+        };
+      };
+
+      # ~/.config/fcitx5/profile
+      inputMethod = {
+        "Groups/0" = {
+          Name = "Default";
+          "Default Layout" = "us";
+          DefaultIM = "hazkey";
+        };
+        "Groups/0/Items/0".Name = "keyboard-us";
+        "Groups/0/Items/1".Name = "hazkey";
+        GroupOrder."0" = "Default";
+      };
+
+      # ~/.config/fcitx5/conf/*.conf
+      addons = {
+        classicui.globalSection = {
+          "Vertical Candidate List" = "False";
+          WheelForPaging = "True";
+          Font = ''"Sans 10"'';
+          MenuFont = ''"Sans 10"'';
+          TrayFont = ''"Sans Bold 10"'';
+          TrayOutlineColor = "#000000";
+          TrayTextColor = "#ffffff";
+          PreferTextIcon = "False";
+          ShowLayoutNameInIcon = "True";
+          UseInputMethodLanguageToDisplayText = "True";
+          Theme = "default-dark";
+          DarkTheme = "default-dark";
+          UseDarkTheme = "False";
+          UseAccentColor = "True";
+          PerScreenDPI = "False";
+          ForceWaylandDPI = "0";
+          EnableFractionalScale = "True";
+        };
+        hazkey.globalSection = {
+          showTabToSelect = "True";
+        };
+      };
+    };
   };
 
   # スリープ復帰系の対処:
