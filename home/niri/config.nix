@@ -25,9 +25,28 @@
         leaf
         flag
         ;
+
+      # アニメーション用 spring (epsilon は全アニメ共通)
+      spring =
+        damping-ratio: stiffness:
+        leaf "spring" {
+          inherit damping-ratio stiffness;
+          epsilon = 0.0001;
+        };
+
+      # Mod+1〜9 / Mod+Shift+1〜9 のように番号だけ違うバインドを生成する
+      numberedBinds =
+        prefix: action:
+        builtins.genList (
+          i:
+          let
+            n = i + 1;
+          in
+          plain "${prefix}${toString n}" [ (leaf action n) ]
+        ) 9;
     in
     [
-      (leaf "prefer-no-csd" true)
+      (flag "prefer-no-csd")
 
       (plain "hotkey-overlay" [
         (flag "skip-at-startup")
@@ -53,13 +72,9 @@
       ])
 
       (plain "window-rule" [
-        (leaf "clip-to-geometry" true)
-        (leaf "draw-border-with-background" false)
-      ])
-
-      (plain "window-rule" [
         (leaf "geometry-corner-radius" 20)
         (leaf "clip-to-geometry" true)
+        (leaf "draw-border-with-background" false)
       ])
 
       (plain "window-rule" [
@@ -168,193 +183,163 @@
         ])
 
         (leaf "gaps" 16)
-
-        (plain "struts" [ ])
-
-        (leaf "center-focused-column" "never")
       ])
 
       # animations
       (plain "animations" [
-        (plain "workspace-switch" [
-          (leaf "spring" {
-            damping-ratio = 0.75;
-            stiffness = 6000;
-            epsilon = 0.0001;
-          })
+        (plain "workspace-switch" [ (spring 0.75 6000) ])
+        (plain "horizontal-view-movement" [ (spring 0.75 5000) ])
+        (plain "window-open" [ (spring 0.75 6000) ])
+
+        # 以下は既定 (stiffness 800 / close は 150ms) のままだと上の 3 つより
+        # 明らかに遅く見えるため揃える。移動・リサイズはオーバーシュートさせない
+        # (damping 1.0) ことでレイアウト変化がブレずに速く収まる。
+        (plain "window-close" [
+          (leaf "duration-ms" 100)
+          (leaf "curve" "ease-out-quad")
         ])
 
-        (plain "horizontal-view-movement" [
-          (leaf "spring" {
-            damping-ratio = 0.75;
-            stiffness = 5000;
-            epsilon = 0.0001;
-          })
-        ])
-
-        (plain "window-open" [
-          (leaf "spring" {
-            damping-ratio = 0.75;
-            stiffness = 6000;
-            epsilon = 0.0001;
-          })
-        ])
+        (plain "window-movement" [ (spring 1.0 5000) ])
+        (plain "window-resize" [ (spring 1.0 5000) ])
+        (plain "overview-open-close" [ (spring 1.0 5000) ])
       ])
 
       # binds
-      (plain "binds" [
-        (plain "Mod+Q" [
-          (leaf "spawn" [ "wezterm" ])
-        ])
+      (plain "binds" (
+        [
+          (plain "Mod+Q" [
+            (leaf "spawn" [ "wezterm" ])
+          ])
 
-        (plain "Mod+D" [
-          (leaf "spawn-sh" "noctalia msg panel-toggle launcher")
-        ])
+          (plain "Mod+D" [
+            (leaf "spawn-sh" "noctalia msg panel-toggle launcher")
+          ])
 
-        (plain "Mod+E" [
-          (leaf "spawn" [ "nautilus" ])
-        ])
+          (plain "Mod+E" [
+            (leaf "spawn" [ "nautilus" ])
+          ])
 
-        (plain "Mod+S" [
-          (leaf "spawn-sh" "noctalia msg panel-toggle control-center")
-        ])
+          (plain "Mod+S" [
+            (leaf "spawn-sh" "noctalia msg panel-toggle control-center")
+          ])
 
-        (plain "Alt+Tab" [
-          (leaf "spawn-sh" "noctalia msg window-switcher")
-        ])
+          (plain "Alt+Tab" [
+            (leaf "spawn-sh" "noctalia msg window-switcher")
+          ])
 
-        # Win+Tab で Overview 表示 (左上ホットコーナー廃止の代替)
-        (plain "Super+Tab" [
-          (flag "toggle-overview")
-        ])
+          # Win+Tab で Overview 表示 (左上ホットコーナー廃止の代替)
+          (plain "Super+Tab" [
+            (flag "toggle-overview")
+          ])
 
-        (plain "Mod+Shift+Q" [
-          (flag "close-window")
-        ])
+          (plain "Mod+Shift+Q" [
+            (flag "close-window")
+          ])
 
-        # ウィンドウフォーカス移動 (Hyprland の Mod+HJKL)
-        (plain "Mod+H" [
-          (flag "focus-column-left")
-        ])
+          # ウィンドウフォーカス移動 (Hyprland の Mod+HJKL)
+          (plain "Mod+H" [
+            (flag "focus-column-left")
+          ])
 
-        (plain "Mod+J" [
-          (flag "focus-window-down")
-        ])
+          (plain "Mod+J" [
+            (flag "focus-window-down")
+          ])
 
-        (plain "Mod+K" [
-          (flag "focus-window-up")
-        ])
+          (plain "Mod+K" [
+            (flag "focus-window-up")
+          ])
 
-        (plain "Mod+L" [
-          (flag "focus-column-right")
-        ])
+          (plain "Mod+L" [
+            (flag "focus-column-right")
+          ])
 
-        # ウィンドウ/カラム移動
-        # ウィンドウ/カラム移動
-        (plain "Mod+Shift+H" [
-          (flag "move-column-left")
-        ])
+          # ウィンドウ/カラム移動
+          (plain "Mod+Shift+H" [
+            (flag "move-column-left")
+          ])
 
-        (plain "Mod+Shift+J" [
-          (flag "move-window-down")
-        ])
+          (plain "Mod+Shift+J" [
+            (flag "move-window-down")
+          ])
 
-        (plain "Mod+Shift+K" [
-          (flag "move-window-up")
-        ])
+          (plain "Mod+Shift+K" [
+            (flag "move-window-up")
+          ])
 
-        (plain "Mod+Shift+L" [
-          (flag "move-column-right")
-        ])
+          (plain "Mod+Shift+L" [
+            (flag "move-column-right")
+          ])
 
-        (plain "Mod+F" [
-          (flag "maximize-window-to-edges")
-        ])
+          (plain "Mod+F" [
+            (flag "maximize-window-to-edges")
+          ])
 
-        (plain "Mod+M" [
-          (flag "maximize-column")
-        ])
+          (plain "Mod+M" [
+            (flag "maximize-column")
+          ])
 
-        (plain "Mod+V" [
-          (flag "toggle-window-floating")
-        ])
+          (plain "Mod+V" [
+            (flag "toggle-window-floating")
+          ])
 
-        (plain "Mod+Shift+Space" [
-          (flag "switch-focus-between-floating-and-tiling")
-        ])
+          (plain "Mod+Shift+Space" [
+            (flag "switch-focus-between-floating-and-tiling")
+          ])
 
-        (plain "Mod+U" [
-          (flag "focus-workspace-up")
-        ])
+          (plain "Mod+U" [
+            (flag "focus-workspace-up")
+          ])
 
-        (plain "Mod+I" [
-          (flag "focus-workspace-down")
-        ])
+          (plain "Mod+I" [
+            (flag "focus-workspace-down")
+          ])
 
-        (plain "Mod+Shift+F" [
-          (flag "fullscreen-window")
-        ])
+          (plain "Mod+Shift+F" [
+            (flag "fullscreen-window")
+          ])
 
-        # ワークスペース切替 (Hyprland の Mod+1~9)
-        (plain "Mod+1" [ (leaf "focus-workspace" 1) ])
-        (plain "Mod+2" [ (leaf "focus-workspace" 2) ])
-        (plain "Mod+3" [ (leaf "focus-workspace" 3) ])
-        (plain "Mod+4" [ (leaf "focus-workspace" 4) ])
-        (plain "Mod+5" [ (leaf "focus-workspace" 5) ])
-        (plain "Mod+6" [ (leaf "focus-workspace" 6) ])
-        (plain "Mod+7" [ (leaf "focus-workspace" 7) ])
-        (plain "Mod+8" [ (leaf "focus-workspace" 8) ])
-        (plain "Mod+9" [ (leaf "focus-workspace" 9) ])
+          # Win+Shift+S 選択領域スクリーンショット (クリップボードへ)
+          (plain "Mod+Shift+S" [
+            (leaf "spawn-sh" "grim -g \"$(slurp)\" - | wl-copy")
+          ])
 
-        # ウィンドウをワークスペースへ移動 (Hyprland の Mod+Shift+1~9)
-        (plain "Mod+Shift+1" [ (leaf "move-window-to-workspace" 1) ])
-        (plain "Mod+Shift+2" [ (leaf "move-window-to-workspace" 2) ])
-        (plain "Mod+Shift+3" [ (leaf "move-window-to-workspace" 3) ])
-        (plain "Mod+Shift+4" [ (leaf "move-window-to-workspace" 4) ])
-        (plain "Mod+Shift+5" [ (leaf "move-window-to-workspace" 5) ])
-        (plain "Mod+Shift+6" [ (leaf "move-window-to-workspace" 6) ])
-        (plain "Mod+Shift+7" [ (leaf "move-window-to-workspace" 7) ])
-        (plain "Mod+Shift+8" [ (leaf "move-window-to-workspace" 8) ])
-        (plain "Mod+Shift+9" [ (leaf "move-window-to-workspace" 9) ])
+          # Win+Shift+V Noctalia クリップボードパネル
+          (plain "Mod+Shift+V" [
+            (leaf "spawn-sh" "noctalia msg panel-toggle clipboard")
+          ])
 
-        # Win+Shift+S 選択領域スクリーンショット (クリップボードへ)
-        (plain "Mod+Shift+S" [
-          (leaf "spawn-sh" "grim -g \"$(slurp)\" - | wl-copy")
-        ])
+          (plain "XF86AudioRaiseVolume" [
+            (leaf "spawn-sh" "noctalia msg volume-up")
+          ])
 
-        # Win+Shift+V Noctalia クリップボードパネル
-        (plain "Mod+Shift+V" [
-          (leaf "spawn-sh" "noctalia msg panel-toggle clipboard")
-        ])
+          (plain "XF86AudioLowerVolume" [
+            (leaf "spawn-sh" "noctalia msg volume-down")
+          ])
 
-        (plain "XF86AudioRaiseVolume" [
-          (leaf "spawn-sh" "noctalia msg volume-up")
-        ])
+          (plain "XF86AudioMute" [
+            (leaf "spawn-sh" "noctalia msg volume-mute")
+          ])
 
-        (plain "XF86AudioLowerVolume" [
-          (leaf "spawn-sh" "noctalia msg volume-down")
-        ])
+          (plain "XF86MonBrightnessUp" [
+            (leaf "spawn-sh" "noctalia msg brightness-up")
+          ])
 
-        (plain "XF86AudioMute" [
-          (leaf "spawn-sh" "noctalia msg volume-mute")
-        ])
+          (plain "XF86MonBrightnessDown" [
+            (leaf "spawn-sh" "noctalia msg brightness-down")
+          ])
 
-        (plain "XF86MonBrightnessUp" [
-          (leaf "spawn-sh" "noctalia msg brightness-up")
-        ])
+          (plain "Mod+Shift+F9" [
+            (leaf "spawn-sh" "gsr-ui-cli toggle-record")
+          ])
 
-        (plain "XF86MonBrightnessDown" [
-          (leaf "spawn-sh" "noctalia msg brightness-down")
-        ])
-
-        (plain "Mod+Shift+F9" [
-          (leaf "spawn-sh" "gsr-ui-cli toggle-record")
-        ])
-
-        (plain "Mod+Shift+F10" [
-          (leaf "spawn-sh" "gsr-ui-cli toggle-show")
-        ])
-      ])
+          (plain "Mod+Shift+F10" [
+            (leaf "spawn-sh" "gsr-ui-cli toggle-show")
+          ])
+        ]
+        # ワークスペース切替 / ウィンドウ移動 (Hyprland の Mod(+Shift)+1~9)
+        ++ numberedBinds "Mod+" "focus-workspace"
+        ++ numberedBinds "Mod+Shift+" "move-window-to-workspace"
+      ))
 
       (plain "switch-events" [
         (plain "lid-close" [
@@ -378,6 +363,7 @@
         ])
       ])
 
+      # 既定の Alt+Tab 系バインドを空にして Noctalia の window-switcher に譲る
       (plain "recent-windows" [
         (plain "binds" [ ])
       ])

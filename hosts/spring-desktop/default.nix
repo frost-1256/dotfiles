@@ -1,20 +1,6 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
+# spring-desktop (GTX 1080 単GPU デスクトップ)。共通部分は modules/system.nix。
+{ config, ... }:
 {
-  config,
-  pkgs,
-  inputs,
-  ...
-}:
-{
-  disabledModules = [ "programs/wayland/noctalia.nix" ];
-
-  # btrfs 圧縮 (新規書き込み分から適用)。store はテキスト比率が高く zstd で
-  # 1.5〜2 倍程度の削減が見込める。noatime は書き込み量を減らす。
-  # 既存データは GC / 再ビルドで順次置き換わる (/nix の defragment は
-  # reflink を壊すので実行しない)。
-
   imports = [
     ../../modules/system.nix
     ../../modules/gnome.nix
@@ -25,22 +11,16 @@
     ./hardware-configuration.nix
   ];
 
-  # Bootloader.
+  networking.hostName = "spring-desktop";
+
   boot.loader = {
     efi = {
       canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot"; # ← use the same mount point here.
+      efiSysMountPoint = "/boot";
     };
     systemd-boot.enable = true;
   };
-  # ブートメニュー待ちを短縮 (loader 5.7秒 → 約2秒。世代選択時は起動時に Space 長押し)。
-  boot.loader.timeout = 1;
-  # SSD の TRIM を週次で実行 (timer のみで boot 時のコストは無い)。
-  # 長期的な書き込み性能の劣化を防ぐ。
-  services.fstrim.enable = true;
-  # CachyOS kernel (chaotic-nyx の既定バリアント = 上流 parity の LTO+BORE)。
-  # nyx-cache でバイナリが降ってくるので Hydra のビルド状況は気にしなくて良い。
-  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+
   # simpledrm (platform-simple-framebuffer) の無効化。
   # このマシンは GTX 1080 単GPUなのに simplefb が card0 として残り、
   # nvidia が card1 になる二重DRM構成になる。GDM (Mutter) は boot_vga を
@@ -58,18 +38,6 @@
   ];
   boot.blacklistedKernelModules = [ "simpledrm" ];
 
-  # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
-  # logind 側で suspend してしまうと lid-toggle が効かないため ignore にする。
-  services.logind.settings.Login = {
-    HandleLidSwitch = "ignore";
-    HandleLidSwitchExternalPower = "ignore";
-    HandleLidSwitchDocked = "ignore";
-  };
-
-  networking.hostName = "spring-desktop"; # Define your hostname.
-  networking.networkmanager.enable = true;
-  systemd.services.NetworkManager-wait-online.enable = false;
-
   # zram から zswap + disk swapfile へ切り替え。
   # zswap は backing swap デバイスへの書き込み前段キャッシュなので、受け皿の
   # disk swap が無いと働かない。zram との併用は二重圧縮になるため外す。
@@ -79,8 +47,6 @@
   # 中の swapfile は `btrfs filesystem mkswapfile` で作成する (nocow + prealloc)。
   swapDevices = [ { device = "/swap/swapfile"; } ];
 
-  hardware.bluetooth.enable = true;
-
   # mesa-git はこのホストでは無効化する。有効化すると hardware.graphics 一式を
   # mkForce で上書きするため、nvidia モジュールの GL/EGL/GBM 配線まで消えて
   # /run/opengl-driver が Mesa のみになり、Niri が renderer を作れず無出力で
@@ -88,23 +54,11 @@
   # 最新 Mesa が要るのは Lunar Lake 機 (t14) だけで、GTX 1080 機は不要。
   chaotic.mesa-git.enable = false;
 
-  # sched-ext (CachyOS カーネルで利用可)。LAVD は応答性と省電力のバランス型で
-  # ノート向け。EPP 側の調整 (perf-mode) とは併用できる。
-  services.scx = {
-    enable = true;
-    scheduler = "scx_lavd";
-  };
-
-  # 負荷時のもたつき抑止。ルールは chaotic の CachyOS 由来を使う。
-  services.ananicy = {
-    enable = true;
-    package = pkgs.ananicy-cpp;
-    rulesProvider = pkgs.ananicy-rules-cachyos_git;
-  };
-
   # NVIDIA GTX 1080 (Pascal) 用ドライバ設定。
   # Pascal は最新ブランチ非対応のため legacy_580 を使う。
   # open モジュールは Turing 以降専用のため使わない。
+  # GL/EGL/GBM は hardware.nvidia モジュールが hardware.graphics.extraPackages へ
+  # 自動配線する (xserver 不要)。modesetting.enable が nvidia-drm.modeset=1 と fbdev=1 を有効化する。
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     open = false;
@@ -112,8 +66,6 @@
     package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
   };
 
-  # Wayland (Niri) 前提の追加設定。
-  # modesetting.enable が nvidia-drm.modeset=1 と fbdev=1 を有効化する。
   # Niri 用の VRAM 解放プロファイル (上流 wiki の推奨値)。
   environment.etc."nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json".text =
     builtins.toJSON {
@@ -138,20 +90,6 @@
         }
       ];
     };
-
-  # NVIDIA の GL/EGL/GBM は hardware.nvidia モジュールが
-  # hardware.graphics.extraPackages へ自動配線する (xserver 不要)。
-  # ここで extraPackages を mkForce するモジュール (mesa-git 等) を
-  # 有効化すると配線ごと消えるので注意 (上記 mesa-git コメント参照)。
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-
-  programs.gpu-screen-recorder = {
-    enable = true;
-    ui.enable = true;
-  };
 
   system.stateVersion = "26.11"; # Did you read the comment?
 }

@@ -56,28 +56,26 @@
     window_switcher.style = "compact";
   };
 
-  bar.default.start = [
-    "workspaces"
-    "media"
-  ];
-
-  bar.default.end = [
-    "tray"
-    "notifications"
-    "network"
-    "bluetooth"
-    "brightness"
-    "volume"
-    "cat"
-    "battery"
-    "session"
-  ];
-
-  bar.default.background_opacity = 0.5;
-
-  bar.default.contact_shadow = true;
-
-  bar.default.dead_zone.actions.right = "none";
+  bar.default = {
+    start = [
+      "workspaces"
+      "media"
+    ];
+    end = [
+      "tray"
+      "notifications"
+      "network"
+      "bluetooth"
+      "brightness"
+      "volume"
+      "cat"
+      "battery"
+      "session"
+    ];
+    background_opacity = 0.5;
+    contact_shadow = true;
+    dead_zone.actions.right = "none";
+  };
 
   battery.warning_threshold = 20;
 
@@ -91,16 +89,17 @@
     };
   };
 
-  control_center.shortcuts = [
-    { type = "wifi"; }
-    { type = "bluetooth"; }
-    { type = "nightlight"; }
-    { type = "wallpaper"; }
-    { type = "notification"; }
-    { type = "power_profile"; }
-  ];
-
-  control_center.calendar.show_events_card = false;
+  control_center = {
+    shortcuts = [
+      { type = "wifi"; }
+      { type = "bluetooth"; }
+      { type = "nightlight"; }
+      { type = "wallpaper"; }
+      { type = "notification"; }
+      { type = "power_profile"; }
+    ];
+    calendar.show_events_card = false;
+  };
 
   location.auto_locate = true;
 

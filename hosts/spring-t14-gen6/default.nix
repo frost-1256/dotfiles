@@ -1,14 +1,27 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
+# spring-t14-gen6 (ThinkPad T14 Gen6 / Core Ultra 5 228V, Lunar Lake)。共通部分は modules/system.nix。
 {
   config,
   pkgs,
-  inputs,
   ...
 }:
 {
-  disabledModules = [ "programs/wayland/noctalia.nix" ];
+  imports = [
+    ../../modules/system.nix
+    ../../modules/fprintd.nix
+    ../../modules/perf-mode.nix
+    ../../modules/gnome.nix
+    ../../modules/niri.nix
+    ../../modules/deskflow.nix
+    ../../modules/podman.nix
+    ../../modules/steam.nix
+    ../../modules/tailscale.nix
+    ../../modules/tor.nix
+    ../../modules/smb.nix
+    ../../modules/sshd.nix
+    ./hardware-configuration.nix
+  ];
+
+  networking.hostName = "spring-t14-gen6";
 
   # btrfs 圧縮 (新規書き込み分から適用)。store はテキスト比率が高く zstd で
   # 1.5〜2 倍程度の削減が見込める。noatime は書き込み量を減らす。
@@ -23,21 +36,6 @@
     "noatime"
   ];
 
-  imports = [
-    ../../modules/system.nix
-    ../../modules/perf-mode.nix
-    ../../modules/gnome.nix
-    ../../modules/niri.nix
-    ../../modules/deskflow.nix
-    ../../modules/podman.nix
-    ../../modules/steam.nix
-    ../../modules/tailscale.nix
-    ../../modules/tor.nix
-    ../../modules/smb.nix
-    ../../modules/sshd.nix
-    ./hardware-configuration.nix
-  ];
-
   # Bootloader: Limine (wallpaper 付き TUI)。壁紙は ~/Pictures の VRChat スクショ
   # (2026-10-16 時点) を assets/boot-wallpaper.png にコピーしたもの。
   boot.loader.limine = {
@@ -45,18 +43,24 @@
     style.wallpapers = [ ./assets/boot-wallpaper.png ];
     style.wallpaperStyle = "stretched"; # 1920x1080 ネイティブ解像度なので stretch で OK
   };
-  # ブートメニュー待ちを短縮 (loader 5.7秒 → 約2秒。世代選択時は起動時に Space 長押し)。
-  boot.loader.timeout = 1;
-  # SSD の TRIM を週次で実行 (timer のみで boot 時のコストは無い)。
-  # 長期的な書き込み性能の劣化を防ぐ。
-  services.fstrim.enable = true;
-  # CachyOS kernel (chaotic-nyx の既定バリアント = 上流 parity の LTO+BORE)。
-  # nyx-cache でバイナリが降ってくるので Hydra のビルド状況は気にしなくて良い。
-  boot.kernelPackages = pkgs.linuxPackages_cachyos;
-  # PSR2 を使う (Panel Replay は明示無効)。復帰直後のデスクトップ透け対策の
-  # 切り分けとして、パネル側フレーム保持 (Replay) を外して PSR2 に寄せる。
-  # 新しめのカーネルでは VRR との共存に対応しているので Niri 側の VRR は残す。
-  # 確認: sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status
+
+  boot.kernelParams = [
+    # PSR2 を使う (Panel Replay は明示無効)。復帰直後のデスクトップ透け対策の
+    # 切り分けとして、パネル側フレーム保持 (Replay) を外して PSR2 に寄せる。
+    # 新しめのカーネルでは VRR との共存に対応しているので Niri 側の VRR は残す。
+    # 確認: sudo cat /sys/kernel/debug/dri/0/eDP-1/i915_psr_status
+    "xe.enable_psr=2"
+    "xe.enable_panel_replay=0"
+    # バッテリ運転時の低消費電力チューニング (performance を落とさない範囲のみ)。
+    # - iwlmvm.power_scheme=3 (low power): 無線のアイドル消費を下げる。
+    #   スループット影響は大容量転送時の末尾に出るだけでデスクトップ用途では無縁。
+    # - nmi_watchdog=0: アイドル時にパッケージ C-state が深く入るのを阻害する
+    #   要因の一つを除去 (障害時の NMI レポートは失われる)。
+    "iwlmvm.power_scheme=3"
+    "nmi_watchdog=0"
+  ];
+
+  # aarch64 (lxc-aarch64 等) のビルド用。重いものは下の nixbuild.net に投げる。
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
   # nixbuild.net リモートビルダー (aarch64 カーネル/イメージ用)。
   # 公開鍵 (~/.ssh/id_ed25519.pub) を https://nixbuild.net/settings/ssh-keys に登録すること。
@@ -71,7 +75,6 @@
   };
   nix = {
     distributedBuilds = true;
-    settings.builders-use-substitutes = true;
     buildMachines = [
       {
         hostName = "eu.nixbuild.net";
@@ -84,29 +87,15 @@
       }
     ];
   };
-  boot.kernelParams = [
-    "xe.enable_psr=2"
-    "xe.enable_panel_replay=0"
-    # バッテリ運転時の低消費電力チューニング (performance を落とさない範囲のみ)。
-    # - iwlmvm.power_scheme=3 (low power): 無線のアイドル消費を下げる。
-    #   スループット影響は大容量転送時の末尾に出るだけでデスクトップ用途では無縁。
-    # - nmi_watchdog=0: アイドル時にパッケージ C-state が深く入るのを阻害する
-    #   要因の一つを除去 (障害時の NMI レポートは失われる)。
-    "iwlmvm.power_scheme=3"
-    "nmi_watchdog=0"
-  ];
 
-  # フタ(Lid)の処理は Hyprland(bindl → lid-action)に一本化する。
-  # logind 側で suspend してしまうと lid-toggle が効かないため ignore にする。
+  # フタ (Lid) の処理は Niri の switch-events (home/niri/config.nix の
+  # lid-close → noctalia lock-and-suspend) に一本化する。
+  # logind 側でも suspend すると二重に走るため ignore にする。
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
     HandleLidSwitchExternalPower = "ignore";
     HandleLidSwitchDocked = "ignore";
   };
-
-  networking.hostName = "spring-t14-gen6"; # Define your hostname.
-  networking.networkmanager.enable = true;
-  systemd.services.NetworkManager-wait-online.enable = false;
 
   # メモリ圧時の SSD スワップ代替。zstd 圧縮 RAM 上なので遅くなく、
   # アイドルページ退避で実効メモリが増える。ノートの体感・消費電力両得。
@@ -115,44 +104,19 @@
     algorithm = "zstd";
   };
 
-  hardware.bluetooth.enable = true;
-
-  # 最新 Mesa (Lunar Lake の Xe2 iGPU 向け)。無効化時のフォールバック用に
-  # hardware.graphics 側の intel-media-driver 残しはそのままにする。
+  # 最新 Mesa (Lunar Lake の Xe2 iGPU 向け)。hardware.graphics を mkForce で
+  # 上書きするので、下の hardware.graphics.extraPackages は mesa-git を
+  # 無効化した時のフォールバック用として残している。
   chaotic.mesa-git = {
     enable = true;
     extraPackages = with pkgs; [
       intel-media-driver
     ];
   };
+  hardware.graphics.extraPackages = with pkgs; [
+    intel-media-driver
+  ];
 
-  # sched-ext (CachyOS カーネルで利用可)。LAVD は応答性と省電力のバランス型で
-  # ノート向け。EPP 側の調整 (perf-mode) とは併用できる。
-  services.scx = {
-    enable = true;
-    scheduler = "scx_lavd";
-  };
-
-  # 負荷時のもたつき抑止。ルールは chaotic の CachyOS 由来を使う。
-  services.ananicy = {
-    enable = true;
-    package = pkgs.ananicy-cpp;
-    rulesProvider = pkgs.ananicy-rules-cachyos_git;
-  };
-
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-
-    extraPackages = with pkgs; [
-      intel-media-driver
-    ];
-  };
-
-  programs.gpu-screen-recorder = {
-    enable = true;
-    ui.enable = true;
-  };
   # Face or Fingerprint の OR 構成:
   # - ロック画面: Noctalia が指紋を D-Bus で常時待ち受け (指を置けば即解除)、
   #   Enter → PAM で顔 → パスワード。PAM 側の fprintd は外す

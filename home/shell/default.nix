@@ -8,6 +8,8 @@
   home.packages = with pkgs; [
     pure-prompt
     zsh-completions
+    # programs.carapace は init にフルパスを埋めるだけで PATH に入れない。
+    # 補完関数は `carapace` をコマンド名で呼ぶため消さないこと
     carapace
     ripgrep
     fd
@@ -16,6 +18,7 @@
     duf
     procs
     nixfmt
+    nix-search-cli
   ];
 
   home.sessionPath = [
@@ -54,6 +57,8 @@
     enable = true;
     icons = "auto";
     git = true;
+    extraOptions = [ "--group-directories-first" ];
+    # ls / la / lt / lla は統合が生成する (eza エイリアス経由で上のオプションが付く)
     enableZshIntegration = true;
   };
 
@@ -99,10 +104,21 @@
       zcompdump_stale=( ${config.home.homeDirectory}/.zcompdump(N.mh+24) )
       if (( $#zcompdump_stale )); then
         compinit -d "$zcompdump"
+        # 罠: compinit は関数集合が変わらないとダンプを書き直さないため mtime が
+        # 古いまま残り、24h 判定が永遠に真 = 毎回フル compinit (compaudit 込み)
+        # になっていた (2026-11-14 実測: 10/18 から未更新)。明示的に touch する。
+        touch "$zcompdump"
       else
         compinit -C -d "$zcompdump"
       fi
       unset zcompdump_stale
+      # ダンプをバイトコンパイル (source 時に新しい .zwc が自動で使われる)。
+      # 起動を待たせないようバックグラウンドで。
+      {
+        if [[ -s $zcompdump && ( ! -s $zcompdump.zwc || $zcompdump -nt $zcompdump.zwc ) ]]; then
+          zcompile "$zcompdump"
+        fi
+      } &!
     '';
 
     history = {
@@ -122,8 +138,7 @@
 
       grep = "rg";
       find = "fd";
-      ls = "eza --icons --group-directories-first";
-      ll = "eza -la --icons --git";
+      ll = "eza -la";
       cat = "bat";
       du = "dust";
       df = "duf";
@@ -131,6 +146,16 @@
       top = "btm";
       man = "tldr";
       cd = "z";
+    };
+
+    # .zshrc 冒頭 (プラグイン読み込み前) に書かれる
+    localVariables = {
+      # --- zsh-autosuggestions の入力レスポンス ---
+      # MANUAL_REBIND: 毎 precmd での全 widget 再ラップを止める (プロンプト復帰が軽くなる)
+      # BUFFER_MAX_SIZE: 長い貼り付け中に履歴検索で固まるのを防ぐ
+      # (非同期化 USE_ASYNC は 0.7.1 が zsh>=5.0.8 で自動有効化するので書かない)
+      ZSH_AUTOSUGGEST_MANUAL_REBIND = 1;
+      ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE = 50;
     };
 
     setOptions = [
@@ -152,10 +177,6 @@
     ];
 
     initContent = lib.mkMerge [
-      (lib.mkOrder 500 ''
-        typeset -U path
-      '')
-
       (lib.mkOrder 1000 ''
         # --- 電源モード手動切り替え ---
         # highperf : performance プロファイルへ。重めビルド・ベンチ等の一時使用用

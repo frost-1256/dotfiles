@@ -21,6 +21,11 @@
   ...
 }:
 {
+  # time / i18n / nix gc / zsh / nixpkgs.config / closure 削減は全ホスト共通。
+  # experimental-features (nix-command / flakes) は droidspaces モジュール側が
+  # 設定するので base.nix には入れていない (二重定義防止)。
+  imports = [ ../../modules/base.nix ];
+
   # lxc-container.nix (droidspaces モジュール経由) も同じ値を書くが、
   # 単独 eval 時の意図明示のため残す (同値の二重定義はマージされる)。
   boot.isContainer = true;
@@ -31,44 +36,6 @@
   # ここでは触らない。
 
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-linux";
-  # allowUnfree 等は全ホスト共通ファイルから (modules/system.nix と同一)。
-  nixpkgs.config = import ../../nixpkgs-config.nix;
-
-  time.timeZone = "Asia/Tokyo";
-
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "ja_JP.UTF-8";
-    LC_IDENTIFICATION = "ja_JP.UTF-8";
-    LC_MEASUREMENT = "ja_JP.UTF-8";
-    LC_MONETARY = "ja_JP.UTF-8";
-    LC_NAME = "ja_JP.UTF-8";
-    LC_NUMERIC = "ja_JP.UTF-8";
-    LC_PAPER = "ja_JP.UTF-8";
-    LC_TELEPHONE = "ja_JP.UTF-8";
-    LC_TIME = "ja_JP.UTF-8";
-  };
-
-  nix.settings = {
-    auto-optimise-store = true;
-    builders-use-substitutes = true;
-    # experimental-features (nix-command / flakes) は
-    # droidspaces モジュール側が設定するので書かない (二重定義防止)。
-  };
-
-  nix.gc = {
-    automatic = lib.mkDefault true;
-    dates = lib.mkDefault "weekly";
-    options = lib.mkDefault "--delete-older-than 7d";
-  };
-
-  # HTML マニュアルと nixos-help を落とす (modules/system.nix と同一の削減)。
-  documentation.doc.enable = false;
-
-  environment.defaultPackages = with pkgs; [
-    rsync
-    strace
-  ];
 
   environment.systemPackages = with pkgs; [
     curl
@@ -79,9 +46,6 @@
   ];
 
   users.users.${username} = {
-    isNormalUser = true;
-    description = username;
-    shell = pkgs.zsh;
     extraGroups = [ "wheel" ];
     # 初回はパスワード無し (コンソールから passwd で設定するか、
     # 下の openssh.authorizedKeys.keys に鍵を登録すること)。
@@ -90,12 +54,6 @@
   # パスワード未設定のまま sudo を使えるようにする
   # (コンソールに入れる時点で root 同等なのでコンテナ内では許容)。
   security.sudo.wheelNeedsPassword = false;
-
-  # ユーザーシェルは zsh。/etc/zshrc 側の compinit は無効化し、
-  # home/shell/default.nix の completionInit に一本化する
-  # (modules/system.nix と同一理由)。
-  programs.zsh.enable = true;
-  programs.zsh.enableGlobalCompInit = false;
 
   # NAT モードで外から入る場合は Droidspaces 側で --port 22:22 を振ること。
   # 鍵認証に切り替えたら PasswordAuthentication は false にする。

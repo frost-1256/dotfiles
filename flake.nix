@@ -67,6 +67,14 @@
       ...
     }@inputs:
     let
+      username = "spring";
+
+      # NixOS / HM 両方のモジュール引数。inputs を展開したもの (`{ niri, ... }`) と
+      # まとめたもの (`{ inputs, ... }`) の両方で取れるようにする。
+      specialArgs = inputs // {
+        inherit inputs username;
+      };
+
       mkHomeModules = username: [
         noctalia.homeModules.default
         nix-hazkey.homeModules.hazkey
@@ -84,19 +92,39 @@
       # NixOS では nixosModules.niri が homeModules.config を sharedModules に
       # 自動注入するが、standalone にはその経路が無いので programs.niri が未定義になる。
       # よって niri の home-module を明示的に足す（NixOS 側 mkHomeModules には入れない）。
-      mkStandaloneHomeModules =
-        username:
-        mkHomeModules username
-        ++ [
-          niri.homeModules.niri
-        ];
+      mkStandaloneHomeModules = username: mkHomeModules username ++ [ niri.homeModules.niri ];
 
-      mkHomeSpecialArgs =
-        username:
-        inputs
-        // {
-          inherit inputs;
-          inherit username;
+      # NixOS に home-manager を組み込むモジュール
+      mkHomeManagerModule = homeModules: {
+        imports = [ home-manager.nixosModules.home-manager ];
+        home-manager = {
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          extraSpecialArgs = specialArgs;
+          users.${username}.imports = homeModules;
+        };
+      };
+
+      # デスクトップホスト (Niri + Noctalia + HM フル構成)。違いは hosts/<host> 側に書く。
+      mkDesktopHost =
+        host:
+        nixpkgs.lib.nixosSystem {
+          inherit specialArgs;
+          system = "x86_64-linux";
+          modules = [
+            noctalia.nixosModules.default
+            niri.nixosModules.niri
+            chaotic.nixosModules.default
+            gaze.nixosModules.default
+            ./hosts/${host}
+            (mkHomeManagerModule (mkHomeModules username))
+            {
+              programs.noctalia = {
+                enable = true;
+                recommendedServices.enable = true;
+              };
+            }
+          ];
         };
 
       mkPkgs =
@@ -114,166 +142,41 @@
         };
 
       mkHomeConfiguration =
-        {
-          username,
-          system,
-        }:
+        modules: system:
         home-manager.lib.homeManagerConfiguration {
           pkgs = mkPkgs system;
-          extraSpecialArgs = mkHomeSpecialArgs username;
-          modules = mkStandaloneHomeModules username;
+          extraSpecialArgs = specialArgs;
+          inherit modules;
         };
-
-      mkPortableHomeConfiguration =
-        {
-          username,
-          system,
-        }:
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = mkPkgs system;
-          extraSpecialArgs = mkHomeSpecialArgs username;
-          modules = mkPortableHomeModules username;
-        };
+      mkPortableHomeConfiguration = mkHomeConfiguration (mkPortableHomeModules username);
     in
     {
       nixosConfigurations = {
-        spring-t14-gen6 =
-          let
-            username = "spring";
-            specialArgs = inputs // {
-              inherit username;
-            };
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = "x86_64-linux";
-
-            modules = [
-              noctalia.nixosModules.default
-
-              niri.nixosModules.niri
-              chaotic.nixosModules.default
-              gaze.nixosModules.default
-
-              {
-                _module.args.inputs = inputs;
-              }
-
-              ./hosts/spring-t14-gen6
-
-              home-manager.nixosModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-
-                home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
-                home-manager.users.${username}.imports = mkHomeModules username;
-              }
-
-              {
-                programs.noctalia = {
-                  enable = true;
-                  recommendedServices.enable = true;
-                };
-              }
-            ];
-          };
-
-        spring-desktop =
-          let
-            username = "spring";
-            specialArgs = inputs // {
-              inherit username;
-            };
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = "x86_64-linux";
-
-            modules = [
-              noctalia.nixosModules.default
-
-              niri.nixosModules.niri
-              chaotic.nixosModules.default
-              gaze.nixosModules.default
-
-              {
-                _module.args.inputs = inputs;
-              }
-
-              ./hosts/spring-desktop
-
-              home-manager.nixosModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-
-                home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
-                home-manager.users.${username}.imports = mkHomeModules username;
-              }
-
-              {
-                programs.noctalia = {
-                  enable = true;
-                  recommendedServices.enable = true;
-                };
-              }
-            ];
-          };
+        spring-t14-gen6 = mkDesktopHost "spring-t14-gen6";
+        spring-desktop = mkDesktopHost "spring-desktop";
 
         # aarch64 NixOS LXC コンテナ用。既存ホストとは独立した最小構成 +
         # portable home (nvim + shell + core)。デスクトップ系 flake モジュール
         # (noctalia / niri / gaze 等) はコンテナに不要なため付けない。
-        lxc-aarch64 =
-          let
-            username = "spring";
-            specialArgs = inputs // {
-              inherit username;
-            };
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = "aarch64-linux";
-
-            modules = [
-              # Droidspaces 公式手順 (https://www.droidspaces.org/docs/nix-nixos.html)。
-              # lxc-container.nix の import と tarball ビルド
-              # (system.build.tarball) を提供する。
-              droidspaces.nixosModules.working-droidspaces-rootfs-minimal
-              ./hosts/lxc-aarch64
-
-              home-manager.nixosModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-
-                home-manager.extraSpecialArgs = mkHomeSpecialArgs username;
-                home-manager.users.${username}.imports = mkPortableHomeModules username;
-              }
-            ];
-          };
+        lxc-aarch64 = nixpkgs.lib.nixosSystem {
+          inherit specialArgs;
+          system = "aarch64-linux";
+          modules = [
+            # Droidspaces 公式手順 (https://www.droidspaces.org/docs/nix-nixos.html)。
+            # lxc-container.nix の import と tarball ビルド
+            # (system.build.tarball) を提供する。
+            droidspaces.nixosModules.working-droidspaces-rootfs-minimal
+            ./hosts/lxc-aarch64
+            (mkHomeManagerModule (mkPortableHomeModules username))
+          ];
+        };
       };
 
       homeConfigurations = {
-        spring = mkHomeConfiguration {
-          username = "spring";
-          system = "x86_64-linux";
-        };
-
-        "spring@x86_64-linux" = mkPortableHomeConfiguration {
-          username = "spring";
-          system = "x86_64-linux";
-        };
-
-        "spring@aarch64-linux" = mkPortableHomeConfiguration {
-          username = "spring";
-          system = "aarch64-linux";
-        };
-
-        "spring@aarch64-darwin" = mkPortableHomeConfiguration {
-          username = "spring";
-          system = "aarch64-darwin";
-        };
+        ${username} = mkHomeConfiguration (mkStandaloneHomeModules username) "x86_64-linux";
+        "${username}@x86_64-linux" = mkPortableHomeConfiguration "x86_64-linux";
+        "${username}@aarch64-linux" = mkPortableHomeConfiguration "aarch64-linux";
+        "${username}@aarch64-darwin" = mkPortableHomeConfiguration "aarch64-darwin";
       };
     };
 }

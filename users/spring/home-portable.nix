@@ -1,22 +1,12 @@
-{
-  pkgs,
-  ...
-}:
+# 非 NixOS (macOS / 他ディストリ / lxc-aarch64) 向けの最小 home。
+# gh は home/shell の programs.gh、nix-search-cli も home/shell 側で入る。
+{ ... }:
 {
   imports = [
     ../../home/nvim
     ../../home/shell
+    ../../home/git
     ../../home/claude
     ../../home/core.nix
   ];
-  home.packages = with pkgs; [
-    github-cli
-    nix-search-cli
-  ];
-  programs.gpg.enable = true;
-  programs.git.enable = true;
-  programs.git.settings = {
-    user.name = "spring";
-    user.email = "harusan@spring-server.com";
-  };
 }

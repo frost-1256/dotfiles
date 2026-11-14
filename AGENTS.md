@@ -6,12 +6,12 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 - Flake は `flake.nix`（git root は `~/dotfiles`）
 - ホスト: `spring-t14-gen6`（ThinkPad T14 Gen6 / Intel）。ユーザーは `spring`
-- nixpkgs は `nixos-unstable-small`、カーネル `linuxPackages_latest`、stateVersion `26.11`（system/home 両方）
+- nixpkgs は `nixos-unstable-small`、カーネル `linuxPackages_cachyos`（chaotic-nyx、modules/system.nix）、stateVersion `26.11`（system/home 両方）
 - ディレクトリ役割:
   - `hosts/<host>/` — ホスト固有設定 + generated な `hardware-configuration.nix`
-  - `modules/` — システム側機能モジュール（host の default.nix から import）
+  - `modules/` — システム側機能モジュール。`base.nix`（全ホスト共通: user/zsh/nix gc/locale/closure 削減）← `system.nix`（デスクトップ 2 台共通: カーネル・scx・ananicy・NM・bluetooth・graphics・fonts・audio 等）← `hosts/<host>` の順に積む。`fprintd.nix` は t14 専用（センサがあるのは t14 だけ）
   - `home/` — home-manager モジュール（アプリごとに `default.nix` + 細分化ファイル）
-  - `users/spring/` — `home.nix`（NixOS用 HM）/ `home-portable.nix`（非NixOS用 HM）/ `home/core.nix`（共通: username, homeDirectory, stateVersion）。システム側のユーザー定義は `modules/system.nix` に統合済み（旧 `nixos.nix` は削除）
+  - `users/spring/` — `home.nix`（NixOS用 HM）/ `home-portable.nix`（非NixOS用 HM）/ `home/core.nix`（共通: username, homeDirectory, stateVersion）。`home/git`（git / gpg）は NixOS・portable 共通。システム側のユーザー定義は `modules/base.nix`（extraGroups は system.nix / lxc 側で足す）
 
 ## ビルド・再構築
 
@@ -29,30 +29,31 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 ## デスクトップ周のクセ
 
-- WM は **Niri + Noctalia**（Hyprland からの移行済み）。`home/hypr/` は生きているが `users/spring/home.nix` の import がコメントアウトされて無効化されているだけ。**消さない・有効化しない**
+- WM は **Niri + Noctalia**（Hyprland からの移行済み。`home/hypr/` は削除済み）
 - Niri 設定は `home/niri/config.nix` で **KDL DSL**（`inputs.niri.lib.kdl` の `node`/`plain`/`leaf`/`flag`）から生成する。DSL 関数の使い分けを間違えると KDL パースエラー:
   - 引数+子ノード → `node`、子のみ → `plain`、値のみ → `leaf`、空ノード → `flag`（例: `(flag "natural-scroll")` であって `(leaf "natural-scroll" true)` ではない）
 - Noctalia の declarative 設定は `home/noctalia/settings.nix`（`pkgs.formats.toml` で TOML 化）。設定アプリの変更はランタイム側 `~/.local/state/noctalia/settings.toml` に書かれ、Nix には自動で入らない → declarative に落とすときは noctalia-sync skill を使う。反映は `systemctl --user restart noctalia.service`
 - `programs.waybar.enable = lib.mkForce false`（home/niri/config.nix）: Noctalia 側のバーを使うため waybar は意図的に無効。`modules/perf-mode.nix` 内の `pkill -RTMIN+9 waybar` は Hyprland 時代の名残で実質 no-op
-- host default.nix の `disabledModules = [ "programs/wayland/noctalia.nix" ]` は nixpkgs 内蔵版を無効化して flake input 版を使うため。外さない
+- `modules/system.nix` の `disabledModules = [ "programs/wayland/noctalia.nix" ]` は nixpkgs 内蔵版を無効化して flake input 版を使うため。外さない
 - **罠**: GDM 50 の `gdm-wayland-session` は .desktop の `Exec=niri-session` を PATH で解決するが、`display-manager.service` の PATH には gnome-session しか入らない。`services.displayManager.sessionPackages`（XDG_DATA_DIRS）だけでは足りず、全ログインが `Unable to run session` → `Session never registered` で即落ちする（2026-10-12 実測）。`modules/niri.nix` で `systemd.services.display-manager.path = [ config.programs.niri.package ]` を足すこと。さらに `services.displayManager.defaultSession` 未設定だと存在しない gnome-session を起動しようとして同じ症状になる（GNOME 本体未導入のため user 側 PATH に無い）ため `defaultSession = "niri"` も必須。PATH 追加だけでは直らない
 
 ## モジュール・設定の罠
 
 - **GDM グリーターの背景**: `modules/gnome.nix` の overlay で `pkgs.gnome-shell` を `hosts/spring-t14-gen6/gdm-bg.nix`（`overrideAttrs` の `postInstall` で gnome-shell-theme.gresource を再パッケージ）に差し替え、`#lockDialogGroup` に `assets/boot-wallpaper.png` を敷いている。GDM 50.x の loginDialog は画像レイヤーを持たず、背景は gnome-shell テーマ CSS の `#lockDialogGroup` 単色がそのまま出る。画像差し替えは assets/boot-wallpaper.png を挿し替えるだけ。**必殺**: 別 out へ `cp -r` するだけの runCommand では効かない（libshell-18.so がビルド時の datadir と unit の ExecStart が元 store パスを指し続ける。gen376 実測）。overrideAttrs で自 $out に作る必要がある。gnome-shell / GDM の更新で `#lockDialogGroup` ルールの記述が変わると sed の注入が外れて失敗する（build 時に気付く）
   - **ぼかし・減光は CSS では不可**（背景画像は `background-image` で、StThemeNode にフィルタが無い）→ 同じ `gdm-bg.nix` の `postInstall` で ImageMagick により build 時に焼き込む（`blurSigma` / `darkenPercent` の 2 定数が調整点。`-strip` で PNG の date チャンクを落として再現性を確保）。実行時コストはゼロで gresource には加工済み PNG だけが載る
-- `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + Hyprland + gnome-keyring の有効化が本体（gnome-keyring はかつて mkForce false だったが有効化に転換済み）
+- `modules/gnome.nix` は**名前に反して GNOME を有効化しない**。GDM + gnome-keyring + GVfs の有効化と GDM 背景 overlay が本体（gnome-keyring はかつて mkForce false だったが有効化に転換済み）
 - **罠**: `chaotic.mesa-git.enable = true` は `hardware.graphics` 一式を `mkForce` で上書きするため、nvidia モジュールの GL/EGL/GBM 配線（`extraPackages` の nvidia ドライバ）まで消えて `/run/opengl-driver` が Mesa のみになる。Niri (Smithay) は software renderer を使わないため `driver (null)` → `no allocator` で renderer を作れず、ログインは成功するのに無出力で真っ黒になる（2026-10-12 実測、GTX 1080 機）。mesa-git が要るのは Lunar Lake 機 (t14) だけ。NVIDIA 単GPU機 (spring-desktop) では無効化すること。自前の `extraPackages = [ nvidiaPkg ]` を足しても mkForce の前では無力（リスト結合ではなく上書きで消える）
 - `modules/virtualisation.nix`（libvirt / virt-manager / looking-glass / vfio / vm-curator 一式）は 2026-11-10 に削除済み。FileZilla / Transmission / AnyDesk / podman-desktop も同日削除（使用頻度調査で未使用のため）。復活させる場合は kernelModules に `vfio_virqfd` を入れない（kernel 6.x で vfio 本体に統合済みでモジュールが無く、毎起動 `Failed to find module` が出る）
 - ボリューム削減の設定（2026-10 追加）: `/nix` と `/home` に btrfs `compress=zstd,noatime`（`hosts/spring-t14-gen6/default.nix`。反映は reboot か `mount -o remount /nix /home`）、`documentation.doc.enable = false`（HTML マニュアル + `nixos-help` を削除、man は残す）、`environment.defaultPackages` から perl を除外、`nix.settings.auto-optimise-store = true`。既存 store を hardlink 最適化するには `sudo nix store optimise`（自動では新規追加分のみ）。`services.speechd.enable = false`（graphical-desktop の mkDefault で入る画面読み上げ。orca 不使用なら不要で mbrola voices 含め約 0.7GB 削減）。`/tmp` の Android ROM 残骸（system.new.dat 等）は都度捨てる（9/27 分で約 9GB。10 月分は現役の可能性あり温存）
 - **`system.disableInstallerTools = true` にしてはいけない**: `nixos-install`/`nixos-generate-config`/`nixos-option` だけでなく `nixos-rebuild`(-ng) 本体も system path から消え、`sudo nixos-rebuild switch` が `command not found` になる（2026-10-05 に実際に踏んだ。復旧は前世代の `sw/bin/nixos-rebuild` を絶対パスで叩く）
 - flake の `specialArgs` / `extraSpecialArgs` で `username` と `inputs` が全モジュールに注入される。モジュール引数で `{ username, ... }` / `{ inputs, ... }` を取れるのが前提
 - `allowUnfree` / `permittedInsecurePackages = [ "electron-38.8.4" ]` は `nixpkgs-config.nix` に一元化済み。flake の `mkPkgs`（standalone HM 用 pkgs）と `modules/system.nix` の `nixpkgs.config`（NixOS グローバル pkgs）が同じファイルを import している。変えるのはこの 1 ファイルだけで良い
+- flake.nix のデスクトップホストは `mkDesktopHost "<host>"` 1 行で定義する（共通の flake モジュール・HM 組み込み・noctalia system 設定はここ）。新ホストは hosts/<host> を作って 1 行足すだけ
 - `mkHomeModules`（NixOS 経由）と `mkPortableHomeModules`（standalone HM）の 2 系統の home 構成がある。`home/` 配下のモジュールは両方から拾われるので、NixOS 専用依存（noctalia input 等）を portable 側で参照しない
 - ブランチ `portable-hm` は非 NixOS（macOS 含む）向け home-manager 専用。main にマージする前提で分離されている
 - Tor Browser は nixpkgs の `tor-browser` を `users/spring/home.nix` の `home.packages` に直書き（NixOS/HM 双方に専用モジュールは無い）。`meta.platforms` が i686/x86_64-linux のみなので **portable 側 (Darwin) には置けない**。バンドルに tor 本体を含むため `services.tor` は不要。ライセンスは MPL-2.0 等で free（allowUnfree 不要）
 - `modules/perf-mode.nix`: VR 専用だった手動トグル (perf-toggle / perf-apply / perf-status-icon、NOPASSWD sudo rule、waybar widget) は 2026-10-17 に削除済み。残っているのは ppd 追随の `power-tune` (EPP=power-saver 時だけ balance_performance に補正 + hwp_dynamic_boost) とその systemd トリガのみ。プロファイル変更は `powerprofilesctl set` を直接叩く (home/shell の highperf/balanced/power エイリアス)。`perf-apply balanced` は iGPU 下限を既定の rpe に戻すだけで rpn(100MHz) まで下げない（DVFS の立ち上がりが間に合わずカクつくため）
-- 固有机能: fprintd（TOD goodix ドライバ + hid-multitouch unbind udev ルール）、NextDNS DoT、Syncthing で `~/Passwords`（KeePassXC）同期。VRChat/Unity 一式 (`modules/unity.nix`) と `nixos-vrchat` / `run-vm` input は 2026-10-17 に削除済み（VR 運用終了。`programs.vrchat-unity` オプションは nixos-vrchat input の `nixosModules.default` が提供していたため、unity.nix を生かすなら input も必要）
+- 固有機能: fprintd（`modules/fprintd.nix`、t14 のみ。TOD goodix ドライバ + hid-multitouch unbind udev ルール）、NextDNS DoT、Syncthing で `~/Passwords`（KeePassXC）同期。VRChat/Unity 一式 (`modules/unity.nix`) と `nixos-vrchat` / `run-vm` input は 2026-10-17 に削除済み（VR 運用終了。`programs.vrchat-unity` オプションは nixos-vrchat input の `nixosModules.default` が提供していたため、unity.nix を生かすなら input も必要）
 - **罠**: btrfs 上の swapfile は `swapDevices` の `size` 指定（NixOS 自動作成）に頼れない。sparse/nocow 未設定で作られるため `swapon` が `Invalid argument` で死ぬ。正解は `/swap` を別 subvolume に切り `btrfs filesystem mkswapfile` で手作りし、`swapDevices = [ { device = "/swap/swapfile"; } ]` と device のみ宣言する（`size = null` だと NixOS はファイルに触らず swapon のみ。eval で確認済み）。zswap は backing disk swap が無いと働かないため zram との併用は二重圧縮になる（spring-desktop は zram 無効化 + 16G swapfile + `zswap.*` kernelParams。2026-10-12）
 
 ## 電源プロファイル (power-profiles-daemon) 周
@@ -85,6 +86,9 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 - compinit の呼び出し元は `home/shell/default.nix` の `completionInit` **だけ**。NixOS 側は `modules/system.nix` の `programs.zsh.enableGlobalCompInit = false` で `/etc/zshrc` の compinit を止めている（戻すと起動に +0.4 秒、二重 compinit になる）
 - **罠**: `[[ -n $var(#qN.mh+24) ]]` は `[[ ]]` 内では glob 展開されず**常に真**。そのため毎回フル compinit（= ダンプ全走査、起動 +0.6 秒）になっていた。glob qualifier は `zcompdump_stale=( $HOME/.zcompdump(N.mh+24) )` のように `[[ ]]` の外で展開する
+- **罠**: compinit は関数集合が変わらないとダンプを**書き直さない**ので `.zcompdump` の mtime が古いまま残り、24h 判定が永遠に真 = 毎回フル compinit (compaudit 込み) になる (2026-11-14 実測: 10/18 から未更新)。フル compinit の後に `touch` している。ダンプは `zcompile` でバックグラウンド .zwc 化
+- **罠**: `programs.carapace` は init に store のフルパスを埋めるだけで carapace を PATH に入れないが、補完関数は `carapace` をコマンド名で呼ぶ。`home.packages` の carapace は重複に見えても消さない
+- zsh-autosuggestions 0.7.1 は zsh>=5.0.8 で `ZSH_AUTOSUGGEST_USE_ASYNC` を自動で立てる（値は空）ので書かなくてよい
 - **罠**: 検証で HM 管理の dotfile リンク（`~/.zshrc` 等）を一時的に差し替えたあと戻すときは `readlink -f` を使わない。store の実体へ直接張り直すと HM activation が `Existing file ... would be clobbered` で失敗する。`readlink`（= `.../home-manager-files/.zshrc` 形式）で復元する
 
 ## nvim (nixvim)

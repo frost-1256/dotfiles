@@ -9,6 +9,7 @@
     ../../home/niri
     ../../home/nvim
     ../../home/shell
+    ../../home/git
     ../../home/noctalia
     ../../home/wezterm
     ../../home/omp
@@ -29,13 +30,10 @@
     floorp-bin
     gimp
     fastfetch
-    nix-search-cli
-    # gh は home/shell の programs.gh に一本化 (補完付き)
+    # gh / nix-search-cli は home/shell 側 (portable と共通)
     nwg-displays
-    keybase
     gthumb
     aria2
-    keybase-gui
     pavucontrol
     protonup-qt
     protontricks
@@ -49,6 +47,8 @@
     tealdeer
     tmux
     tor-browser
+    # ida-free # 要手動DL: nix-store --add-fixed sha256 ida-free-pc_93_x64linux.run してから有効化
+    ghidra
     lan-mouse
     vesktop
     rustdesk
@@ -73,8 +73,7 @@
       };
     };
   };
-  services.keybase.enable = true;
-  programs.gpg.enable = true;
+  # programs.gpg / programs.git の本体は home/git (portable と共通)
   services.gpg-agent = {
     enable = true;
     enableSshSupport = false;
@@ -86,13 +85,6 @@
   # sockets.target との循環依存を起こすのを防ぐ
   systemd.user.services.set-SSH_AUTH_SOCK = {
     Unit.DefaultDependencies = false;
-  };
-  programs.git = {
-    enable = true;
-    settings = {
-      user.name = "spring";
-      user.email = "harusan@spring-server.com";
-    };
   };
   programs.delta = {
     enable = true;
