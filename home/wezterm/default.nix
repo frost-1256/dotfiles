@@ -19,7 +19,15 @@
       scrollback_lines = 10000;
 
       # --- 見た目 ---
-      font.font = [ { family = "HackGen Console NF"; } ];
+      # 罠: wezterm.font() を通さない生テーブルでは is_fallback / is_synthetic が
+      # 必須フィールド (省略すると Config::from_dynamic で missing field エラー)
+      font.font = [
+        {
+          family = "HackGen Console NF";
+          is_fallback = false;
+          is_synthetic = false;
+        }
+      ];
       font_size = 12.5;
       color_scheme = "Dracula (Official)";
       window_background_opacity = 0.3;

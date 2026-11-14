@@ -157,3 +157,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 ## nix 信任 (trusted-users)
 
 - **罠**: `nixConfig`（flake 直下の `extra-*`）を使うにはユーザーが trusted-user である必要がある。`trusted-users` 未指定（既定 `root`）だと、flake 利用のたびに extra-substituters / extra-trusted-public-keys の y/N プロンプトが出続け、さらにクライアント側から restricted 設定（`trusted-public-keys` 等）を渡すと `ignoring the client-specified setting ... not a trusted user` で無視される（2026-10-17 実測）。`modules/system.nix` の `nix.settings.trusted-users = [ username ]` で解決済み。`spring` を trusted にすると flake の nixConfig は確認なしで自動適用される（初回 prompt の "permanently mark" は `~/.local/share/nix/trusted-settings.json` に保存される派であり、trusted-users 化後は出ない）
+
+## WezTerm
+
+- **罠**: `programs.wezterm.settings.font.font` の生テーブルでは `is_fallback` / `is_synthetic` が**必須**（既定値っぽいが省略すると `missing field is_fallback` で設定全体が読めなくなる。2026-11-14 実測）。設定変更後は `wezterm --config-file <生成 lua> ls-fonts 2>&1 | grep ERROR` で読み込み検証する
