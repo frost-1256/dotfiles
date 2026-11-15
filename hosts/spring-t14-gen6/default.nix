@@ -58,7 +58,19 @@
     #   要因の一つを除去 (障害時の NMI レポートは失われる)。
     "iwlmvm.power_scheme=3"
     "nmi_watchdog=0"
+    # zswap を止める。CachyOS カーネルは既定で zswap 有効だが、このホストは
+    # zram swap なので zswap → zram の二重圧縮になり CPU とレイテンシを無駄にする
+    # (spring-desktop は逆に zram 無効 + zswap + disk swapfile 構成)。
+    "zswap.enabled=0"
   ];
+
+  # PCI デバイスのランタイム省電力 (TLP の RUNTIME_PM と同じ手法)。既定では
+  # WiFi / BT / NVMe / 有線 LAN 等 12 個が常時給電 (power/control=on) だった。
+  # auto にすると未使用時に D3 へ落ちる。実測 (power-saver・放置):
+  # 7.3〜7.8W → 7.1W (2026-11-15)。WiFi / BT / NVMe の動作に影響なし。
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="pci", ATTR{power/control}="auto"
+  '';
 
   # aarch64 (lxc-aarch64 等) のビルド用。重いものは下の nixbuild.net に投げる。
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
