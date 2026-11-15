@@ -75,8 +75,8 @@
   };
 
   programs.gpu-screen-recorder = {
-    enable = true;
-    ui.enable = true;
+    enable = false;
+    ui.enable = false;
   };
 
   fonts = {

@@ -40,7 +40,7 @@
     proton-authenticator
     icoutils
     wine
-    gpu-screen-recorder-gtk
+    #gpu-screen-recorder-gtk
     mpv
     thunderbird
     teams-for-linux
