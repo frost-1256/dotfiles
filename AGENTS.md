@@ -90,6 +90,8 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 - **罠**: compinit は関数集合が変わらないとダンプを**書き直さない**ので `.zcompdump` の mtime が古いまま残り、24h 判定が永遠に真 = 毎回フル compinit (compaudit 込み) になる (2026-11-14 実測: 10/18 から未更新)。フル compinit の後に `touch` している。ダンプは `zcompile` でバックグラウンド .zwc 化
 - **罠**: `programs.carapace` は init に store のフルパスを埋めるだけで carapace を PATH に入れないが、補完関数は `carapace` をコマンド名で呼ぶ。`home.packages` の carapace は重複に見えても消さない
 - zsh-autosuggestions 0.7.1 は zsh>=5.0.8 で `ZSH_AUTOSUGGEST_USE_ASYNC` を自動で立てる（値は空）ので書かなくてよい
+- 起動時の fork を潰している (2026-11-15、`zsh -i -c exit` 48ms → 34ms): carapace / direnv / zoxide の `enableZshIntegration` は false にして、`home/shell` の `mkZshInit` が build 時に生成した init を source する。fast-syntax-highlighting は `FAST_WORK_DIR` 事前指定 (mkdir fork 回避) + `$(uname -a)` → `$OSTYPE` パッチ、pure は `who -m` フォールバックを切るパッチ、promptinit は通さず `prompt_pure_setup` を直接呼ぶ。計測は `hyperfine -N 'zsh -i -c exit'`、内訳は .zshrc のコピーに `EPOCHREALTIME` の差分 print を挟むと早い (zprof は外部コマンドの fork を数えない)
+- **罠**: `zsh-fast-syntax-highlighting` の installPhase は `runHook postInstall` を呼ばないので、`postInstall` のパッチは黙って無視される (`--replace-fail` でも落ちない)。`postPatch` で当てる
 - **罠**: 検証で HM 管理の dotfile リンク（`~/.zshrc` 等）を一時的に差し替えたあと戻すときは `readlink -f` を使わない。store の実体へ直接張り直すと HM activation が `Existing file ... would be clobbered` で失敗する。`readlink`（= `.../home-manager-files/.zshrc` 形式）で復元する
 
 ## nvim (nixvim)
@@ -102,6 +104,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
   - **罠**: `plugins.lsp.servers.<name>.settings` は nixvim がルートキー（lua_ls → `Lua = {}`、nixd → `nixd = {}`）で包む。`settings` 側にそのキーを書くと二重になる（例: `Lua.Lua.runtime`）
   - `plugins.cmp.autoEnableSources = false` にしているので、LSP の補完能力は `plugins.lsp.capabilities` に `cmp_nvim_lsp.default_capabilities()` を明示的に足している（auto-enable 任せだと入らない）
 - **罠**: nixvim は `nixpkgs.source` から**独自に pkgs を作る**ため、NixOS 側の `nixpkgs.config`（allowUnfree 等）が引き継がれない。`programs.nixvim.nixpkgs.config = import ../../nixpkgs-config.nix;` を渡さないと `barbar-nvim`（unfree 扱い）で評価が落ちる
+- 起動高速化 (2026-11-15、`nvim --headless +qa` 105ms → 45ms): `luaLoader` + `performance.byteCompileLua` + `performance.combinePlugins`、重いプラグイン (telescope / diffview / lazygit / trouble / toggleterm) は `plugins.lz-n` + 各 `lazyLoad.settings.cmd|keys` で遅延。nvim-tree は `nvim <dir>` の netrw 置き換えが要るので遅延させない。スニペットは vim-vsnip をやめて内蔵 `vim.snippet.expand`
 - ビルド検証は `nix build --impure --no-link --print-out-paths --expr '(builtins.getFlake "/home/spring/dotfiles").nixosConfigurations.spring-t14-gen6.config.home-manager.users.spring.programs.nixvim.build.package'`。実機確認は `XDG_CONFIG_HOME` に生成 init.lua を置いて headless 起動（`xdg.configFile."nvim/init.lua".source` で store path が取れる）
 
 ## omp (oh-my-pi)
@@ -115,7 +118,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 ## 自作 flake input
 
-- `frost-1256/discord-rpc` はユーザー自身のリポジトリ。挙動のおかしい箇所は input 側が原因のことがある (`run-vm` / `nixos-vrchat` は 2026-10-17 に input ごと削除)
+- `frost-1256/discord-rpc` (ユーザー自身のリポジトリ) は 2026-11-15 に input ごと削除 (`home/discord-rpc` も削除。`run-vm` / `nixos-vrchat` は 2026-10-17 に削除)。同日 Cloudflare WARP (`services.cloudflare-warp`) と rustdesk (rustc + llvm 約 1.7GB を実行時参照していた) も削除
 - `noctalia` は cachix ブランチピン、`niri` は sodiboo/niri-flake（overlay + `niri-unstable` パッケージ、cachix 有効）
   - noctalia に local carry パッチあり (`home/noctalia/patches/*.patch`。現在は未適用・dormant): 指紋 VerifyStart の bounded retry (16 x 500ms) + watchdog 再 arm。素は ClaimDevice 時にしか再試行せず resume 直後の NoReply/NoEnrolledPrints/NoSuchDevice で同セッション死亡する。ExecStartPre 方式 (activation 待ち直列化) で解決したため適用していないが、再発時は `programs.noctalia.package.overrideAttrs` で当てる。既存テストの契約 (disconnect で再 arm しない・他人の claim に手を出さない) は保ってある。input 更新でパッチが当たらなくなったらビルド失敗で気付くので中身を見直す
 - nixpkgs から `libdisplay-info_0_2` が削除されたが niri-flake がまだ要求するため、`overlays/niri-compat.nix` で現行 `libdisplay-info` を 0.2.0 として見せて互換化している（mkPkgs と modules/niri.nix の両方に適用、niri-flake 側が対応したら削除）。`gpu-screen-recorder` の UI は外部 flake `gsr-ui-nix` がオプション衝突を起こすため削除済み。nixpkgs 内蔵の `programs.gpu-screen-recorder.ui` を使うこと

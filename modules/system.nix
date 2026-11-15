@@ -145,7 +145,6 @@
     libimobiledevice
     ifuse
     gnome-firmware
-    cloudflare-warp
     proton-vpn
 
     gst_all_1.gstreamer
@@ -159,7 +158,6 @@
     enable = true;
     package = pkgs.usbmuxd2;
   };
-  services.cloudflare-warp.enable = true;
 
   services.pulseaudio.enable = false;
 

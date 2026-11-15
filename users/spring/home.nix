@@ -5,7 +5,6 @@
 {
   imports = [
     ../../home/fcitx5
-    ../../home/discord-rpc
     ../../home/niri
     ../../home/nvim
     ../../home/shell
@@ -51,7 +50,6 @@
     ghidra
     lan-mouse
     vesktop
-    rustdesk
     distrobox
     distrobox-tui
     (bottles.override { removeWarningPopup = true; })

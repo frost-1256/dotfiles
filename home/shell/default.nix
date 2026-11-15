@@ -4,9 +4,41 @@
   pkgs,
   ...
 }:
+let
+  # `eval "$(tool init zsh)"` 系は起動のたびに fork+exec が走る (carapace だけで ~5ms)。
+  # 出力はパッケージにしか依存しないので build 時に生成して source するだけにする
+  mkZshInit =
+    name: cmd:
+    pkgs.runCommand "${name}-init.zsh" { } ''
+      export HOME=$TMPDIR
+      ${cmd} > $out
+    '';
+  carapaceInit = mkZshInit "carapace" "${config.programs.carapace.finalPackage}/bin/carapace _carapace zsh";
+  direnvInit = mkZshInit "direnv" "${lib.getExe config.programs.direnv.package} hook zsh";
+  zoxideInit = mkZshInit "zoxide" "${lib.getExe config.programs.zoxide.package} init zsh";
+
+  # fast-syntax-highlighting は読み込み時に `$(uname -a)` で Darwin 判定する (fork ~2ms)。
+  # 同じ判定は $OSTYPE で fork 無しにできる
+  # pure は起動時、SSH_CONNECTION が無いと `who -m` を fork して「sudo -s 越しの SSH」を
+  # 検出しようとする (~2ms)。sshd はたまにしか使わず、普通の SSH ログインは
+  # SSH_CONNECTION で判定されるので who フォールバックは切る
+  purePrompt = pkgs.pure-prompt.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace pure.zsh \
+        --replace-fail '(( $+commands[who] ))' '(( 0 ))'
+    '';
+  });
+
+  fastSyntaxHighlighting = pkgs.zsh-fast-syntax-highlighting.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace fast-syntax-highlighting.plugin.zsh \
+        --replace-fail '$(uname -a)' '$OSTYPE'
+    '';
+  });
+in
 {
   home.packages = with pkgs; [
-    pure-prompt
+    purePrompt
     zsh-completions
     # programs.carapace は init にフルパスを埋めるだけで PATH に入れない。
     # 補完関数は `carapace` をコマンド名で呼ぶため消さないこと
@@ -35,9 +67,10 @@
 
   programs.bottom.enable = true;
 
+  # carapace / zoxide / direnv の zsh 統合は自前で build 時生成したものを source する (mkZshInit)
   programs.carapace = {
     enable = true;
-    enableZshIntegration = true;
+    enableZshIntegration = false;
   };
 
   programs.gh = {
@@ -69,7 +102,7 @@
 
   programs.zoxide = {
     enable = true;
-    enableZshIntegration = true;
+    enableZshIntegration = false;
   };
 
   programs.zsh = {
@@ -156,6 +189,9 @@
       # (非同期化 USE_ASYNC は 0.7.1 が zsh>=5.0.8 で自動有効化するので書かない)
       ZSH_AUTOSUGGEST_MANUAL_REBIND = 1;
       ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE = 50;
+      # fast-syntax-highlighting の既定 (~/.cache/fast-syntax-highlighting) は存在せず、
+      # 毎回 fsh へフォールバックして `mkdir -p` を fork していた (~3ms)。最初から fsh を指す
+      FAST_WORK_DIR = "${config.xdg.cacheHome}/fsh";
     };
 
     setOptions = [
@@ -171,7 +207,7 @@
       }
       {
         name = "fast-syntax-highlighting";
-        src = pkgs.zsh-fast-syntax-highlighting;
+        src = fastSyntaxHighlighting;
         file = "share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
       }
     ];
@@ -217,9 +253,11 @@
         bindkey "^[OF" end-of-line
         bindkey "^[[3~" delete-char
 
-        autoload -Uz promptinit
-        promptinit
-        prompt pure
+        # promptinit は fpath 全体から prompt_*_setup を探す (~2ms) ので通さず pure を直接読む。
+        # promptinit 経由で付く prompt_opts (subst / percent) はここで立てる
+        setopt prompt_subst prompt_percent
+        autoload -Uz prompt_pure_setup
+        prompt_pure_setup
 
         # --- distrobox コンテナ内ではプロンプト先頭にコンテナ名を表示 ---
         # pure の precustom フックが psvar[22] (custom prefix) を描画するので、
@@ -231,12 +269,18 @@
           [[ -n $cname ]] && psvar[22]="(distrobox:$cname)"
         }
       '')
+      # zoxide は HM 既定と同じく compinit (mkOrder 570) の後
+      (lib.mkOrder 851 "source ${zoxideInit}")
+      (lib.mkOrder 1500 ''
+        source ${direnvInit}
+        source ${carapaceInit}
+      '')
     ];
   };
 
   programs.direnv = {
     enable = true;
-    enableZshIntegration = true;
+    enableZshIntegration = false;
     nix-direnv.enable = true;
   };
 }

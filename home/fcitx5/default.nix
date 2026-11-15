@@ -25,6 +25,9 @@ in
     # qt6Packages.fcitx5-configtool は KDE Frameworks → pyside6 → qtwebengine
     # (Chromium ビルド) を引いて重いため外し、設定は下の settings で宣言する
     fcitx5.addons = [ ];
+    # Wayland の text-input-v3 を使うので GTK_IM_MODULE / QT_IM_MODULE を設定しない
+    # (Fcitx5 の "Wayland Diagnose" 通知対策)
+    fcitx5.waylandFrontend = true;
     # fcitx5-with-addons は既定で configtool を同梱するので明示的に外す
     fcitx5.fcitx5-with-addons = pkgs.qt6Packages.fcitx5-with-addons.override {
       withConfigtool = false;

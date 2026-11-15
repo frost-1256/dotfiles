@@ -41,8 +41,6 @@
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    discord-rpc.url = "github:frost-1256/discord-rpc";
-    discord-rpc.inputs.nixpkgs.follows = "nixpkgs";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     omp.url = "github:can1357/oh-my-pi";
     gaze.url = "github:GunduLabs/gaze";

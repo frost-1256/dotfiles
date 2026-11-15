@@ -227,26 +227,6 @@
         "type": "github"
       }
     },
-    "discord-rpc": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1785562667,
-        "narHash": "sha256-7IXgAywPmsRx9mD2SYbBj90XG4pOFCEz01E1OU/84dY=",
-        "owner": "frost-1256",
-        "repo": "discord-rpc",
-        "rev": "84710796dd39c792b764bc59a7e89cb574e8892a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "frost-1256",
-        "repo": "discord-rpc",
-        "type": "github"
-      }
-    },
     "droidspaces": {
       "inputs": {
         "artifacts": "artifacts",
@@ -1005,7 +985,6 @@
       "inputs": {
         "ccusage": "ccusage",
         "chaotic": "chaotic",
-        "discord-rpc": "discord-rpc",
         "droidspaces": "droidspaces",
         "gaze": "gaze",
         "home-manager": "home-manager_2",

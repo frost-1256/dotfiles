@@ -59,6 +59,19 @@ in
     viAlias = true;
     vimAlias = true;
 
+    # ── 起動高速化 ──
+    # Lua を build 時にバイトコンパイルし、プラグインを 1 つの pack に結合して
+    # runtimepath の走査を減らす。vim.loader は残りの require をキャッシュする
+    luaLoader.enable = true;
+    performance = {
+      byteCompileLua = {
+        enable = true;
+        nvimRuntime = true;
+        plugins = true;
+      };
+      combinePlugins.enable = true;
+    };
+
     # tree-sitter-manager が parser を clone/ビルドするのに必要
     extraPackages = with pkgs; [
       gcc
@@ -167,6 +180,9 @@ in
     ];
 
     plugins = {
+      # 遅延読み込み。コマンド・キー経由でしか使わない重いプラグインを起動パスから外す
+      lz-n.enable = true;
+
       transparent.enable = true;
       web-devicons.enable = true;
 
@@ -234,9 +250,10 @@ in
         enable = true;
         autoEnableSources = false;
         settings = {
+          # LSP スニペット展開は nvim 内蔵の vim.snippet (vim-vsnip は起動 ~4ms の Vim script だった)
           snippet.expand.__raw = ''
             function(args)
-              vim.fn["vsnip#anonymous"](args.body)
+              vim.snippet.expand(args.body)
             end
           '';
           mapping.__raw = ''
@@ -265,7 +282,6 @@ in
           sources.__raw = ''
             cmp.config.sources({
               { name = "nvim_lsp" },
-              { name = "vsnip" },
             }, {
               { name = "buffer" },
             })
@@ -297,7 +313,6 @@ in
       cmp-buffer.enable = true;
       cmp-path.enable = true;
       cmp-cmdline.enable = true;
-      cmp-vsnip.enable = true;
 
       # ── UI / 操作 ──────────────────────────────────────────
       nvim-tree.enable = true;
@@ -308,15 +323,30 @@ in
       telescope = {
         enable = true;
         extensions.file-browser.enable = true;
+        # file_browser 拡張込みで起動時 ~20ms 食っていた。キーマップは :Telescope 経由なので cmd で足りる
+        lazyLoad.settings.cmd = "Telescope";
       };
       barbar.enable = true;
       nvim-autopairs.enable = true;
       cord.enable = true;
-      lazygit.enable = true;
-      trouble.enable = true;
-      diffview.enable = true;
+      lazygit = {
+        enable = true;
+        lazyLoad.settings.cmd = "LazyGit";
+      };
+      trouble = {
+        enable = true;
+        lazyLoad.settings.cmd = "Trouble";
+      };
+      diffview = {
+        enable = true;
+        lazyLoad.settings.cmd = [
+          "DiffviewOpen"
+          "DiffviewFileHistory"
+        ];
+      };
       toggleterm = {
         enable = true;
+        lazyLoad.settings.keys = [ "<c-t>" ];
         settings = {
           size = 100;
           open_mapping = "[[<c-t>]]";
@@ -332,7 +362,6 @@ in
 
     extraPlugins = [
       tree-sitter-manager
-      pkgs.vimPlugins.vim-vsnip
     ]
     ++ tsGrammars
     ++ tsQueries;
