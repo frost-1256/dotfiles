@@ -154,6 +154,14 @@ in
   # (pcie_aspm.policy=performance と amd_pstate=active は上の boot.kernelParams に入れている)
   powerManagement.cpuFreqGovernor = "performance";
   hardware.nvidia.nvidiaPersistenced = true;
+  # persistenced は SIGTERM 後の後始末 (svc_unregister → persistence mode 解除) で固まり、
+  # 毎シャットダウン stop-sigterm の 90 秒タイムアウトまで残る (2026-11-16 実測、615.78.08)。
+  # 後始末は電源断/再起動前には不要 (fd が閉じればドライバ側で解放され、runtime dir は
+  # ExecStopPost が消す) なので、最初から SIGKILL で止める。
+  systemd.services.nvidia-persistenced.serviceConfig = {
+    KillSignal = "SIGKILL";
+    TimeoutStopSec = "5s";
+  };
   boot.kernelPackages = lib.mkForce zen3Kernel;
 
   # --- CachyOS-Settings 由来のチューニング (2026-11-16 時点の上流 9e6603a を読んで選別) ---
