@@ -1,4 +1,40 @@
-{ ... }:
+{ pkgs, ... }:
+let
+  # 太字用フォント。HackGen の Bold は日本語部分 (源柔ゴシック Bold) が太すぎて、
+  # 12.5pt では「鬱」「議」等の画数の多い漢字が塗りつぶされて潰れる (Claude Code の
+  # **strong** 等で顕著。2026-11-16 スクショで比較)。
+  # 対策: HackGen Regular のファミリ名だけ変えたコピー ("HackGen Console NF Synth") を
+  # build 時に作り、太字はそれを weight=Bold で要求する。Bold 体が存在しないので
+  # WezTerm が Regular から合成ボールド (輪郭を少しだけ太らせる) を作る。字形は地の文と
+  # 同じまま、本物の Bold より細いので画数の多い漢字も潰れない。
+  # 不採用: Noto Sans Mono CJK JP Bold (潰れはしないが地の文と書体がずれて浮く)、
+  # Hack Nerd Font + scale=0.83 (字高が縮む)。
+  hackgenSynth =
+    pkgs.runCommand "hackgen-console-nf-synth"
+      { nativeBuildInputs = [ pkgs.python3Packages.fonttools ]; }
+      ''
+        mkdir -p $out/share/fonts/truetype
+        ttx -q -t name -o name.ttx ${pkgs.hackgen-nf-font}/share/fonts/hackgen-nf/HackGenConsoleNF-Regular.ttf
+        # family / full name / PostScript 名をすべて別名にする (元フォントと衝突させない)
+        sed -i 's/HackGen Console NF/HackGen Console NF Synth/g; s/HackGenConsoleNF/HackGenConsoleNFSynth/g' name.ttx
+        ttx -q -m ${pkgs.hackgen-nf-font}/share/fonts/hackgen-nf/HackGenConsoleNF-Regular.ttf \
+          -o $out/share/fonts/truetype/HackGenConsoleNFSynth-Regular.ttf name.ttx
+      '';
+  # 罠: 生テーブルなので各エントリに is_fallback / is_synthetic が必須
+  boldFont = italic: {
+    inherit italic;
+    intensity = "Bold";
+    font.font = [
+      {
+        family = "HackGen Console NF Synth";
+        weight = "Bold";
+        style = if italic then "Italic" else "Normal";
+        is_fallback = false;
+        is_synthetic = false;
+      }
+    ];
+  };
+in
 {
   programs.wezterm = {
     enable = true;
@@ -27,6 +63,13 @@
           is_fallback = false;
           is_synthetic = false;
         }
+      ];
+      # 合成ボールド用フォントは fontconfig に登録せず WezTerm だけに見せる
+      # (システムのフォント一覧を汚さない。portable 側でもそのまま動く)
+      font_dirs = [ "${hackgenSynth}/share/fonts/truetype" ];
+      font_rules = [
+        (boldFont false)
+        (boldFont true)
       ];
       font_size = 12.5;
       # 字形を細めに見せる。HackGen は Regular / Bold しか無いので weight では細くできず、
