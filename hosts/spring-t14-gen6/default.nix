@@ -72,8 +72,13 @@
     ACTION=="add", SUBSYSTEM=="pci", ATTR{power/control}="auto"
   '';
 
-  # aarch64 (lxc-aarch64 等) のビルド用。重いものは下の nixbuild.net に投げる。
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  # aarch64 (lxc-aarch64 等) のビルドはすべて下の nixbuild.net に投げる。
+  # ローカルの binfmt エミュレーション (boot.binfmt.emulatedSystems) は外した:
+  # systemd-binfmt が sysinit.target の前で毎起動 0.8〜2 秒止まっていたため (2026-11-15 実測)。
+  # 登録が空でも NixOS は空の /etc/binfmt.d/nixos.conf を置き、systemd-binfmt が
+  # binfmt_misc の automount を踏んで同じ待ちが残るので unit ごと止める。
+  # emulatedSystems を戻すときはこの行も消すこと
+  systemd.services.systemd-binfmt.enable = false;
   # nixbuild.net リモートビルダー (aarch64 カーネル/イメージ用)。
   # 公開鍵 (~/.ssh/id_ed25519.pub) を https://nixbuild.net/settings/ssh-keys に登録すること。
   programs.ssh.extraConfig = ''
@@ -121,6 +126,9 @@
   # 無効化した時のフォールバック用として残している。
   chaotic.mesa-git = {
     enable = true;
+    # 既定 true だと安定版 Mesa の specialisation "stable-mesa" (約 0.6GB) を毎回抱える。
+    # mesa-git が壊れたら前の世代に戻せば足りるので作らない (2026-11-15)
+    fallbackSpecialisation = false;
     extraPackages = with pkgs; [
       intel-media-driver
     ];

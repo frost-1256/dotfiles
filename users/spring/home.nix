@@ -27,7 +27,6 @@
 
   home.packages = with pkgs; [
     floorp-bin
-    gimp
     fastfetch
     # gh / nix-search-cli は home/shell 側 (portable と共通)
     nwg-displays
@@ -38,21 +37,17 @@
     protontricks
     proton-authenticator
     icoutils
-    wine
     #gpu-screen-recorder-gtk
     mpv
     thunderbird
-    teams-for-linux
     tealdeer
     tmux
     tor-browser
     # ida-free # 要手動DL: nix-store --add-fixed sha256 ida-free-pc_93_x64linux.run してから有効化
-    ghidra
     lan-mouse
     vesktop
     distrobox
     distrobox-tui
-    (bottles.override { removeWarningPopup = true; })
   ];
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。

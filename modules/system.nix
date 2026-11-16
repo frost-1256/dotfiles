@@ -67,6 +67,9 @@
   # --- ハードウェア共通 ---
   networking.networkmanager.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
+  # WWAN モデムを積んだ機体は無い (/dev/cdc-wdm* 等なし)。NM 有効時の既定 true で
+  # 毎起動 ModemManager が立ち上がり、起動直後の CPU 取り合いに加わるだけなので切る
+  networking.modemmanager.enable = false;
   hardware.bluetooth.enable = true;
   # ドライバ側 (intel-media-driver / nvidia) は各ホストで足す。
   hardware.graphics = {

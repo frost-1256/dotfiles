@@ -45,9 +45,9 @@
           };
         };
       };
-      # 0.3 だと明るい壁紙の上で紫・白の文字が埋もれて読みにくく、0.75 だと透け感が
-      # 足りない (2026-11-15)。Niri の blur + xray と合わせた妥協点
-      window_background_opacity = 0.5;
+      # 背景を黒 (#101010) にしたので、紫背景の 0.3 より文字が埋もれにくい。
+      # 0.5 は透け感が足りなかった (2026-11-15)。Niri の blur + xray と合わせて調整
+      window_background_opacity = 0.35;
       # 装飾なし (Niri 側で prefer-no-csd)。fancy tab bar 不使用なので window_frame は不要
       window_decorations = "NONE";
       hide_tab_bar_if_only_one_tab = true;
