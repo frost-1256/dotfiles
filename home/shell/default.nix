@@ -269,6 +269,40 @@ in
           [[ -n $cname ]] && psvar[22]="(distrobox:$cname)"
         }
       '')
+      # --- `./binary` の不足ライブラリを自動解決 (nix-alien があるホストのみ = modules/nix-ld.nix を import している両デスクトップ) ---
+      # Enter 時に、先頭語がパス指定 (/ を含む) の Nix ストア外 ELF で、nix-ld の共通ライブラリ
+      # (NIX_LD_LIBRARY_PATH) を足しても ldd に "not found" が出る時だけ、
+      # `nix-alien-ld <bin> -- <args>` に書き換えて実行する (不足分を nix-index で解決して取得。
+      # 2 回目以降は ~/.cache/nix-alien のキャッシュで即起動)。足りていれば何もしない。
+      # accept-line 自体は上書きせず Enter 用の別ウィジェットから `zle accept-line` を呼ぶ
+      # (autosuggestions / fast-syntax-highlighting が accept-line を包んでいるので連鎖を壊さない)。
+      # zsh 内で打った時だけ効く (ファイラ等からの起動は nix-ld のみ)。起動時は関数定義だけで fork 無し。
+      # portable (macOS) では nix-alien-ld が無いので何も定義しない
+      (lib.mkOrder 1100 ''
+        if (( $+commands[nix-alien-ld] )); then
+          function _nix_alien_accept_line {
+            local -a words
+            words=(''${(z)BUFFER})
+            local cmd=''${(Q)words[1]-}
+            if [[ $cmd == */* && -f $cmd && -x $cmd && ''${cmd:A} != /nix/store/* ]]; then
+              local magic=""
+              read -r -k 4 -u 0 magic < $cmd 2>/dev/null
+              if [[ $magic == $'\x7f'ELF ]] &&
+                LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH ldd -- $cmd 2>/dev/null | grep -q 'not found'; then
+                if (( ''${#words} > 1 )); then
+                  BUFFER="nix-alien-ld ''${words[1]} -- ''${words[2,-1]}"
+                else
+                  BUFFER="nix-alien-ld ''${words[1]}"
+                fi
+                zle redisplay
+              fi
+            fi
+            zle accept-line
+          }
+          zle -N nix-alien-accept-line _nix_alien_accept_line
+          bindkey '^M' nix-alien-accept-line
+        fi
+      '')
       # zoxide は HM 既定と同じく compinit (mkOrder 570) の後
       (lib.mkOrder 851 "source ${zoxideInit}")
       (lib.mkOrder 1500 ''

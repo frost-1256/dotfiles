@@ -283,6 +283,21 @@
         "type": "github"
       }
     },
+    "flake-compat_2": {
+      "locked": {
+        "lastModified": 1767039857,
+        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -670,6 +685,28 @@
         "type": "github"
       }
     },
+    "nix-alien": {
+      "inputs": {
+        "flake-compat": "flake-compat_2",
+        "nix-index-database": "nix-index-database",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794748314,
+        "narHash": "sha256-i2IAZOKp1tEVOhPOl0OBx5gFi/gglJWJUCfwVs4k5es=",
+        "owner": "thiagokokada",
+        "repo": "nix-alien",
+        "rev": "a9d3619774b7508f5d52baa09a4449a61b72c8bc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "thiagokokada",
+        "repo": "nix-alien",
+        "type": "github"
+      }
+    },
     "nix-bun": {
       "inputs": {
         "nixpkgs": [
@@ -729,6 +766,46 @@
       "original": {
         "owner": "aster-void",
         "repo": "nix-hazkey",
+        "type": "github"
+      }
+    },
+    "nix-index-database": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794739050,
+        "narHash": "sha256-PCGNIyAydZcdUXCxEXTjrS1+wWS+k9E+ENqBkUK2Mpg=",
+        "owner": "nix-community",
+        "repo": "nix-index-database",
+        "rev": "9bd074026d6db75b59aae8cd6071b5f2fe27a36c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nix-index-database",
+        "type": "github"
+      }
+    },
+    "nixos-vrchat": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1782702925,
+        "narHash": "sha256-iit7ebn9LyLS0A/vFEvBaZevFA6OqnpvVmU6wY5HTLQ=",
+        "owner": "frost-1256",
+        "repo": "nixos-vrchat",
+        "rev": "3bf9368dde2bca9d761ec2247e250b4a239282a8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "frost-1256",
+        "repo": "nixos-vrchat",
         "type": "github"
       }
     },
@@ -990,8 +1067,10 @@
         "home-manager": "home-manager_2",
         "llm-agents": "llm-agents",
         "niri": "niri",
+        "nix-alien": "nix-alien",
         "nix-claude-code": "nix-claude-code",
         "nix-hazkey": "nix-hazkey",
+        "nixos-vrchat": "nixos-vrchat",
         "nixpkgs": "nixpkgs_3",
         "nixvim": "nixvim",
         "noctalia": "noctalia",

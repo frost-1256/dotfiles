@@ -18,6 +18,8 @@
     ../../modules/tor.nix
     ../../modules/smb.nix
     ../../modules/sshd.nix
+    # 普通の Linux 向けバイナリの直接実行 (nix-ld + envfs + nix-alien)
+    ../../modules/nix-ld.nix
     ./hardware-configuration.nix
   ];
 

@@ -45,6 +45,15 @@
     omp.url = "github:can1357/oh-my-pi";
     gaze.url = "github:GunduLabs/gaze";
     gaze.inputs.nixpkgs.follows = "nixpkgs";
+    # VRChat (Quest + WiVRn / xrizer) と Unity/ALCOM 制作環境の NixOS モジュール (ユーザー自身のリポジトリ)。
+    # spring-b550m-pro4 の host から import する (t14 では使わない)。
+    nixos-vrchat.url = "github:frost-1256/nixos-vrchat";
+    nixos-vrchat.inputs.nixpkgs.follows = "nixpkgs";
+    # 未知のバイナリの不足ライブラリを nix-index で調べて取ってきて実行する (nix-alien)。
+    # 構築済み nix-index DB (nix-index-database) を同梱。modules/nix-ld.nix (両デスクトップ) で使う
+    nix-alien.url = "github:thiagokokada/nix-alien";
+    nix-alien.inputs.nixpkgs.follows = "nixpkgs";
+    nix-alien.inputs.nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     # Droidspaces (Android 上の LXC ランタイム) 用 NixOS モジュール。
     # lxc-aarch64 からのみ参照する。follows は付けない (公式手順通り)。
     droidspaces.url = "github:ravindu644/Droidspaces-OSS";

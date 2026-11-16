@@ -31,6 +31,11 @@ in
     ../../modules/podman.nix
     ../../modules/steam.nix
     ../../modules/tailscale.nix
+    # VRChat (Quest + WiVRn) と Unity/ALCOM 制作環境 (nixos-vrchat input)
+    ../../modules/vrchat.nix
+    ../../modules/unity.nix
+    # 普通の Linux 向けバイナリの直接実行 (nix-ld + envfs)
+    ../../modules/nix-ld.nix
     ./hardware-configuration.nix
   ];
 
