@@ -68,6 +68,8 @@ in
       efiSysMountPoint = "/boot";
     };
     systemd-boot.enable = true;
+    # ブートメニュー (と nvidia-drm が載るまでの efifb) を GOP の最大モードにする
+    systemd-boot.consoleMode = "max";
   };
 
   # simpledrm (platform-simple-framebuffer) の無効化。
@@ -78,6 +80,10 @@ in
   # 組み込み・モジュールのどちらの simpledrm にも効くよう両方書く。
   boot.kernelParams = [
     "initcall_blacklist=simpledrm_platform_driver_init"
+    # IOD LCD-AD221X は EDID の preferred が 1280x1024 (最大は 1680x1050) なので、
+    # 放っておくと nvidia-drm fbdev のコンソール (起動ログ・TTY) が 1280x1024 になる。
+    # DRM の cmdline mode でフル解像度を指定する (Niri 側は home/niri/config.nix で指定済み)
+    "video=HDMI-A-1:1680x1050@60"
     # PCIe ASPM を性能優先に (リンク省電力の復帰遅延をなくす)
     "pcie_aspm.policy=performance"
     # Zen 3 は既定だと acpi-cpufreq/passive になりうる。active (CPPC + EPP) に固定して
