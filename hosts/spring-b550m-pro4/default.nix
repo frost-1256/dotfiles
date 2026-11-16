@@ -5,6 +5,7 @@
   inputs,
   pkgs,
   lib,
+  username,
   ...
 }:
 let
@@ -40,6 +41,18 @@ in
   ];
 
   networking.hostName = "spring-b550m-pro4";
+
+  # fcitx5 の設定ディレクトリ (home/fcitx5 の i18n.inputMethod.fcitx5.settings が生成)。
+  # HM 既定は ~/.config/fcitx5 を丸ごと store への symlink にするため fcitx5 が
+  # 実行時に書く cached_layouts 等を書けず、終了時に config を書き戻すと symlink が
+  # 実ファイルに化けて次の rebuild で clobber エラーになる。
+  # - recursive: ディレクトリは実体のまま、宣言したファイル (config / profile / conf/*.conf)
+  #   だけを個別にリンクする
+  # - force: 書き戻されて実ファイルになったものも宣言値で上書きする
+  home-manager.users.${username}.xdg.configFile.fcitx5 = {
+    recursive = true;
+    force = true;
+  };
 
   boot.loader = {
     efi = {

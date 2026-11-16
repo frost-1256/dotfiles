@@ -162,6 +162,7 @@ spring (haru) の NixOS dotfiles リポジトリ。作業中に新しいクセ�
 
 - `.codex` は中身 0 バイトの残骸（既に削除済み）。`.gitignore` には `old-dots/` と `flake-lock.nix` がある
 - i18n は `en_US.UTF-8` ベース + `extraLocaleSettings` で ja_JP を個別指定（fcitx5 + hazkey 入力）
+- **罠 (fcitx5)**: HM の `i18n.inputMethod.fcitx5.settings` は既定で `~/.config/fcitx5` を丸ごと store への symlink にする (`xdg.configFile.fcitx5`)。fcitx5 は実行時に cached_layouts を書き、終了時に config を書き戻すので、symlink が実ファイルに化けて次の rebuild が clobber エラーになる。spring-b550m-pro4 の host で `home-manager.users.${username}.xdg.configFile.fcitx5 = { recursive = true; force = true; }` (宣言ファイルだけ個別リンク + 書き戻しを上書き)。t14 で同じ症状が出たら同じ 2 行を足す (2026-11-16)
 
 ## nix 信任 (trusted-users)
 
