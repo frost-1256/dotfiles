@@ -49,9 +49,17 @@ in
   # - recursive: ディレクトリは実体のまま、宣言したファイル (config / profile / conf/*.conf)
   #   だけを個別にリンクする
   # - force: 書き戻されて実ファイルになったものも宣言値で上書きする
-  home-manager.users.${username}.xdg.configFile.fcitx5 = {
-    recursive = true;
-    force = true;
+  # (home-manager.users.${username} は同じ attrset に 2 回書くと dynamic attribute の
+  # 重複で評価が落ちるので、このホストの HM 上書きはこのブロックにまとめる)
+  home-manager.users.${username} = {
+    xdg.configFile.fcitx5 = {
+      recursive = true;
+      force = true;
+    };
+    # WezTerm の WebGpu (Vulkan) フロントエンドは NVIDIA では不安定 (gen19 で wezterm-gui が
+    # NULL 呼び出しで SEGV し、窓が固まって入力できなくなる)。このホストだけ OpenGL (EGL) にする。
+    # home/wezterm の WebGpu は T14 (Intel Xe) 向けの選択
+    programs.wezterm.settings.front_end = lib.mkForce "OpenGL";
   };
 
   boot.loader = {

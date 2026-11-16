@@ -188,10 +188,13 @@
       alsa.enable = true;
       alsa.support32Bit = true;
       pulse.enable = true;
-      # If you want to use JACK applications, uncomment this
-      jack.enable = true;
+      # jack.enable は deprecated (JACK ライブラリを LD_LIBRARY_PATH で全プロセスに注入する)。
+      # JACK アプリが要る時だけ `nix shell nixpkgs#pipewire.jack -c pw-jack <app>` で起動する
     };
   };
+  # PipeWire / WirePlumber に RT 優先度を渡す。無いと RTKit エラーで通常優先度に落ち、
+  # 負荷時に音切れしやすい
+  security.rtkit.enable = true;
 
   programs.ssh.startAgent = true;
 }

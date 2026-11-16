@@ -100,6 +100,19 @@ in
   #   (dbus 名取得失敗で exit 0 → 2 秒毎に再起動を延々繰り返していた)。
   # - hazkey-server は GPU 再生成中数回クラッシュしうるので、起動回数制限を外し
   #   RestartSec を稼がせて自動復帰させる
+  # fcitx5 パッケージ同梱の XDG autostart (org.fcitx.Fcitx5.desktop) を殺す。
+  # 起動は HM の fcitx5-daemon.service が担うので、残すと systemd-xdg-autostart-generator 経由の
+  # app-org.fcitx.Fcitx5@autostart と 2 つ同時に起動する。両方が Wayland の input-method を
+  # bind してから負けた側が dbus 名を取れずに終了するため、どちらが勝つか・IME が生きるかが
+  # 起動ごとに変わり、ターミナル等で文字が打てなくなることがあった (2026-11-16 実測)。
+  # ユーザー側の同名 .desktop に Hidden=true を置くとシステム側のエントリは無視される
+  xdg.configFile."autostart/org.fcitx.Fcitx5.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=Fcitx 5
+    Hidden=true
+  '';
+
   systemd.user.services.fcitx5-daemon = {
     Unit.After = [ "hazkey-server.service" ];
     Service.Restart = "on-failure";
