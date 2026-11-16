@@ -124,7 +124,7 @@
       ])
 
       # output
-      # spring-desktop の外部ディスプレイ (IOD LCD-AD221X): EDID 最大 1680x1050、
+      # spring-b550m-pro4 の外部ディスプレイ (IOD LCD-AD221X): EDID 最大 1680x1050、
       # DTD2 の 59.883Hz に固定 (59.954Hz の Standard Timing もあるが DTD 優先)。
       # コネクタ名 (HDMI-A-1) ではなく manufacturer + model + serial でマッチさせ、
       # この個体だけに適用する (コネクタ名マッチは記述マッチに勝つため両立させない)。

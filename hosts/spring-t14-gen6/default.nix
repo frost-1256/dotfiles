@@ -60,7 +60,7 @@
     "nmi_watchdog=0"
     # zswap を止める。CachyOS カーネルは既定で zswap 有効だが、このホストは
     # zram swap なので zswap → zram の二重圧縮になり CPU とレイテンシを無駄にする
-    # (spring-desktop は逆に zram 無効 + zswap + disk swapfile 構成)。
+    # (spring-b550m-pro4 は逆に zram 無効 + zswap + disk swapfile 構成)。
     "zswap.enabled=0"
   ];
 

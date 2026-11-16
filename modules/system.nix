@@ -1,4 +1,4 @@
-# デスクトップホスト (spring-t14-gen6 / spring-desktop) 共通のシステム設定。
+# デスクトップホスト (spring-t14-gen6 / spring-b550m-pro4) 共通のシステム設定。
 # コンテナとも共有する最小部分は ./base.nix、ハードウェア固有は各 hosts/<host> に置く。
 {
   pkgs,

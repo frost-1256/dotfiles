@@ -151,7 +151,7 @@
     {
       nixosConfigurations = {
         spring-t14-gen6 = mkDesktopHost "spring-t14-gen6";
-        spring-desktop = mkDesktopHost "spring-desktop";
+        spring-b550m-pro4 = mkDesktopHost "spring-b550m-pro4";
 
         # aarch64 NixOS LXC コンテナ用。既存ホストとは独立した最小構成 +
         # portable home (nvim + shell + core)。デスクトップ系 flake モジュール
