@@ -67,10 +67,51 @@ in
       canTouchEfiVariables = true;
       efiSysMountPoint = "/boot";
     };
-    systemd-boot.enable = true;
-    # ブートメニュー (と nvidia-drm が載るまでの efifb) を GOP の最大モードにする
-    systemd-boot.consoleMode = "max";
+    # Limine (t14 と同じ)。メニューとカーネルへ渡す GOP モード (nvidia-drm が載るまでの
+    # efifb) をモニタのフル解像度にする。GOP に無いモードなら Limine が自動で選び直す
+    limine = {
+      enable = true;
+      resolution = "1680x1050";
+      style.interface.resolution = "1680x1050";
+      # 別ディスク (sdc) の Windows をチェーンロード。guid() は ESP (sdc3) の GPT パーティション
+      # GUID (PARTUUID)。Windows 再インストールで ESP を作り直したら lsblk -o NAME,PARTUUID で取り直す
+      extraEntries = ''
+        /Windows
+            protocol: efi
+            path: guid(1aa49273-da58-41c8-8c09-dbccac7e2977):/EFI/Microsoft/Boot/bootmgfw.efi
+      '';
+    };
   };
+
+  # GDM (Mutter) も EDID の preferred (1280x1024) を選ぶので、Mutter のシステム既定
+  # ($XDG_CONFIG_DIRS/monitors.xml) でフル解像度を指定する。Niri はこのファイルを読まない。
+  # monitorspec は EDID の vendor (PNP ID) / 製品名 / シリアル文字列と一致させる必要がある。
+  # rate は Mutter が DRM モードから計算する値と 0.001 未満の差で一致させる (niri msg outputs と同値)
+  environment.etc."xdg/monitors.xml".text = ''
+    <monitors version="2">
+      <configuration>
+        <logicalmonitor>
+          <x>0</x>
+          <y>0</y>
+          <scale>1</scale>
+          <primary>yes</primary>
+          <monitor>
+            <monitorspec>
+              <connector>HDMI-A-1</connector>
+              <vendor>IOD</vendor>
+              <product>LCD-AD221X</product>
+              <serial>URJ20002954O</serial>
+            </monitorspec>
+            <mode>
+              <width>1680</width>
+              <height>1050</height>
+              <rate>59.883</rate>
+            </mode>
+          </monitor>
+        </logicalmonitor>
+      </configuration>
+    </monitors>
+  '';
 
   # simpledrm (platform-simple-framebuffer) の無効化。
   # このマシンは GTX 1080 単GPUなのに simplefb が card0 として残り、
