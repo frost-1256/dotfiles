@@ -48,6 +48,7 @@
     vesktop
     distrobox
     distrobox-tui
+    deepseek-harness
     # T3 Code (コーディングエージェントの GUI)。t3code-desktop が Electron 版
     t3code
   ];

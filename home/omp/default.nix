@@ -203,20 +203,52 @@ in
               input: [text]
               contextWindow: 262144
               maxTokens: 262144
-        qwen-local:
-          baseUrl: https://spies-and-genius-sms.trycloudflare.com/v1
+        # 自宅の hyperdrive (OpenAI 互換)。認証なし、n_ctx 131072。
+        # 旧 trycloudflare の一時 URL から固定ドメインへ移行 (2026-11-17)。
+        hyperdrive-local:
+          baseUrl: https://qwen-hyprdrv.lunar-insky.f5.si/v1
           auth: none
           api: openai-completions
           models:
-            - id: qwen3.8-27b
-              name: Qwen 3.8 27B (llama.cpp)
+            - id: qwen-hyperdrive
+              name: Qwen 3.8 27B Abliterated IQ3_XXS (hyperdrive)
               reasoning: true
               input: [text]
               contextWindow: 131072
               maxTokens: 32768
               thinking:
                 mode: effort
-                efforts: [low, high, xhigh]
+                efforts: [minimal, low, high, xhigh]
+              compat:
+                supportsReasoningSummary: true
+                includeEncryptedReasoning: false
+                filterReasoningHistory: true
+                replayReasoningContent: false
+                reasoningContentField: reasoning_content
+                allowsSyntheticReasoningContentForToolCalls: true
+            - id: qwen-hyperdrive-low
+              name: Qwen 3.8 27B Abliterated IQ3_XXS low (hyperdrive)
+              reasoning: true
+              input: [text]
+              contextWindow: 131072
+              maxTokens: 32768
+              thinking:
+                mode: effort
+                efforts: [low]
+              compat:
+                supportsReasoningSummary: true
+                includeEncryptedReasoning: false
+                filterReasoningHistory: true
+                replayReasoningContent: false
+                reasoningContentField: reasoning_content
+                allowsSyntheticReasoningContentForToolCalls: true
+            # qwen-hyperdrive-fast はサーバ側プリセットで thinking が無効。
+            - id: qwen-hyperdrive-fast
+              name: Qwen 3.8 27B Abliterated IQ3_XXS No reasoning (hyperdrive)
+              reasoning: false
+              input: [text]
+              contextWindow: 131072
+              maxTokens: 32768
               compat:
                 supportsReasoningSummary: true
                 includeEncryptedReasoning: false

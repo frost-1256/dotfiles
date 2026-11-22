@@ -28,8 +28,9 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
-    nix-hazkey.url = "github:aster-void/nix-hazkey";
-    nix-hazkey.inputs.nixpkgs.follows = "nixpkgs";
+    # 日本語入力 (fcitx5 アドオン)。home/fcitx5 で使う
+    sweet-ime.url = "github:frost-1256/sweet-ime";
+    sweet-ime.inputs.nixpkgs.follows = "nixpkgs";
     nix-claude-code.url = "github:ryoppippi/nix-claude-code";
     nix-claude-code.inputs.nixpkgs.follows = "nixpkgs";
     ccusage.url = "github:ryoppippi/ccusage";
@@ -64,7 +65,6 @@
       nixpkgs,
       home-manager,
       nixvim,
-      nix-hazkey,
       noctalia,
       niri,
       chaotic,
@@ -84,7 +84,6 @@
 
       mkHomeModules = username: [
         noctalia.homeModules.default
-        nix-hazkey.homeModules.hazkey
         nixvim.homeModules.nixvim
         omp.homeManagerModules.default
         ./users/${username}/home.nix
