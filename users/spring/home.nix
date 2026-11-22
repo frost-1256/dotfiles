@@ -48,6 +48,8 @@
     vesktop
     distrobox
     distrobox-tui
+    # T3 Code (コーディングエージェントの GUI)。t3code-desktop が Electron 版
+    t3code
   ];
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。
