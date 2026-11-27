@@ -32,10 +32,13 @@
     substituters = [
       "https://noctalia.cachix.org"
       "https://nixos-nothing-spacewar.cachix.org"
+      # sweet-ime は CI ビルド成果を cachix に置いている (上流 README の設定を取り込み)
+      "https://sweet-ime.cachix.org"
     ];
     trusted-public-keys = [
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       "nixos-nothing-spacewar.cachix.org-1:TWmfQAaPB47M0zWUX6m2YgjKKu+WJYqwFtt9nR9pZDU="
+      "sweet-ime.cachix.org-1:KrnImhtgcdSD1qlYusdBprFJWl/AsgL24H+QUwDZbIY="
     ];
     # nixConfig (extra-*) の信任確認と restricted 設定の上書きを許すユーザー。
     # 無いと flake 利用時に extra-substituters/extra-trusted-public-keys の
@@ -166,8 +169,13 @@
 
   # 画面読み上げ (speech-dispatcher + mbrola 音声で約 0.7GB)。
   # NixOS が graphical desktop 向けの既定 (mkDefault) で入れるが、
-  # orca 不使用なら不要。無効化で closure から落ちる。
+  # 画面読み上げの Orca は不使用なので無効化して closure から落とす。
   services.speechd.enable = false;
+
+  # AI コーディング IDE の Orca (stablyai/orca、llm-agents.nix の packages.orca) は
+  # computer use で AT-SPI のセッションバスを使う。上流 README どおり有効化。
+  # 反映には再ログインが必要。上の speechd (画面読み上げ) とは別物。
+  services.gnome.at-spi2-core.enable = true;
 
   security.polkit.enable = true;
   # Firmware updates (LVFS) — daemon + GNOME Firmware GUI

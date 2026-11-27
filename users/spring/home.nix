@@ -1,7 +1,11 @@
 {
   pkgs,
+  inputs,
   ...
 }:
+let
+  system = pkgs.stdenv.hostPlatform.system;
+in
 {
   imports = [
     ../../home/fcitx5
@@ -15,6 +19,11 @@
     ../../home/claude
     ../../home/core.nix
   ];
+  # nixpkgs は nixos-unstable-small を追うが、home-manager / nixvim は 26.11
+  # リリースを使うので release check の警告が毎回出る。意図的な組み合わせなので抑制。
+  home.enableNixpkgsReleaseCheck = false;
+  programs.nixvim.version.enableNixpkgsReleaseCheck = false;
+
   # nm-applet / blueman-applet の自動起動を無効化
   xdg.autostart.entries = {
     "nm-applet.desktop" = {
@@ -51,6 +60,12 @@
     deepseek-harness
     # T3 Code (コーディングエージェントの GUI)。t3code-desktop が Electron 版
     t3code
+    # Orca (AI コーディング IDE + CLI)。llm-agents.nix のビルドをそのまま使う。
+    # computer use 用の AT-SPI は modules/system.nix 側で有効化済み。
+    inputs.llm-agents.packages.${system}.orca
+    # ターミナルで動くコーディングエージェント (両方 nixpkgs のビルドをそのまま使う)
+    opencode # コマンド: opencode
+    antigravity-cli # Google の TUI エージェント。コマンド: agy
   ];
 
   # KeePassXC の .kdbx をデバイス間で同期する用の Syncthing。

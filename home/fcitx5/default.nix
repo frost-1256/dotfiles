@@ -63,7 +63,7 @@ in
       # ~/.config/fcitx5/conf/*.conf
       addons = {
         classicui.globalSection = {
-          "Vertical Candidate List" = "False";
+          "Vertical Candidate List" = "True";
           WheelForPaging = "True";
           Font = ''"Sans 10"'';
           MenuFont = ''"Sans 10"'';

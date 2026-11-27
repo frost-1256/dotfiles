@@ -13,12 +13,15 @@
       "https://niri.cachix.org"
       "https://noctalia.cachix.org"
       "https://nixos-nothing-spacewar.cachix.org"
+      # sweet-ime の CI ビルド成果 (flake input を更新してもソースビルドにならないように)
+      "https://sweet-ime.cachix.org"
     ];
     extra-trusted-public-keys = [
       "nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk="
       "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       "nixos-nothing-spacewar.cachix.org-1:TWmfQAaPB47M0zWUX6m2YgjKKu+WJYqwFtt9nR9pZDU="
+      "sweet-ime.cachix.org-1:KrnImhtgcdSD1qlYusdBprFJWl/AsgL24H+QUwDZbIY="
     ];
   };
 
